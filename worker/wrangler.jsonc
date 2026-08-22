@@ -3,5 +3,9 @@
   "name": "chemistry-handwriting",
   "main": "src/index.js",
   "compatibility_date": "2026-08-22",
-  "ai": { "binding": "AI" }
+  "ai": { "binding": "AI" },
+  "durable_objects": {
+    "bindings": [{ "name": "CHALLENGE", "class_name": "ChallengeRoom" }]
+  },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["ChallengeRoom"] }]
 }
