@@ -1,0 +1,26 @@
+name: Accept Cloudflare Llama 3.2 Vision Terms
+
+on:
+  workflow_dispatch:
+
+jobs:
+  accept:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send required agreement request
+        env:
+          ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: |
+          set -euo pipefail
+          response=$(curl -sS -w '\n%{http_code}' \
+            "https://api.cloudflare.com/client/v4/accounts/${ACCOUNT_ID}/ai/run/@cf/meta/llama-3.2-11b-vision-instruct" \
+            -X POST \
+            -H "Authorization: Bearer ${API_TOKEN}" \
+            -H "Content-Type: application/json" \
+            --data '{"prompt":"agree"}')
+          body=$(printf '%s\n' "$response" | sed '$d')
+          code=$(printf '%s\n' "$response" | tail -n1)
+          echo "$body"
+          test "$code" -ge 200 && test "$code" -lt 300
+          echo "Cloudflare accepted the initial agreement request."
