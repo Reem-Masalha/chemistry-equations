@@ -4,6 +4,10 @@ on:
     branches: [ nonogram-android ]
     paths:
       - 'nonogram-android/**'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'nonogram-android/**'
   workflow_dispatch:
 jobs:
   build:
