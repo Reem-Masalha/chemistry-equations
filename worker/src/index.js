@@ -13,16 +13,16 @@ export default {
     try {
       const body = await request.json();
       if (!body.image || typeof body.image !== 'string') return json({ error: 'Missing image' }, 400);
-      const base64 = body.image.replace(/^data:image\/[^;]+;base64,/, '');
-      const bytes = Uint8Array.from(atob(base64), c => c.charCodeAt(0));
-      // Cloudflare Vision/AI OCR is intentionally isolated here so the browser never receives credentials.
-      // The model should return only the chemical equation text.
-      const result = await env.AI.run('@cf/llava-hf/llava-1.5-7b-hf', {
-        image: [...bytes],
-        prompt: 'Read the handwritten chemical equation in this image. Return ONLY the equation as plain text, using normal element symbols, numbers, + and ->. Do not explain anything. Example: 2H2 + O2 -> 2H2O'
+      const result = await env.AI.run('@cf/meta/llama-3.2-11b-vision-instruct', {
+        messages: [
+          { role: 'system', content: 'You are a chemistry handwriting OCR engine. Read only the handwritten chemical equation. Return ONLY normalized plain text. Use element symbols such as H2, O2, Fe2O3; use + and ->; preserve coefficients. Never explain.' },
+          { role: 'user', content: 'Transcribe this handwritten chemical equation exactly enough to balance it. Return only the equation.' }
+        ],
+        image: body.image,
+        max_tokens: 128
       });
-      const text = result?.response || result?.description || '';
-      return json({ text: text.trim() });
+      const text = (result?.response || result?.result || '').toString().trim();
+      return json({ text });
     } catch (e) {
       return json({ error: e?.message || 'Recognition failed' }, 500);
     }
