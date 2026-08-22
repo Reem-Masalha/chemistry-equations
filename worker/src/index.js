@@ -13,12 +13,13 @@ export default {
     try {
       const body = await request.json();
       if (!body.image || typeof body.image !== 'string') return json({ error: 'Missing image' }, 400);
+      const image = body.image.includes(',') ? body.image.split(',')[1] : body.image;
       const result = await env.AI.run('@cf/meta/llama-3.2-11b-vision-instruct', {
         messages: [
           { role: 'system', content: 'You are a chemistry handwriting OCR engine. Read only the handwritten chemical equation. Return ONLY normalized plain text. Use element symbols such as H2, O2, Fe2O3; use + and ->; preserve coefficients. Never explain.' },
           { role: 'user', content: 'Transcribe this handwritten chemical equation exactly enough to balance it. Return only the equation.' }
         ],
-        image: body.image,
+        image,
         max_tokens: 128
       });
       const text = (result?.response || result?.result || '').toString().trim();
