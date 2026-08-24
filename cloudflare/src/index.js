@@ -22,6 +22,22 @@ export default {
         return json({ ok: true, user: { id, name: String(name).trim(), username: u } }, headers);
       }
 
+      if (url.pathname === '/api/set-password' && request.method === 'POST') {
+        const { username, password, confirmPassword } = await request.json();
+        const u = String(username || '').trim().toLowerCase();
+        if (!u) return json({ error: 'Username is required.' }, headers, 400);
+        if (!password) return json({ error: 'Password is required.' }, headers, 400);
+        if (String(password).length < 8) return json({ error: 'Password must be at least 8 characters.' }, headers, 400);
+        if (password !== confirmPassword) return json({ error: 'Passwords do not match.' }, headers, 400);
+        const user = await env.DB.prepare('SELECT id,name,username,password_hash,password_salt FROM users WHERE username = ?').bind(u).first();
+        if (!user) return json({ error: 'No existing account was found with that username.' }, headers, 404);
+        if (user.password_hash && user.password_salt) return json({ error: 'This account already has a password. Please use Sign in.' }, headers, 409);
+        const salt = crypto.randomUUID();
+        const hash = await hashPassword(String(password), salt);
+        await env.DB.prepare('UPDATE users SET password_hash = ?, password_salt = ? WHERE id = ?').bind(hash, salt, user.id).run();
+        return json({ ok: true, user: { id: user.id, name: user.name, username: user.username } }, headers);
+      }
+
       if (url.pathname === '/api/sign-in' && request.method === 'POST') {
         const { username, password } = await request.json();
         if (!username || !password) return json({ error: 'Username and password are required.' }, headers, 400);
