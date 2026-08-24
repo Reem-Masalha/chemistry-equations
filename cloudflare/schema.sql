@@ -2,6 +2,8 @@ CREATE TABLE IF NOT EXISTS users (
   id TEXT PRIMARY KEY,
   name TEXT NOT NULL,
   username TEXT NOT NULL UNIQUE,
+  password_hash TEXT,
+  password_salt TEXT,
   created_at TEXT NOT NULL
 );
 
@@ -16,3 +18,6 @@ CREATE TABLE IF NOT EXISTS scores (
 );
 
 CREATE INDEX IF NOT EXISTS idx_scores_user ON scores(user_id);
+
+ALTER TABLE users ADD COLUMN password_hash TEXT;
+ALTER TABLE users ADD COLUMN password_salt TEXT;
