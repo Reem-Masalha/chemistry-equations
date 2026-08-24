@@ -1,0 +1,41 @@
+name: Setup Chemistry Equations Cloudflare D1
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  setup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install Wrangler
+        run: npm install --global wrangler@latest
+
+      - name: Create D1 database if needed
+        env:
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: |
+          set -e
+          wrangler d1 list > /tmp/d1-list.txt
+          if grep -q 'chemistry-equations-db' /tmp/d1-list.txt; then
+            echo 'chemistry-equations-db already exists.'
+          else
+            wrangler d1 create chemistry-equations-db
+          fi
+
+      - name: Show database information
+        env:
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: wrangler d1 list
