@@ -22,10 +22,12 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
         run: |
           set -e
-          if ! wrangler d1 list | grep -q 'chemistry-equations-db'; then
-            wrangler d1 create chemistry-equations-db
+          DB_JSON=$(wrangler d1 list --json)
+          ID=$(printf '%s' "$DB_JSON" | node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>{const a=JSON.parse(s);const r=Array.isArray(a)?a:a.result;const x=(r||[]).find(x=>x.name==='chemistry-equations-db');if(!x){console.error(JSON.stringify(a));process.exit(1)}console.log(x.uuid)})")
+          if [ -z "$ID" ]; then
+            echo 'Could not find chemistry-equations-db.'
+            exit 1
           fi
-          ID=$(wrangler d1 list --json | node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>{let a=JSON.parse(s);let x=a.result.find(x=>x.name==='chemistry-equations-db');if(!x)process.exit(1);console.log(x.uuid)})")
           sed -i "s/REPLACE_AFTER_D1_CREATION/$ID/" wrangler.toml
           wrangler d1 execute chemistry-equations-db --remote --file=schema.sql
       - name: Deploy Worker
