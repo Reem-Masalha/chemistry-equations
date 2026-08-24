@@ -1,0 +1,12 @@
+(()=>{
+  const SESSION='chemistryCurrentUser';
+  const API=window.CHEMISTRY_API_WORKER||'https://chemistry-equations-api.reemkhmasalha.workers.dev';
+  const el=document.getElementById('profileContent'); if(!el)return;
+  const current=()=>{try{return JSON.parse(localStorage.getItem(SESSION)||sessionStorage.getItem(SESSION)||'null')}catch{return null}};
+  const a=current();
+  if(!a){el.innerHTML='<h2>Please sign in</h2><p>Sign in to view your profile and saved quiz progress.</p><button id="profileSignIn" class="primary">Sign in</button>';document.getElementById('profileSignIn').onclick=()=>document.getElementById('accountTopBtn').click();return;}
+  el.innerHTML='<div class="profile-head"><div class="profile-avatar">'+escapeHtml((a.name||a.username).charAt(0).toUpperCase())+'</div><div><h2>'+escapeHtml(a.name||a.username)+'</h2><p>@'+escapeHtml(a.username)+'</p></div></div><div class="profile-stats"><div><b id="scoreCount">—</b><span>Quizzes</span></div><div><b id="bestScore">—</b><span>Best score</span></div><div><b id="avgScore">—</b><span>Average</span></div></div><h3>Saved quiz scores</h3><div id="scoreList">Loading…</div><button id="profileSignOut" class="secondary">Sign out</button>';
+  document.getElementById('profileSignOut').onclick=()=>{localStorage.removeItem(SESSION);sessionStorage.removeItem(SESSION);location.href='learn.html';};
+  fetch(API+'/api/scores?userId='+encodeURIComponent(a.id)).then(r=>r.json()).then(d=>{const scores=d.scores||[];document.getElementById('scoreCount').textContent=scores.length;const vals=scores.map(x=>Number(x.score)||0);document.getElementById('bestScore').textContent=vals.length?Math.max(...vals):'—';document.getElementById('avgScore').textContent=vals.length?(vals.reduce((x,y)=>x+y,0)/vals.length).toFixed(1):'—';document.getElementById('scoreList').innerHTML=scores.length?scores.map(x=>'<div class="score-row"><span>'+escapeHtml(String(x.stage||'Quiz'))+'</span><b>'+escapeHtml(String(x.score))+'/'+escapeHtml(String(x.total))+'</b></div>').join(''):'<p>No saved quiz scores yet.</p>';}).catch(()=>{document.getElementById('scoreList').textContent='Could not load saved scores.'});
+  function escapeHtml(v){return String(v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+})();
