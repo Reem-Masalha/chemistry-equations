@@ -1,0 +1,36 @@
+name: Deploy Chemistry Equations Cloudflare API
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: npm install --global wrangler@latest
+      - name: Ensure database exists and migrate
+        working-directory: cloudflare
+        env:
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: |
+          set -e
+          if ! wrangler d1 list | grep -q 'chemistry-equations-db'; then
+            wrangler d1 create chemistry-equations-db
+          fi
+          ID=$(wrangler d1 list --json | node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>{let a=JSON.parse(s);let x=a.result.find(x=>x.name==='chemistry-equations-db');if(!x)process.exit(1);console.log(x.uuid)})")
+          sed -i "s/REPLACE_AFTER_D1_CREATION/$ID/" wrangler.toml
+          wrangler d1 execute chemistry-equations-db --remote --file=schema.sql
+      - name: Deploy Worker
+        working-directory: cloudflare
+        env:
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: wrangler deploy
