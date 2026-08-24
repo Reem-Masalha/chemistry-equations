@@ -1,0 +1,47 @@
+name: Create Chemistry Equations D1 Database
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  create-d1:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Create D1 database if needed
+        env:
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: |
+          set -e
+          npx wrangler@latest d1 list > /tmp/d1-list.json
+          if grep -q '"name"[[:space:]]*:[[:space:]]*"chemistry-equations-db"' /tmp/d1-list.json; then
+            echo 'chemistry-equations-db already exists.'
+          else
+            npx wrangler@latest d1 create chemistry-equations-db | tee /tmp/d1-create.txt
+          fi
+          echo '--- D1 databases ---'
+          cat /tmp/d1-list.json || true
+          echo '--- Creation output ---'
+          cat /tmp/d1-create.txt 2>/dev/null || true
+      - name: Initialize database schema
+        env:
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: |
+          if [ -f worker/schema.sql ]; then
+            npx wrangler@latest d1 execute chemistry-equations-db --remote --file=worker/schema.sql
+          else
+            cat > /tmp/schema.sql <<'SQL'
+          CREATE TABLE IF NOT EXISTS users (id TEXT PRIMARY KEY, username TEXT NOT NULL UNIQUE, name TEXT NOT NULL, password_hash TEXT NOT NULL, created_at TEXT NOT NULL);
+          CREATE TABLE IF NOT EXISTS quiz_scores (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id TEXT NOT NULL, stage TEXT NOT NULL, score REAL NOT NULL, total INTEGER NOT NULL, elapsed_ms INTEGER, created_at TEXT NOT NULL, FOREIGN KEY(user_id) REFERENCES users(id));
+          CREATE TABLE IF NOT EXISTS progress (user_id TEXT PRIMARY KEY, data TEXT NOT NULL, updated_at TEXT NOT NULL, FOREIGN KEY(user_id) REFERENCES users(id));
+          SQL
+            npx wrangler@latest d1 execute chemistry-equations-db --remote --file=/tmp/schema.sql
+          fi
