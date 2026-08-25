@@ -3,8 +3,6 @@ name: Deploy to GitHub Pages
 on:
   push:
     branches: [main]
-  pull_request:
-    branches: [main]
   workflow_dispatch:
 
 permissions:
@@ -13,8 +11,8 @@ permissions:
   id-token: write
 
 concurrency:
-  group: pages
-  cancel-in-progress: true
+  group: github-pages
+  cancel-in-progress: false
 
 jobs:
   deploy:
@@ -23,29 +21,38 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
-      - name: Checkout
+      - name: Checkout exact main commit
         uses: actions/checkout@v5
+        with:
+          ref: main
+          fetch-depth: 1
 
-      - name: Verify Balancer files
+      - name: Build clean Pages artifact
         run: |
           set -e
-          test -f index.html
-          test -f handwriting-controls.js
-          grep -q 'id="undoPad"' index.html
-          grep -q 'id="redoPad"' index.html
-          grep -q 'id="erasePad"' index.html
-          grep -q 'id="clearPad"' index.html
-          grep -q 'handwriting-controls.js' index.html
-          echo "Balancer handwriting controls verified in Pages artifact"
-          echo "Deploying commit: $GITHUB_SHA"
+          rm -rf _site
+          mkdir -p _site
+          cp -R . _site/source
+          cp index.html _site/index.html
+          [ -f style.css ] && cp style.css _site/style.css || true
+          [ -f handwriting-controls.js ] && cp handwriting-controls.js _site/handwriting-controls.js || true
+          touch _site/.nojekyll
+          test -s _site/index.html
+          grep -q 'id="undoPad"' _site/index.html
+          grep -q 'id="redoPad"' _site/index.html
+          grep -q 'id="erasePad"' _site/index.html
+          grep -q 'id="clearPad"' _site/index.html
+          grep -q 'handwriting-controls.js' _site/index.html
+          echo "Pages artifact commit: $GITHUB_SHA"
+          echo "$GITHUB_SHA" > _site/DEPLOYMENT_COMMIT.txt
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
 
-      - name: Upload artifact
+      - name: Upload clean Pages artifact
         uses: actions/upload-pages-artifact@v4
         with:
-          path: '.'
+          path: '_site'
 
       - name: Deploy to GitHub Pages
         id: deployment
