@@ -2,6 +2,11 @@ name: Deploy Chemistry Equations Cloudflare API
 
 on:
   workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'cloudflare/**'
+      - '.github/workflows/deploy-cloudflare.yml'
 
 permissions:
   contents: read
