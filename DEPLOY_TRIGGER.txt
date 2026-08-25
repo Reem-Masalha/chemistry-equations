@@ -1,0 +1,1 @@
+Pages deployment trigger for Node 24-compatible workflow.
