@@ -35,6 +35,7 @@ jobs:
           grep -q 'id="clearPad"' index.html
           grep -q 'handwriting-controls.js' index.html
           echo "Balancer handwriting controls verified in Pages artifact"
+          echo "Deploying commit: $GITHUB_SHA"
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
