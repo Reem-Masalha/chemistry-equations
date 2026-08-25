@@ -49,8 +49,16 @@ export default {
       if (url.pathname === '/api/scores' && request.method === 'POST') {
         const { userId, stage, score, total } = await request.json(); await env.DB.prepare('INSERT INTO scores (user_id,stage,score,total,created_at) VALUES (?,?,?,?,?)').bind(userId, stage, score, total, new Date().toISOString()).run(); return json({ ok: true }, headers);
       }
-      if (url.pathname === '/api/admin/stats' && request.method === 'GET') {
-        if (!env.ADMIN_KEY || request.headers.get('x-admin-key') !== env.ADMIN_KEY) return json({ error: 'Unauthorized.' }, headers, 401);
+      if (url.pathname === '/api/admin/stats' && (request.method === 'GET' || request.method === 'POST')) {
+        let key = request.headers.get('x-admin-key') || '';
+        if (request.method === 'GET') key = key || url.searchParams.get('key') || '';
+        if (request.method === 'POST' && !key) {
+          const type = request.headers.get('content-type') || '';
+          if (type.includes('application/x-www-form-urlencoded')) { const form = await request.formData(); key = String(form.get('adminKey') || ''); }
+          else if (type.includes('application/json')) { const body = await request.json(); key = String(body.adminKey || ''); }
+        }
+        if (!env.ADMIN_KEY) return json({ error: 'ADMIN_KEY is not configured on the Cloudflare Worker.' }, headers, 500);
+        if (!key || key !== env.ADMIN_KEY) return json({ error: 'Incorrect admin key.' }, headers, 401);
         const users = await env.DB.prepare('SELECT id,name,username,created_at FROM users ORDER BY created_at DESC').all();
         const totals = await env.DB.prepare('SELECT COUNT(*) AS visits, COUNT(DISTINCT visitor_id) AS unique_visitors FROM visits').first();
         const pages = await env.DB.prepare('SELECT path,COUNT(*) AS views FROM visits GROUP BY path ORDER BY views DESC').all();
