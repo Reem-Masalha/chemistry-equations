@@ -12,7 +12,7 @@ permissions:
 
 concurrency:
   group: pages
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
   deploy:
@@ -22,7 +22,19 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
+
+      - name: Verify Balancer files
+        run: |
+          set -e
+          test -f index.html
+          test -f handwriting-controls.js
+          grep -q 'id="undoPad"' index.html
+          grep -q 'id="redoPad"' index.html
+          grep -q 'id="erasePad"' index.html
+          grep -q 'id="clearPad"' index.html
+          grep -q 'handwriting-controls.js' index.html
+          echo "Balancer handwriting controls verified in Pages artifact"
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
