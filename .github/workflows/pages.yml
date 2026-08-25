@@ -37,13 +37,20 @@ jobs:
           git archive HEAD | tar -x -C _site
           touch _site/.nojekyll
           test -s _site/index.html
+          test -s _site/balancer-enhancements.js
+          test -s _site/handwriting-controls.js
+          test -s _site/balancer-methods.js
+          grep -q 'balancer-enhancements.js' _site/index.html
+          grep -q 'handwriting-controls.js' _site/index.html
+          grep -q 'balancer-methods.js' _site/index.html
           grep -q 'id="undoPad"' _site/index.html
           grep -q 'id="redoPad"' _site/index.html
           grep -q 'id="erasePad"' _site/index.html
           grep -q 'id="clearPad"' _site/index.html
-          grep -q 'handwriting-controls.js' _site/index.html
+          echo "BALANCER_ENHANCEMENTS_DEPLOYED=true"
           echo "DEPLOYED_COMMIT=$GITHUB_SHA"
           printf '%s\n' "$GITHUB_SHA" > _site/DEPLOYMENT_COMMIT.txt
+          printf '%s\n' 'enhanced-balancer-2026-08-25' > _site/BALANCER_VERSION.txt
 
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
