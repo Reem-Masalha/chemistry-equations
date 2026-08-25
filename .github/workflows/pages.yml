@@ -32,10 +32,7 @@ jobs:
           set -e
           rm -rf _site
           mkdir -p _site
-          cp -R . _site/source
-          cp index.html _site/index.html
-          [ -f style.css ] && cp style.css _site/style.css || true
-          [ -f handwriting-controls.js ] && cp handwriting-controls.js _site/handwriting-controls.js || true
+          tar --exclude='./.git' --exclude='./_site' -cf - . | tar -xf - -C _site
           touch _site/.nojekyll
           test -s _site/index.html
           grep -q 'id="undoPad"' _site/index.html
