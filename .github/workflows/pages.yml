@@ -2,7 +2,8 @@ name: Deploy to GitHub Pages
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
   workflow_dispatch:
 
 permissions:
@@ -11,8 +12,8 @@ permissions:
   id-token: write
 
 concurrency:
-  group: github-pages
-  cancel-in-progress: false
+  group: pages
+  cancel-in-progress: true
 
 jobs:
   deploy:
@@ -21,18 +22,19 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
-      - name: Checkout exact main commit
+      - name: Checkout repository
         uses: actions/checkout@v5
         with:
           ref: main
           fetch-depth: 1
 
-      - name: Build clean Pages artifact
+      - name: Prepare Pages site
+        shell: bash
         run: |
-          set -e
+          set -euo pipefail
           rm -rf _site
-          mkdir -p _site
-          tar --exclude='./.git' --exclude='./_site' -cf - . | tar -xf - -C _site
+          mkdir _site
+          git archive HEAD | tar -x -C _site
           touch _site/.nojekyll
           test -s _site/index.html
           grep -q 'id="undoPad"' _site/index.html
@@ -40,17 +42,17 @@ jobs:
           grep -q 'id="erasePad"' _site/index.html
           grep -q 'id="clearPad"' _site/index.html
           grep -q 'handwriting-controls.js' _site/index.html
-          echo "Pages artifact commit: $GITHUB_SHA"
-          echo "$GITHUB_SHA" > _site/DEPLOYMENT_COMMIT.txt
+          echo "DEPLOYED_COMMIT=$GITHUB_SHA"
+          printf '%s\n' "$GITHUB_SHA" > _site/DEPLOYMENT_COMMIT.txt
 
-      - name: Setup Pages
+      - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
 
-      - name: Upload clean Pages artifact
+      - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v4
         with:
-          path: '_site'
+          path: _site
 
-      - name: Deploy to GitHub Pages
+      - name: Deploy Pages artifact
         id: deployment
         uses: actions/deploy-pages@v4
