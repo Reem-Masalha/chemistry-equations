@@ -37,9 +37,13 @@ jobs:
           git archive HEAD | tar -x -C _site
           touch _site/.nojekyll
           test -s _site/index.html
+          test -s _site/admin.html
+          test -s _site/balancer-live.js
           test -s _site/balancer-enhancements.js
           test -s _site/handwriting-controls.js
           test -s _site/balancer-methods.js
+          test -s _site/visitor-tracker.js
+          grep -q 'balancer-live.js' _site/site-enhancements.js
           grep -q 'balancer-enhancements.js' _site/index.html
           grep -q 'handwriting-controls.js' _site/index.html
           grep -q 'balancer-methods.js' _site/index.html
@@ -47,10 +51,14 @@ jobs:
           grep -q 'id="redoPad"' _site/index.html
           grep -q 'id="erasePad"' _site/index.html
           grep -q 'id="clearPad"' _site/index.html
+          grep -q 'balancer-live-primary-2026-08-25-v13' _site/index.html
+          grep -q 'window.showBalance=show' _site/balancer-live.js
           echo "BALANCER_ENHANCEMENTS_DEPLOYED=true"
+          echo "ADMIN_DASHBOARD_INCLUDED=true"
+          echo "UNIQUE_VISITOR_TRACKING_INCLUDED=true"
           echo "DEPLOYED_COMMIT=$GITHUB_SHA"
           printf '%s\n' "$GITHUB_SHA" > _site/DEPLOYMENT_COMMIT.txt
-          printf '%s\n' 'enhanced-balancer-2026-08-25' > _site/BALANCER_VERSION.txt
+          printf '%s\n' 'enhanced-balancer-2026-08-25-v13' > _site/BALANCER_VERSION.txt
 
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
