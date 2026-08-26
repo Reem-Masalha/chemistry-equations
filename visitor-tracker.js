@@ -1,6 +1,9 @@
 (()=>{
 const API=window.CHEMISTRY_API_WORKER||'https://chemistry-equations-api.reemkhmasalha.workers.dev';
-let id=localStorage.getItem('chemistryVisitorId');if(!id){id=crypto.randomUUID();localStorage.setItem('chemistryVisitorId',id)}
+const cookieName='chemistryVisitorId';
+const getCookie=()=>document.cookie.split('; ').find(x=>x.startsWith(cookieName+'='))?.slice(cookieName.length+1)||null;
+const setCookie=v=>{document.cookie=cookieName+'='+encodeURIComponent(v)+'; Max-Age=31536000; Path=/; SameSite=Lax'};
+let id=getCookie()||localStorage.getItem('chemistryVisitorId');if(!id)id=crypto.randomUUID();setCookie(id);try{localStorage.setItem('chemistryVisitorId',id)}catch{}
 let userId=null;try{const u=JSON.parse(localStorage.getItem('chemistryCurrentUser')||sessionStorage.getItem('chemistryCurrentUser')||'null');userId=u?.id||null}catch{}
 const send=(p)=>fetch(API+'/api/track-event',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({...p,visitorId:id,userId})}).catch(()=>{});
 fetch(API+'/api/track-visit',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({visitorId:id,path:location.pathname})}).catch(()=>{});
