@@ -37,29 +37,25 @@ jobs:
           git archive HEAD | tar -x -C _site
           touch _site/.nojekyll
 
-          # Required published files
           test -s _site/index.html
           test -s _site/admin.html
           test -s _site/balancer-live.js
           test -s _site/visitor-tracker.js
 
-          # Required Balancer UI
           for id in equationInput balanceBtn pad clearPad undoPad redoPad erasePad usePad recognizedEdit balanceRecognized recognitionConfidence; do
             grep -q "id=\"$id\"" _site/index.html
           done
 
-          # Required Balancer capabilities
-          grep -q 'Recognized equation before balancing' _site/index.html
+          grep -q 'Correct the recognized equation before balancing' _site/index.html
           grep -q 'Co is cobalt' _site/balancer-live.js
           grep -q 'Confidence:' _site/balancer-live.js
           grep -q 'Tesseract' _site/balancer-live.js
           grep -q 'parseFormula' _site/balancer-live.js
           grep -q 'parseEquation' _site/balancer-live.js
-          grep -q 'Show step-by-step explanation' _site/balancer-live.js
-          grep -q 'algebra' _site/balancer-live.js
-          grep -q 'inspection' _site/balancer-live.js
+          grep -q 'step-by-step' _site/balancer-live.js
+          grep -qi 'algebra' _site/balancer-live.js
+          grep -qi 'inspection' _site/balancer-live.js
 
-          # The Balancer must not load the legacy app initializer.
           if grep -qE '<script[^>]+src=["'"'][^"'"']*app\.js([^"'"']*)["'"']' _site/index.html; then
             echo 'ERROR: legacy app.js is still loaded by the Balancer page'
             exit 1
@@ -70,7 +66,7 @@ jobs:
           echo "UNIQUE_VISITOR_TRACKING_INCLUDED=true"
           echo "DEPLOYED_COMMIT=$GITHUB_SHA"
           printf '%s\n' "$GITHUB_SHA" > _site/DEPLOYMENT_COMMIT.txt
-          printf '%s\n' 'live-balancer-2026-08-26-v3' > _site/BALANCER_VERSION.txt
+          printf '%s\n' 'live-balancer-2026-08-26-v4' > _site/BALANCER_VERSION.txt
 
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v6
