@@ -4,6 +4,7 @@
   const BALANCER='chemistryBalancerSolved';
   const API=window.CHEMISTRY_API_WORKER||'https://chemistry-equations-api.reemkhmasalha.workers.dev';
   const el=document.getElementById('profileContent'); if(!el)return;
+  const style=document.createElement('style');style.textContent='.achievements{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin:18px 0}.achievement{border:1px solid #ddd;border-radius:16px;padding:16px;background:#fff}.achievement.locked{opacity:.5}.achievement-icon{font-size:30px}.achievement h3{margin:8px 0 4px}.achievement p{margin:0;color:#666}.certificate{margin-top:24px;border:3px double #b99a45;border-radius:18px;padding:38px 30px;text-align:center;background:#fffdf5;box-shadow:0 8px 30px rgba(0,0,0,.08)}.certificate .cert-title{font-size:30px;font-weight:700;letter-spacing:1px}.certificate .cert-name{font-size:28px;font-weight:700;margin:20px 0}.certificate .cert-number{font-family:monospace;color:#666}.certificate-actions{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin-top:20px}@media print{body *{visibility:hidden}.certificate,.certificate *{visibility:visible}.certificate{position:absolute;left:0;top:0;width:100%;box-sizing:border-box;border:3px double #000;box-shadow:none}.certificate-actions{display:none}}';document.head.appendChild(style);
   const current=()=>{try{return JSON.parse(localStorage.getItem(SESSION)||sessionStorage.getItem(SESSION)||'null')}catch{return null}};
   const history=()=>{try{return JSON.parse(localStorage.getItem(HISTORY)||'[]')}catch{return[]}};
   const a=current();
@@ -18,22 +19,14 @@
     let streak=0,bestStreak=0;const answers=h.flatMap(x=>(x.questions||[]).map(q=>!!q.correct));answers.forEach(ok=>{streak=ok?streak+1:0;bestStreak=Math.max(bestStreak,streak)});
     const balancerSolved=Math.max(0,Number(localStorage.getItem(BALANCER)||0));
     const earned=[attempts>0,bestStreak>=10,balancerSolved>=50,stages.has('easy')&&stages.has('medium')&&stages.has('hard'),hardPerfect];
-    const items=[
-      ['🏅','First Quiz','Complete your first quiz.'],
-      ['🔥','10 in a Row','Get 10 correct answers consecutively.'],
-      ['⚗️','Balancer','Balance 50 equations.'],
-      ['📚','Scholar','Complete all Easy, Medium and Hard quiz stages.'],
-      ['💯','Perfect Score','Get 100% on a Hard quiz.']
-    ];
+    const items=[['🏅','First Quiz','Complete your first quiz.'],['🔥','10 in a Row','Get 10 correct answers consecutively.'],['⚗️','Balancer','Balance 50 equations.'],['📚','Scholar','Complete all Easy, Medium and Hard quiz stages.'],['💯','Perfect Score','Get 100% on a Hard quiz.']];
     document.getElementById('achievements').innerHTML=items.map((x,i)=>`<div class="achievement ${earned[i]?'earned':'locked'}"><div class="achievement-icon">${x[0]}</div><h3>${x[1]} ${earned[i]?'✓':'🔒'}</h3><p>${x[2]}</p></div>`).join('');
     const scholar=earned[3];
     if(scholar){
       const totalQ=scores.reduce((n,x)=>n+Number(x.total||0),0),points=scores.reduce((n,x)=>n+Number(x.score||0),0),overall=totalQ?Math.round(points/totalQ*100):0;
-      const certNo=certificateNumber(a.id);
-      const date=new Date().toLocaleDateString(undefined,{month:'long',year:'numeric'});
+      const certNo=certificateNumber(a.id);const date=new Date().toLocaleDateString(undefined,{month:'long',year:'numeric'});
       document.getElementById('certificateArea').innerHTML=`<div class="certificate" id="certificate"><div class="eyebrow">CHEMISTRY EQUATIONS</div><div class="cert-title">Certificate of Achievement</div><p>This certifies that</p><div class="cert-name">${escapeHtml(a.username||a.name)}</div><p>has successfully completed the<br><b>Easy • Medium • Hard</b><br>chemistry equation challenges.</p><p><b>Overall score:</b> ${overall}%<br><b>Equations solved:</b> ${balancerSolved}<br><b>Date:</b> ${date}</p><p class="cert-number">Certificate No. ${certNo}</p><div class="certificate-actions"><button id="downloadCertificate" class="primary" type="button">Download PDF</button><button id="printCertificate" class="secondary" type="button">Print Certificate</button></div></div>`;
-      document.getElementById('downloadCertificate').onclick=()=>window.print();
-      document.getElementById('printCertificate').onclick=()=>window.print();
+      document.getElementById('downloadCertificate').onclick=()=>window.print();document.getElementById('printCertificate').onclick=()=>window.print();
     }else document.getElementById('certificateArea').innerHTML='<div class="certificate locked"><h2>Major achievement: Certificate</h2><p>Complete at least one quiz in Easy, Medium and Hard to unlock your certificate.</p></div>';
   }
   function certificateNumber(id){let s=String(id||'certificate'),n=2166136261;for(let i=0;i<s.length;i++){n^=s.charCodeAt(i);n=Math.imul(n,16777619)}return 'CE-'+(n>>>0).toString(16).toUpperCase().padStart(8,'0');}
