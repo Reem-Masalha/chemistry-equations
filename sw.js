@@ -1,1 +1,43 @@
-const CACHE='chemistry-equations-v1';const ASSETS=['./','./learn.html','./personal-quiz.html','./index.html','./checker.html','./challenges.html','./profile.html','./style.css','./personal-quiz.js','./challenges.js','./account.js','./profile.js','./site-enhancements.js','./worker-url.js','./manifest.webmanifest'];self.addEventListener('install',e=>e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS)).then(()=>self.skipWaiting())));self.addEventListener('activate',e=>e.waitUntil(self.clients.claim()));self.addEventListener('fetch',e=>{if(e.request.method!=='GET')return;e.respondWith(caches.match(e.request).then(c=>c||fetch(e.request).then(r=>{const copy=r.clone();caches.open(CACHE).then(x=>x.put(e.request,copy));return r}).catch(()=>caches.match('./learn.html'))))});
+const CACHE = 'chemistry-equations-runtime-v3';
+const SCOPE = '/chemistry-equations/';
+
+self.addEventListener('install', event => {
+  event.waitUntil(self.skipWaiting());
+});
+
+self.addEventListener('activate', event => {
+  event.waitUntil((async () => {
+    const keys = await caches.keys();
+    await Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k)));
+    await self.clients.claim();
+  })());
+});
+
+self.addEventListener('fetch', event => {
+  const req = event.request;
+  if (req.method !== 'GET') return;
+  const url = new URL(req.url);
+  if (url.origin !== self.location.origin) return;
+
+  if (req.mode === 'navigate' || req.destination === 'document') {
+    event.respondWith((async () => {
+      try {
+        const fresh = await fetch(req, { cache: 'no-store' });
+        if (fresh.ok) caches.open(CACHE).then(c => c.put(req, fresh.clone()));
+        return fresh;
+      } catch (_) {
+        return (await caches.match(req)) || (await caches.match(SCOPE + 'learn.html')) || Response.error();
+      }
+    })());
+    return;
+  }
+
+  event.respondWith((async () => {
+    const cached = await caches.match(req);
+    const network = fetch(req, { cache: 'no-store' }).then(r => {
+      if (r.ok) caches.open(CACHE).then(c => c.put(req, r.clone()));
+      return r;
+    }).catch(() => null);
+    return cached || (await network) || Response.error();
+  })());
+});
