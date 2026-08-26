@@ -2,8 +2,7 @@ name: Deploy to GitHub Pages
 
 on:
   push:
-    branches:
-      - main
+    branches: [main]
   workflow_dispatch:
 
 permissions:
@@ -37,16 +36,17 @@ jobs:
           git archive HEAD | tar -x -C _site
           touch _site/.nojekyll
           test -s _site/index.html
+          test -s _site/learn.html
+          test -s _site/beginner-lessons.html
           test -s _site/admin.html
-          test -s _site/balancer-live.js
           test -s _site/visitor-tracker.js
-          grep -q 'balancer-live.js' _site/index.html
-          echo "LIVE_BALANCER_SINGLE_ENTRYPOINT=true"
-          echo "ADMIN_DASHBOARD_INCLUDED=true"
-          echo "UNIQUE_VISITOR_TRACKING_INCLUDED=true"
-          echo "DEPLOYED_COMMIT=$GITHUB_SHA"
+          grep -q 'beginner-lessons.html' _site/learn.html
+          grep -q 'Step 2 — Count every atom' _site/beginner-lessons.html
           printf '%s\n' "$GITHUB_SHA" > _site/DEPLOYMENT_COMMIT.txt
-          printf '%s\n' 'live-balancer-2026-08-26-v6' > _site/BALANCER_VERSION.txt
+          printf '%s\n' 'chemistry-equations-pages-20260827-2' > _site/SITE_BUILD_VERSION.txt
+          echo "PAGES_SOURCE_COMMIT=$GITHUB_SHA"
+          echo "BEGINNER_PATH_INCLUDED=true"
+          echo "BEGINNER_ATOM_COUNTING_INCLUDED=true"
 
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v6
