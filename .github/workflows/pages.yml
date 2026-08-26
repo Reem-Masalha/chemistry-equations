@@ -14,6 +14,9 @@ concurrency:
   group: pages
   cancel-in-progress: true
 
+env:
+  PAGES_DEPLOY_TRIGGER: "20260826-profile-challenge-refresh"
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -43,10 +46,11 @@ jobs:
           grep -q 'beginner-lessons.html' _site/learn.html
           grep -q 'Step 2 — Count every atom' _site/beginner-lessons.html
           printf '%s\n' "$GITHUB_SHA" > _site/DEPLOYMENT_COMMIT.txt
-          printf '%s\n' 'chemistry-equations-pages-20260827-2' > _site/SITE_BUILD_VERSION.txt
+          printf '%s\n' 'chemistry-equations-pages-20260826-3' > _site/SITE_BUILD_VERSION.txt
           echo "PAGES_SOURCE_COMMIT=$GITHUB_SHA"
           echo "BEGINNER_PATH_INCLUDED=true"
           echo "BEGINNER_ATOM_COUNTING_INCLUDED=true"
+          echo "PAGES_DEPLOY_TRIGGER=$PAGES_DEPLOY_TRIGGER"
 
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v6
