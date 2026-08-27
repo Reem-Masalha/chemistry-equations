@@ -1,132 +1,20 @@
 (()=>{
   const SESSION='chemistryCurrentUser';
   const API=window.CHEMISTRY_API_WORKER||'https://chemistry-equations-api.reemkhmasalha.workers.dev';
-
-  function session(){
-    for(const store of [localStorage,sessionStorage]){
-      try{
-        const raw=store.getItem(SESSION);
-        const value=raw?JSON.parse(raw):null;
-        if(value&&value.token)return value;
-      }catch{}
-    }
-    return null;
-  }
-
+  function session(){for(const store of [localStorage,sessionStorage]){try{const raw=store.getItem(SESSION);const v=raw?JSON.parse(raw):null;if(v&&v.token)return v}catch{}}return null}
   function start(){
-    const root=document.getElementById('profileContent');
-    if(!root||root.dataset.privacyTabsInstalled)return;
+    const root=document.getElementById('profileContent');if(!root||root.dataset.privacyTabsInstalled)return;
     root.dataset.privacyTabsInstalled='1';
-
-    const style=document.createElement('style');
-    style.textContent=`
-      .profile-tabs{display:flex;gap:8px;flex-wrap:wrap;margin:4px 0 20px}
-      .profile-tab{border:1px solid #dce3ee;background:#fff;color:#334155;border-radius:999px;padding:10px 16px;font-weight:800;cursor:pointer}
-      .profile-tab.active{background:#3158d6;color:#fff;border-color:#3158d6}
-      .privacy-view{display:none}
-      .privacy-view.active{display:block}
-      .privacy-card{background:#fff;border:1px solid #dce3ee;border-radius:18px;padding:22px;margin-bottom:18px}
-      .privacy-card h2{margin-top:0}
-      .privacy-card p{color:#64748b;line-height:1.6}
-      .privacy-list{margin:12px 0 0;padding-left:20px;line-height:1.8}
-      .recovery-code-box{font:700 19px monospace;letter-spacing:1px;word-break:break-all;margin:12px 0;padding:12px;background:#f7f7f7;border:2px dashed #777;border-radius:10px}
-      .recovery-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
-      .recovery-actions button{padding:9px 13px;border:1px solid #aaa;border-radius:8px;background:#fff;cursor:pointer;font-weight:700}
-      .privacy-security-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
-      .privacy-security-actions button{padding:10px 15px;border:1px solid #cbd5e1;border-radius:9px;background:#fff;cursor:pointer;font-weight:700}
-      .privacy-security-actions .primary{border-color:#3158d6}
-      @media(max-width:700px){.profile-tabs{margin-bottom:16px}.profile-tab{flex:1;text-align:center}.privacy-security-actions{display:grid}.privacy-security-actions button{width:100%}}
-    `;
-    document.head.appendChild(style);
-
-    const tabs=document.createElement('div');
-    tabs.className='profile-tabs';
-    tabs.innerHTML='<button class="profile-tab active" type="button" data-view="profile">Profile</button><button class="profile-tab" type="button" data-view="privacy">Privacy & security</button>';
-
-    const dashboard=root.querySelector('.profile-dashboard');
-    if(!dashboard)return;
-    dashboard.parentNode.insertBefore(tabs,dashboard);
-
-    const privacy=document.createElement('div');
-    privacy.className='privacy-view';
-    privacy.innerHTML=`
-      <div class="privacy-card">
-        <h2>Password recovery</h2>
-        <p>Create a one-time recovery code while you are signed in. Save it somewhere private. If you forget your password, you can use the code with your username to create a new password. No email address, domain, or email service is required.</p>
-        <button id="privacyRecoveryBtn" class="primary" type="button">Generate recovery code</button>
-        <div id="privacyRecoveryResult" class="muted" style="margin-top:10px"></div>
-      </div>
-      <div class="privacy-card">
-        <h2>Change password</h2>
-        <p>Change your password whenever you want. You will need your current password. After changing it, your other active sessions will be signed out.</p>
-        <div class="privacy-security-actions">
-          <button id="privacyChangePasswordBtn" class="primary" type="button">Change password</button>
-        </div>
-      </div>
-      <div class="privacy-card">
-        <h2>Privacy & account security</h2>
-        <ul class="privacy-list">
-          <li>Your password is stored as a cryptographic hash, not as plain text.</li>
-          <li>Your recovery code is stored only as a hash and expires after 24 hours.</li>
-          <li>A recovery code can be used once; resetting your password signs out existing sessions.</li>
-          <li>Signing out from all devices invalidates your active sessions.</li>
-        </ul>
-      </div>
-      <div class="privacy-card">
-        <h2>Account security</h2>
-        <p>Use the Account button at the top of the page to manage your profile, password, sessions, and account.</p>
-      </div>`;
-    root.appendChild(privacy);
-
-    const profileTab=tabs.querySelector('[data-view="profile"]');
-    const privacyTab=tabs.querySelector('[data-view="privacy"]');
-    function show(which){
-      const isPrivacy=which==='privacy';
-      dashboard.style.display=isPrivacy?'none':'';
-      privacy.classList.toggle('active',isPrivacy);
-      profileTab.classList.toggle('active',!isPrivacy);
-      privacyTab.classList.toggle('active',isPrivacy);
-    }
-    profileTab.onclick=()=>show('profile');
-    privacyTab.onclick=()=>show('privacy');
-
-    const button=privacy.querySelector('#privacyRecoveryBtn');
-    const output=privacy.querySelector('#privacyRecoveryResult');
-    button.onclick=async()=>{
-      const user=session();
-      if(!user){output.textContent='Your sign-in session is missing. Please sign in again.';return;}
-      button.disabled=true;
-      output.textContent='Generating recovery code…';
-      try{
-        const r=await fetch(API+'/api/create-recovery-code',{method:'POST',headers:{'content-type':'application/json',authorization:'Bearer '+user.token},body:'{}'});
-        const d=await r.json().catch(()=>({}));
-        if(!r.ok)throw new Error(d.error||'Could not create a recovery code.');
-        if(!d.recoveryCode)throw new Error('The server did not return a recovery code.');
-        output.innerHTML='<strong>Your recovery code:</strong><div class="recovery-code-box"></div><span>Save it somewhere safe. It expires in 24 hours.</span><div class="recovery-actions"><button type="button" id="copyRecovery">Copy code</button><button type="button" id="printRecovery">Print</button></div>';
-        output.querySelector('.recovery-code-box').textContent=d.recoveryCode;
-        output.querySelector('#copyRecovery').onclick=async()=>{try{await navigator.clipboard.writeText(d.recoveryCode);output.querySelector('#copyRecovery').textContent='Copied!'}catch{output.querySelector('#copyRecovery').textContent='Copy failed'}};
-        output.querySelector('#printRecovery').onclick=()=>{
-          const w=window.open('','_blank','width=700,height=500');
-          if(!w){output.insertAdjacentHTML('beforeend','<p>Please allow pop-ups to print the recovery code.</p>');return;}
-          const code=String(d.recoveryCode).replace(/[&<>\\"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\\"':'&quot;',"'":'&#39;'}[c]));
-          w.document.write('<!doctype html><html><head><title>Chemistry Equations Recovery Code</title><style>body{font-family:Arial,sans-serif;text-align:center;padding:60px}.code{font:700 28px monospace;border:2px dashed #555;padding:20px;margin:30px;word-break:break-all}</style></head><body><h1>Chemistry Equations</h1><h2>Account Recovery Code</h2><div class="code">'+code+'</div><p>Keep this code private and safe.</p><script>window.onload=function(){window.print()}<\\/script></body></html>');
-          w.document.close();
-        };
-      }catch(e){output.textContent=e.message||'Could not create a recovery code.'}
-      finally{button.disabled=false}
-    };
-
-    const changeButton=privacy.querySelector('#privacyChangePasswordBtn');
-    changeButton.onclick=()=>{
-      const accountButton=document.getElementById('accountTopBtn');
-      if(accountButton){
-        accountButton.click();
-        setTimeout(()=>{
-          const manage=document.getElementById('manageAccountBtn');
-          if(manage)manage.click();
-        },0);
-      }
-    };
+    const style=document.createElement('style');style.textContent=`.profile-tabs{display:flex;gap:8px;flex-wrap:wrap;margin:4px 0 20px}.profile-tab{border:1px solid #dce3ee;background:#fff;color:#334155;border-radius:999px;padding:10px 16px;font-weight:800;cursor:pointer}.profile-tab.active{background:#3158d6;color:#fff;border-color:#3158d6}.privacy-view{display:none}.privacy-view.active{display:block}.privacy-card{background:#fff;border:1px solid #dce3ee;border-radius:18px;padding:22px;margin-bottom:18px}.privacy-card h2{margin-top:0}.privacy-card p{color:#64748b;line-height:1.6}.privacy-list{margin:12px 0 0;padding-left:20px;line-height:1.8}.recovery-code-box{font:700 19px monospace;letter-spacing:1px;word-break:break-all;margin:12px 0;padding:12px;background:#f7f7f7;border:2px dashed #777;border-radius:10px}.recovery-actions,.privacy-security-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.recovery-actions button,.privacy-security-actions button{padding:10px 15px;border:1px solid #cbd5e1;border-radius:9px;background:#fff;cursor:pointer;font-weight:700}.password-modal{position:fixed;inset:0;z-index:100000;display:none}.password-modal.active{display:block}.password-backdrop{position:absolute;inset:0;background:rgba(0,0,0,.6)}.password-dialog{position:relative;width:min(92vw,460px);max-height:90vh;overflow:auto;margin:7vh auto;padding:26px;border-radius:18px;background:#fff;color:#111;box-shadow:0 20px 60px #0005}.password-close{position:absolute;right:12px;top:8px;border:0;background:none;font-size:30px;cursor:pointer}.password-dialog label{display:block;font-weight:700;margin:12px 0}.password-dialog input{display:block;width:100%;box-sizing:border-box;margin-top:6px;padding:11px;border:1px solid #aaa;border-radius:9px;font-size:16px}.password-dialog button.submit{margin-top:10px;padding:11px 16px;border:0;border-radius:9px;background:#3158d6;color:#fff;font-weight:800;cursor:pointer}.password-error{color:#b42318;font-weight:700;margin-top:12px}.password-success{color:#087a22;font-weight:700;margin-top:12px}.pw-wrap{position:relative}.pw-wrap input{padding-right:65px!important}.pw-show{position:absolute;right:5px;top:50%;transform:translateY(-50%);border:0!important;background:none!important;color:#1261a0!important;padding:6px 8px!important;cursor:pointer;font:inherit}@media(max-width:700px){.profile-tabs{margin-bottom:16px}.profile-tab{flex:1;text-align:center}.privacy-security-actions{display:grid}.privacy-security-actions button{width:100%}}`;document.head.appendChild(style);
+    const tabs=document.createElement('div');tabs.className='profile-tabs';tabs.innerHTML='<button class="profile-tab active" type="button" data-view="profile">Profile</button><button class="profile-tab" type="button" data-view="privacy">Privacy & security</button>';
+    const dashboard=root.querySelector('.profile-dashboard');if(!dashboard)return;dashboard.parentNode.insertBefore(tabs,dashboard);
+    const privacy=document.createElement('div');privacy.className='privacy-view';privacy.innerHTML=`<div class="privacy-card"><h2>Password recovery</h2><p>Create a one-time recovery code while you are signed in. Save it somewhere private. If you forget your password, you can use the code with your username to create a new password.</p><button id="privacyRecoveryBtn" class="primary" type="button">Generate recovery code</button><div id="privacyRecoveryResult" class="muted" style="margin-top:10px"></div></div><div class="privacy-card"><h2>Change password</h2><p>Change your password whenever you want. You will need your current password.</p><div class="privacy-security-actions"><button id="privacyChangePasswordBtn" class="primary" type="button">Change password</button></div></div><div class="privacy-card"><h2>Privacy & account security</h2><ul class="privacy-list"><li>Your password is stored as a cryptographic hash, not as plain text.</li><li>Your recovery code is stored only as a hash and expires after 24 hours.</li><li>A recovery code can be used once; resetting your password signs out existing sessions.</li><li>Signing out from all devices invalidates your active sessions.</li></ul></div><div class="privacy-card"><h2>Account security</h2><p>Manage your profile, password, sessions, and recovery options from this area.</p></div>`;root.appendChild(privacy);
+    const profileTab=tabs.querySelector('[data-view="profile"]'),privacyTab=tabs.querySelector('[data-view="privacy"]');function show(which){const p=which==='privacy';dashboard.style.display=p?'none':'';privacy.classList.toggle('active',p);profileTab.classList.toggle('active',!p);privacyTab.classList.toggle('active',p)}profileTab.onclick=()=>show('profile');privacyTab.onclick=()=>show('privacy');
+    const modal=document.createElement('div');modal.className='password-modal';modal.innerHTML='<div class="password-backdrop"></div><div class="password-dialog"><button class="password-close" type="button">×</button><h2>Change password</h2><p>Enter your current password and choose a new password.</p><form><label>Current password<div class="pw-wrap"><input id="cpw" type="password" autocomplete="current-password"><button type="button" class="pw-show">Show</button></div></label><label>New password<div class="pw-wrap"><input id="npw" type="password" autocomplete="new-password"><button type="button" class="pw-show">Show</button></div></label><label>Confirm new password<div class="pw-wrap"><input id="npw2" type="password" autocomplete="new-password"><button type="button" class="pw-show">Show</button></div></label><button class="submit" type="submit">Change password</button><div class="password-error" aria-live="polite"></div></form></div></div>';document.body.appendChild(modal);
+    modal.querySelector('.password-close').onclick=()=>modal.classList.remove('active');modal.querySelector('.password-backdrop').onclick=()=>modal.classList.remove('active');modal.querySelectorAll('.pw-show').forEach(b=>b.onclick=()=>{const i=b.parentElement.querySelector('input');i.type=i.type==='password'?'text':'password';b.textContent=i.type==='password'?'Show':'Hide'});
+    modal.querySelector('form').onsubmit=async e=>{e.preventDefault();const out=modal.querySelector('.password-error'),s=session();const cp=modal.querySelector('#cpw').value,np=modal.querySelector('#npw').value,np2=modal.querySelector('#npw2').value;out.className='password-error';if(!s){out.textContent='Your session has expired. Please sign in again.';return}if(!cp||!np||!np2){out.textContent='Please fill in all password fields.';return}if(np.length<8){out.textContent='New password must be at least 8 characters.';return}if(np!==np2){out.textContent='New passwords do not match.';return}out.textContent='Changing password…';try{const r=await fetch(API+'/api/change-password',{method:'POST',headers:{'content-type':'application/json',authorization:'Bearer '+s.token},body:JSON.stringify({currentPassword:cp,newPassword:np,confirmPassword:np2})});const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.error||'Could not change the password.');if(d.token){const data={...s,token:d.token};const store=localStorage.getItem(SESSION)?localStorage:sessionStorage;store.setItem(SESSION,JSON.stringify(data))}out.className='password-success';out.textContent='Password changed successfully.';modal.querySelector('form').reset();setTimeout(()=>modal.classList.remove('active'),900)}catch(err){out.textContent=err.message||'Could not change the password.'}};
+    privacy.querySelector('#privacyChangePasswordBtn').onclick=()=>{modal.classList.add('active');setTimeout(()=>modal.querySelector('#cpw')?.focus(),50)};
+    const button=privacy.querySelector('#privacyRecoveryBtn'),output=privacy.querySelector('#privacyRecoveryResult');button.onclick=async()=>{const user=session();if(!user){output.textContent='Your sign-in session is missing. Please sign in again.';return}button.disabled=true;output.textContent='Generating recovery code…';try{const r=await fetch(API+'/api/create-recovery-code',{method:'POST',headers:{'content-type':'application/json',authorization:'Bearer '+user.token},body:'{}'});const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.error||'Could not create a recovery code.');if(!d.recoveryCode)throw new Error('The server did not return a recovery code.');output.innerHTML='<strong>Your recovery code:</strong><div class="recovery-code-box"></div><span>Save it somewhere safe. It expires in 24 hours.</span><div class="recovery-actions"><button type="button" id="copyRecovery">Copy code</button><button type="button" id="printRecovery">Print</button></div>';output.querySelector('.recovery-code-box').textContent=d.recoveryCode;output.querySelector('#copyRecovery').onclick=async()=>{try{await navigator.clipboard.writeText(d.recoveryCode);output.querySelector('#copyRecovery').textContent='Copied!'}catch{output.querySelector('#copyRecovery').textContent='Copy failed'}};output.querySelector('#printRecovery').onclick=()=>{const w=window.open('','_blank','width=700,height=500');if(!w)return;w.document.write('<!doctype html><html><head><title>Chemistry Equations Recovery Code</title></head><body style="font-family:Arial;text-align:center;padding:60px"><h1>Chemistry Equations</h1><h2>Account Recovery Code</h2><div style="font:700 28px monospace;border:2px dashed #555;padding:20px;margin:30px">'+String(d.recoveryCode).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]))+'</div><p>Keep this code private and safe.</p><script>window.onload=function(){window.print()}<\\/script></body></html>');w.document.close()}}catch(e){output.textContent=e.message||'Could not create a recovery code.'}finally{button.disabled=false}};
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start);else start();
 })();
