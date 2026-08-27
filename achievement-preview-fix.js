@@ -15,7 +15,7 @@
 
       const style=document.createElement('style');
       style.id='achievementPreviewStyle';
-      style.textContent=`#achievementPreviewModal .achievement-preview-backdrop{position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.65);overflow:auto;padding:24px;box-sizing:border-box}#achievementPreviewModal .achievement-preview-window{position:relative;max-width:900px;margin:20px auto;background:var(--bg,#fff);color:var(--text,#111);border-radius:18px;padding:28px;box-shadow:0 20px 70px rgba(0,0,0,.3)}#achievementPreviewModal .achievement-preview-close{position:absolute;right:14px;top:10px;border:0;background:transparent;font-size:32px;line-height:1;cursor:pointer;padding:4px 10px;color:inherit}#achievementPreviewModal .preview-dashboard{display:grid;gap:16px;margin-top:20px}#achievementPreviewModal .profile-summary{display:flex;align-items:center;gap:14px;flex-wrap:wrap}#achievementPreviewModal .profile-level{margin-left:auto}#achievementPreviewModal .dashboard-card{padding:18px;border:1px solid rgba(127,127,127,.22);border-radius:14px}#achievementPreviewModal .profile-table{width:100%;border-collapse:collapse}#achievementPreviewModal .profile-table td{padding:7px 4px;border-bottom:1px solid rgba(127,127,127,.16)}#achievementPreviewModal .profile-table td:last-child{font-weight:700;text-align:right}#achievementPreviewModal .stage-pills{display:flex;gap:10px;flex-wrap:wrap}#achievementPreviewModal .stage-pill{display:inline-block;white-space:nowrap}#achievementPreviewModal .achievements{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px}#achievementPreviewModal .achievement{padding:14px;border-radius:12px;border:1px solid rgba(127,127,127,.22)}#achievementPreviewModal .achievement-icon{font-size:28px}#achievementPreviewModal .achievement h3{margin:7px 0 4px}#achievementPreviewModal .achievement p{margin:0}#achievementPreviewModal .recent-quiz,#achievementPreviewModal .weak{display:grid!important;grid-template-columns:max-content max-content!important;justify-content:start!important;gap:5px!important;margin:5px 0}#achievementPreviewModal .certificate{padding:28px;text-align:center;border:2px solid currentColor;border-radius:12px}#achievementPreviewModal .cert-brand{font-weight:700;letter-spacing:2px}#achievementPreviewModal .cert-title{font-size:30px;font-weight:800;margin:20px 0 10px}#achievementPreviewModal .cert-name{font-size:28px;font-weight:800}#achievementPreviewModal .cert-stats{display:flex;justify-content:center;gap:30px;flex-wrap:wrap;margin:22px 0}#achievementPreviewModal .cert-stat{display:flex;flex-direction:column;gap:3px}#achievementPreviewModal .cert-stat b{font-size:20px}#achievementPreviewModal .cert-number{font-size:12px;opacity:.7;margin-bottom:16px}@media(max-width:600px){#achievementPreviewModal .achievement-preview-backdrop{padding:8px}#achievementPreviewModal .achievement-preview-window{padding:20px 14px;margin:5px auto}#achievementPreviewModal .profile-level{margin-left:0}}@media print{body>*{display:none!important}#achievementPrintWindow{display:block!important;position:static!important;width:100%!important;margin:0!important;padding:0!important;background:#fff!important;color:#000!important}#achievementPrintWindow .print-certificate{display:block!important;width:100%!important;min-height:100vh!important;box-sizing:border-box!important;padding:55px!important;border:3px solid #111!important;background:#fff!important;text-align:center!important}#achievementPrintWindow .print-certificate .cert-title{font-size:36px!important;margin:35px 0 18px!important}#achievementPrintWindow .print-certificate .cert-name{font-size:34px!important;margin:18px 0!important}#achievementPrintWindow .print-certificate .cert-stats{display:flex!important;justify-content:center!important;gap:45px!important;margin:35px 0!important}#achievementPrintWindow .print-certificate button{display:none!important}@page{size:A4 portrait;margin:12mm}}`;
+      style.textContent=`#achievementPreviewModal .achievement-preview-backdrop{position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.65);overflow:auto;padding:24px;box-sizing:border-box}#achievementPreviewModal .achievement-preview-window{position:relative;max-width:900px;margin:20px auto;background:var(--bg,#fff);color:var(--text,#111);border-radius:18px;padding:28px;box-shadow:0 20px 70px rgba(0,0,0,.3)}#achievementPreviewModal .achievement-preview-close{position:absolute;right:14px;top:10px;border:0;background:transparent;font-size:32px;line-height:1;cursor:pointer;padding:4px 10px;color:inherit}#achievementPreviewModal .preview-dashboard{display:grid;gap:16px;margin-top:20px}#achievementPreviewModal .profile-summary{display:flex;align-items:center;gap:14px;flex-wrap:wrap}#achievementPreviewModal .profile-level{margin-left:auto}#achievementPreviewModal .dashboard-card{padding:18px;border:1px solid rgba(127,127,127,.22);border-radius:14px}#achievementPreviewModal .profile-table{width:100%;border-collapse:collapse}#achievementPreviewModal .profile-table td{padding:7px 4px;border-bottom:1px solid rgba(127,127,127,.16)}#achievementPreviewModal .profile-table td:last-child{font-weight:700;text-align:right}#achievementPreviewModal .stage-pills{display:flex;gap:10px;flex-wrap:wrap}#achievementPreviewModal .stage-pill{display:inline-block;white-space:nowrap}#achievementPreviewModal .achievements{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px}#achievementPreviewModal .achievement{padding:14px;border-radius:12px;border:1px solid rgba(127,127,127,.22)}#achievementPreviewModal .achievement-icon{font-size:28px}#achievementPreviewModal .achievement h3{margin:7px 0 4px}#achievementPreviewModal .achievement p{margin:0}#achievementPreviewModal .recent-quiz,#achievementPreviewModal .weak{display:grid!important;grid-template-columns:max-content max-content!important;justify-content:start!important;gap:5px!important;margin:5px 0}#achievementPreviewModal .certificate{padding:28px;text-align:center;border:2px solid currentColor;border-radius:12px}#achievementPreviewModal .cert-brand{font-weight:700;letter-spacing:2px}#achievementPreviewModal .cert-title{font-size:30px;font-weight:800;margin:20px 0 10px}#achievementPreviewModal .cert-name{font-size:28px;font-weight:800}#achievementPreviewModal .cert-stats{display:flex;justify-content:center;gap:30px;flex-wrap:wrap;margin:22px 0}#achievementPreviewModal .cert-stat{display:flex;flex-direction:column;gap:3px}#achievementPreviewModal .cert-stat b{font-size:20px}#achievementPreviewModal .cert-number{font-size:12px;opacity:.7;margin-bottom:16px}@media(max-width:600px){#achievementPreviewModal .achievement-preview-backdrop{padding:8px}#achievementPreviewModal .achievement-preview-window{padding:20px 14px;margin:5px auto}#achievementPreviewModal .profile-level{margin-left:0}}`;
       document.head.appendChild(style);
       const close=()=>{modal.remove();style.remove();};
       modal.querySelector('.achievement-preview-close').onclick=close;
@@ -24,12 +24,39 @@
       modal.querySelector('#previewPrintCertificate').onclick=()=>{
         const certificate=modal.querySelector('#previewCertificate');
         if(!certificate)return;
-        const printWindow=document.createElement('div');
-        printWindow.id='achievementPrintWindow';
-        printWindow.innerHTML=`<div class="print-certificate">${certificate.innerHTML}</div>`;
-        document.body.appendChild(printWindow);
-        window.print();
-        setTimeout(()=>printWindow.remove(),1000);
+
+        const printWindow=window.open('', '_blank', 'width=1000,height=800');
+        if(!printWindow){
+          alert('Please allow pop-ups for this site, then click Print Certificate again.');
+          return;
+        }
+
+        const printStyles=`
+          @page{size:A4 portrait;margin:12mm}
+          *{box-sizing:border-box}
+          html,body{margin:0;padding:0;background:#fff;color:#000;font-family:Arial,sans-serif}
+          body{width:100%}
+          .print-certificate{width:100%;min-height:271mm;padding:30mm 20mm;border:3px solid #111;background:#fff;text-align:center;display:flex;flex-direction:column;justify-content:center;align-items:center}
+          .cert-brand{font-weight:700;letter-spacing:2px;font-size:16px}
+          .cert-title{font-size:36px;font-weight:800;margin:35px 0 18px}
+          .cert-subtitle{font-size:18px}
+          .cert-name{font-size:34px;font-weight:800;margin:18px 0}
+          .print-certificate p{font-size:17px;line-height:1.7;margin:10px 0}
+          .cert-stats{display:flex;justify-content:center;gap:45px;margin:35px 0;flex-wrap:wrap}
+          .cert-stat{display:flex;flex-direction:column;gap:5px;min-width:90px}
+          .cert-stat b{font-size:20px}
+          .cert-number{font-size:12px;opacity:.7;margin-top:10px}
+          button{display:none!important}
+        `;
+
+        printWindow.document.open();
+        printWindow.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>Certificate of Achievement — Reem</title><style>${printStyles}</style></head><body><div class="print-certificate">${certificate.innerHTML}</div></body></html>`);
+        printWindow.document.close();
+
+        printWindow.onload=()=>{
+          printWindow.focus();
+          setTimeout(()=>printWindow.print(),150);
+        };
       };
     }
     btn.addEventListener('click',showPreview,true);
