@@ -32,7 +32,10 @@
       .recovery-code-box{font:700 19px monospace;letter-spacing:1px;word-break:break-all;margin:12px 0;padding:12px;background:#f7f7f7;border:2px dashed #777;border-radius:10px}
       .recovery-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
       .recovery-actions button{padding:9px 13px;border:1px solid #aaa;border-radius:8px;background:#fff;cursor:pointer;font-weight:700}
-      @media(max-width:700px){.profile-tabs{margin-bottom:16px}.profile-tab{flex:1;text-align:center}}
+      .privacy-security-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+      .privacy-security-actions button{padding:10px 15px;border:1px solid #cbd5e1;border-radius:9px;background:#fff;cursor:pointer;font-weight:700}
+      .privacy-security-actions .primary{border-color:#3158d6}
+      @media(max-width:700px){.profile-tabs{margin-bottom:16px}.profile-tab{flex:1;text-align:center}.privacy-security-actions{display:grid}.privacy-security-actions button{width:100%}}
     `;
     document.head.appendChild(style);
 
@@ -54,6 +57,13 @@
         <div id="privacyRecoveryResult" class="muted" style="margin-top:10px"></div>
       </div>
       <div class="privacy-card">
+        <h2>Change password</h2>
+        <p>Change your password whenever you want. You will need your current password. After changing it, your other active sessions will be signed out.</p>
+        <div class="privacy-security-actions">
+          <button id="privacyChangePasswordBtn" class="primary" type="button">Change password</button>
+        </div>
+      </div>
+      <div class="privacy-card">
         <h2>Privacy & account security</h2>
         <ul class="privacy-list">
           <li>Your password is stored as a cryptographic hash, not as plain text.</li>
@@ -64,7 +74,7 @@
       </div>
       <div class="privacy-card">
         <h2>Account security</h2>
-        <p>Use the Account button at the top of the page to change your password, sign out, or delete your account.</p>
+        <p>Use the Account button at the top of the page to manage your profile, password, sessions, and account.</p>
       </div>`;
     root.appendChild(privacy);
 
@@ -98,12 +108,24 @@
         output.querySelector('#printRecovery').onclick=()=>{
           const w=window.open('','_blank','width=700,height=500');
           if(!w){output.insertAdjacentHTML('beforeend','<p>Please allow pop-ups to print the recovery code.</p>');return;}
-          const code=String(d.recoveryCode).replace(/[&<>\"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;'}[c]));
+          const code=String(d.recoveryCode).replace(/[&<>\\"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\\"':'&quot;',"'":'&#39;'}[c]));
           w.document.write('<!doctype html><html><head><title>Chemistry Equations Recovery Code</title><style>body{font-family:Arial,sans-serif;text-align:center;padding:60px}.code{font:700 28px monospace;border:2px dashed #555;padding:20px;margin:30px;word-break:break-all}</style></head><body><h1>Chemistry Equations</h1><h2>Account Recovery Code</h2><div class="code">'+code+'</div><p>Keep this code private and safe.</p><script>window.onload=function(){window.print()}<\\/script></body></html>');
           w.document.close();
         };
       }catch(e){output.textContent=e.message||'Could not create a recovery code.'}
       finally{button.disabled=false}
+    };
+
+    const changeButton=privacy.querySelector('#privacyChangePasswordBtn');
+    changeButton.onclick=()=>{
+      const accountButton=document.getElementById('accountTopBtn');
+      if(accountButton){
+        accountButton.click();
+        setTimeout(()=>{
+          const manage=document.getElementById('manageAccountBtn');
+          if(manage)manage.click();
+        },0);
+      }
     };
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start);else start();
