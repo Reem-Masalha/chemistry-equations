@@ -2,73 +2,27 @@
   function init(){
     const btn=document.getElementById('previewAchievements');
     if(!btn)return;
-
-    btn.style.pointerEvents='auto';
     btn.disabled=false;
+    btn.style.pointerEvents='auto';
 
-    const showPreview=()=>{
-      const real=document.getElementById('realProfile');
-      const note=document.getElementById('previewNote');
-      const level=document.getElementById('level');
-      const q=document.getElementById('statQuizzes');
-      const questions=document.getElementById('statQuestions');
-      const correct=document.getElementById('statCorrect');
-      const accuracy=document.getElementById('statAccuracy');
-      const best=document.getElementById('statBest');
-      const hard=document.getElementById('statHard');
-      const stages=document.getElementById('stages');
-      const achievements=document.getElementById('achievements');
-      const recent=document.getElementById('recentQuizzes');
-      const weak=document.getElementById('weakAreas');
-      const cert=document.getElementById('certificateArea');
-      if(!real||!note||!level)return;
+    function showPreview(){
+      let old=document.getElementById('achievementPreviewModal');
+      if(old) old.remove();
+      const modal=document.createElement('div');
+      modal.id='achievementPreviewModal';
+      modal.innerHTML=`<div class="achievement-preview-backdrop"><div class="achievement-preview-window" role="dialog" aria-modal="true" aria-labelledby="achievementPreviewTitle"><button type="button" class="achievement-preview-close" aria-label="Close preview">×</button><div class="eyebrow">PREVIEW MODE</div><h2 id="achievementPreviewTitle">What others will see</h2><p class="preview-note">This is a preview only. Your real profile and progress are unchanged.</p><div class="profile-dashboard preview-dashboard"><div class="profile-summary"><div class="profile-avatar">R</div><div><h2 style="margin:0">Reem</h2><p style="margin:3px 0">@reem</p></div><div class="profile-level">⭐ Level 8</div></div><div class="dashboard-card"><h2>Statistics</h2><table class="profile-table"><tbody><tr><td>Quizzes</td><td>37</td></tr><tr><td>Questions</td><td>370</td></tr><tr><td>Correct</td><td>326</td></tr><tr><td>Accuracy</td><td>88.1%</td></tr><tr><td>Best score</td><td>10/10</td></tr><tr><td>Hard equations</td><td>42</td></tr></tbody></table></div><div class="dashboard-card"><h2>Completed stages</h2><div class="stage-pills"><span class="stage-pill">✓Easy</span><span class="stage-pill">✓Medium</span><span class="stage-pill">✓Hard</span></div></div><div class="dashboard-card"><h2>Achievements</h2><div class="achievements"><div class="achievement earned"><div class="achievement-icon">🏅</div><h3>First Quiz ✓</h3><p>Complete your first quiz.</p></div><div class="achievement earned"><div class="achievement-icon">🔥</div><h3>10 in a Row ✓</h3><p>Get 10 correct answers consecutively.</p></div><div class="achievement earned"><div class="achievement-icon">⚗️</div><h3>Balancer ✓</h3><p>Balance 50 equations.</p></div><div class="achievement earned"><div class="achievement-icon">📚</div><h3>Scholar ✓</h3><p>Complete all learning stages.</p></div><div class="achievement earned"><div class="achievement-icon">💯</div><h3>Perfect Score ✓</h3><p>Get 100% on a hard quiz.</p></div></div></div><div class="dashboard-card"><h2>Recent quizzes</h2><div class="recent-quiz"><span>Hard</span><b>10/10</b></div><div class="recent-quiz"><span>Medium</span><b>9/10</b></div><div class="recent-quiz"><span>Easy</span><b>10/10</b></div><div class="recent-quiz"><span>Hard</span><b>8/10</b></div></div><div class="dashboard-card"><h2>Weak areas</h2><div class="weak"><span>Stoichiometry</span><b>6 misses</b></div><div class="weak"><span>Redox equations</span><b>3 misses</b></div></div><div class="dashboard-card"><h2>Certificate preview</h2><div class="certificate"><div class="cert-brand">CHEMISTRY EQUATIONS</div><div class="cert-title">Certificate of Achievement</div><div class="cert-subtitle">This certifies that</div><div class="cert-name">Reem</div><p>has successfully completed the<br><b>Easy • Medium • Hard</b><br>chemistry equation challenges.</p><div class="cert-stats"><div class="cert-stat"><b>92%</b><span>Overall score</span></div><div class="cert-stat"><b>184</b><span>Equations solved</span></div><div class="cert-stat"><b>August 2026</b><span>Date</span></div></div><div class="cert-number">Preview certificate</div><button id="previewPrintCertificate" class="primary" type="button">Print Certificate</button></div></div></div></div></div>`;
+      document.body.appendChild(modal);
 
-      btn.style.display='none';
-      real.style.display='inline-block';
-      note.textContent='Preview mode is ON. Your real progress is unchanged.';
-      document.body.classList.add('preview-mode');
-
-      if(q)q.textContent='37';
-      if(questions)questions.textContent='370';
-      if(correct)correct.textContent='326';
-      if(accuracy)accuracy.textContent='88.1%';
-      if(best)best.textContent='10/10';
-      if(hard)hard.textContent='42';
-      level.textContent='⭐ Level 8';
-
-      if(stages)stages.innerHTML=['Easy','Medium','Hard'].map(x=>`<span class="stage-pill">✓${x}</span>`).join(' ');
-
-      if(achievements){
-        const items=[
-          ['🏅','First Quiz','Complete your first quiz.'],
-          ['🔥','10 in a Row','Get 10 correct answers consecutively.'],
-          ['⚗️','Balancer','Balance 50 equations.'],
-          ['📚','Scholar','Complete all learning stages.'],
-          ['💯','Perfect Score','Get 100% on a hard quiz.']
-        ];
-        achievements.innerHTML=items.map(x=>`<div class="achievement earned"><div class="achievement-icon">${x[0]}</div><h3>${x[1]} ✓</h3><p>${x[2]}</p></div>`).join('');
-      }
-
-      if(recent)recent.innerHTML=[['Hard','10/10'],['Medium','9/10'],['Easy','10/10'],['Hard','8/10']].map(x=>`<div class="recent-quiz"><span>${x[0]}</span><b>${x[1]}</b></div>`).join('');
-      if(weak)weak.innerHTML='<div class="weak"><span>Stoichiometry</span><b>6 misses</b></div><div class="weak"><span>Redox equations</span><b>3 misses</b></div>';
-
-      if(cert){
-        cert.innerHTML=`<div class="certificate" id="achievementPreviewCertificate"><div class="cert-brand">CHEMISTRY EQUATIONS</div><div class="cert-title">Certificate of Achievement</div><div class="cert-subtitle">This certifies that</div><div class="cert-name">Preview User</div><p>has successfully completed the<br><b>Easy • Medium • Hard</b><br>chemistry equation challenges.</p><div class="cert-stats"><div class="cert-stat"><b>92%</b><span>Overall score</span></div><div class="cert-stat"><b>184</b><span>Equations solved</span></div><div class="cert-stat"><b>August 2026</b><span>Date</span></div></div><div class="cert-number">Preview certificate</div><div class="certificate-actions"><button id="previewPrintCertificate" class="primary" type="button">Print Certificate</button></div></div>`;
-        const print=document.getElementById('previewPrintCertificate');
-        if(print)print.onclick=()=>window.print();
-      }
-    };
-
-    btn.addEventListener('click',showPreview,true);
-
-    const real=document.getElementById('realProfile');
-    if(real){
-      real.addEventListener('click',()=>{
-        location.reload();
-      },true);
+      const style=document.createElement('style');
+      style.id='achievementPreviewStyle';
+      style.textContent=`#achievementPreviewModal .achievement-preview-backdrop{position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.65);overflow:auto;padding:24px;box-sizing:border-box}#achievementPreviewModal .achievement-preview-window{position:relative;max-width:900px;margin:20px auto;background:var(--bg,#fff);color:var(--text,#111);border-radius:18px;padding:28px;box-shadow:0 20px 70px rgba(0,0,0,.3)}#achievementPreviewModal .achievement-preview-close{position:absolute;right:14px;top:10px;border:0;background:transparent;font-size:32px;line-height:1;cursor:pointer;padding:4px 10px;color:inherit}#achievementPreviewModal .preview-dashboard{display:grid;gap:16px;margin-top:20px}#achievementPreviewModal .profile-summary{display:flex;align-items:center;gap:14px;flex-wrap:wrap}#achievementPreviewModal .profile-level{margin-left:auto}#achievementPreviewModal .dashboard-card{padding:18px;border:1px solid rgba(127,127,127,.22);border-radius:14px}#achievementPreviewModal .profile-table{width:100%;border-collapse:collapse}#achievementPreviewModal .profile-table td{padding:7px 4px;border-bottom:1px solid rgba(127,127,127,.16)}#achievementPreviewModal .profile-table td:last-child{font-weight:700;text-align:right}#achievementPreviewModal .stage-pills{display:flex;gap:10px;flex-wrap:wrap}#achievementPreviewModal .stage-pill{display:inline-block;white-space:nowrap}#achievementPreviewModal .achievements{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px}#achievementPreviewModal .achievement{padding:14px;border-radius:12px;border:1px solid rgba(127,127,127,.22)}#achievementPreviewModal .achievement-icon{font-size:28px}#achievementPreviewModal .achievement h3{margin:7px 0 4px}#achievementPreviewModal .achievement p{margin:0}#achievementPreviewModal .recent-quiz,#achievementPreviewModal .weak{display:grid!important;grid-template-columns:max-content max-content!important;justify-content:start!important;gap:5px!important;margin:5px 0}#achievementPreviewModal .certificate{padding:28px;text-align:center;border:2px solid currentColor;border-radius:12px}#achievementPreviewModal .cert-brand{font-weight:700;letter-spacing:2px}#achievementPreviewModal .cert-title{font-size:30px;font-weight:800;margin:20px 0 10px}#achievementPreviewModal .cert-name{font-size:28px;font-weight:800}#achievementPreviewModal .cert-stats{display:flex;justify-content:center;gap:30px;flex-wrap:wrap;margin:22px 0}#achievementPreviewModal .cert-stat{display:flex;flex-direction:column;gap:3px}#achievementPreviewModal .cert-stat b{font-size:20px}#achievementPreviewModal .cert-number{font-size:12px;opacity:.7;margin-bottom:16px}@media(max-width:600px){#achievementPreviewModal .achievement-preview-backdrop{padding:8px}#achievementPreviewModal .achievement-preview-window{padding:20px 14px;margin:5px auto}#achievementPreviewModal .profile-level{margin-left:0}}`;
+      document.head.appendChild(style);
+      const close=()=>{modal.remove();style.remove();};
+      modal.querySelector('.achievement-preview-close').onclick=close;
+      modal.querySelector('.achievement-preview-backdrop').addEventListener('click',e=>{if(e.target===e.currentTarget)close();});
+      modal.querySelector('#previewPrintCertificate').onclick=()=>window.print();
     }
+    btn.addEventListener('click',showPreview,true);
   }
-
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);
-  else init();
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 })();
