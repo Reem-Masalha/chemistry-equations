@@ -1,6 +1,6 @@
-const CACHE = 'chemistry-equations-v4';
+const CACHE = 'chemistry-equations-v5';
 const SCOPE = '/chemistry-equations/';
-const SHELL = ['learn.html','style.css','manifest.webmanifest','account.js','visitor-tracker.js','site-enhancements.js'];
+const SHELL = ['learn.html','style.css','manifest.webmanifest','account.js','visitor-tracker.js','site-enhancements.js','language.js'];
 self.addEventListener('install', event => {
   event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(SHELL.map(x => SCOPE + x))).then(() => self.skipWaiting()));
 });
@@ -12,6 +12,6 @@ self.addEventListener('fetch', event => {
   const url=new URL(req.url); if(url.origin!==self.location.origin) return;
   event.respondWith((async()=>{
     try { const fresh=await fetch(req,{cache:'no-store'}); if(fresh.ok)caches.open(CACHE).then(c=>c.put(req,fresh.clone())); return fresh; }
-    catch(_) { return (await caches.match(req)) || (await caches.match(SCOPE+'learn.html')) || Response.error(); }
+    catch(_) { return (await caches.match(req)) || Response.error(); }
   })());
 });
