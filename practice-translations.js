@@ -9,10 +9,8 @@
     t.he[en] = he;
   };
 
-  // Practice questions used in the educational lessons.
-  // Keep the English keys exact so the existing language engine can replace them.
   const entries = [
-    ['What does the arrow in a chemical equation show?','ماذا يُظهر السهم في المعادلة الكيميائية؟','מה מראה החץ במשוואה כימית?'],
+    ['What does the arrow in a chemical equation show?','ماذا يُظهر السهم في المعادلة الكيميائية؟','מה מראה החץ במשוואה כימית؟'],
     ['What are the substances on the left called?','ماذا تُسمّى المواد الموجودة على اليسار؟','כיצד נקראים החומרים שבצד שמאל?'],
     ['What are the substances on the right called?','ماذا تُسمّى المواد الموجودة على اليمين؟','כיצד נקראים החומרים שבצד ימין?'],
     ['How many oxygen atoms are in Ca(OH)₂?','كم عدد ذرات الأكسجين في Ca(OH)₂؟','כמה אטומי חמצן יש ב-Ca(OH)₂?'],
@@ -30,12 +28,23 @@
     ['What should you check after adding all coefficients?','ماذا يجب أن تتحقق منه بعد إضافة جميع المعاملات؟','מה צריך לבדוק לאחר הוספת כל המקדמים?'],
     ['Which formula represents elemental oxygen?','أي صيغة تمثل الأكسجين العنصري؟','איזו נוסחה מייצגת חמצן יסודי?'],
     ['Which formula represents elemental chlorine?','أي صيغة تمثل الكلور العنصري؟','איזו נוסחה מייצגת כלור יסודי?'],
-    ['Why does O₂ contain two oxygen atoms?','لماذا يحتوي O₂ على ذرتي أكسجين؟','מדוע O₂ מכיל שני אטומי חמצן?']
+    ['Why does O₂ contain two oxygen atoms?','لماذا يحتوي O₂ على ذرتي أكسجين؟','מדוע O₂ מכיל שני אטומי חמצן?'],
+    ['Balance H₂ + O₂ → H₂O.','وازن H₂ + O₂ → H₂O.','אזן את H₂ + O₂ → H₂O.'],
+    ['Balance N₂ + H₂ → NH₃.','وازن N₂ + H₂ → NH₃.','אזן את N₂ + H₂ → NH₃.']
   ];
 
   entries.forEach(x=>add(...x));
 
-  // Re-apply the active language after adding the new dictionary entries.
+  // Make the balancing checklist part of the same translation dictionary.
+  add('Balancing checklist','قائمة تحقق للموازنة','רשימת בדיקה לאיזון');
+  add('Correct element symbols','رموز العناصر الصحيحة','סמלי היסודות הנכונים');
+  add('Correct chemical formulas and subscripts','الصيغ الكيميائية الصحيحة والأرقام السفلية الصحيحة','נוסחאות כימיות ומספרים תחתונים נכונים');
+  add('Correct diatomic formulas when applicable','الصيغ الصحيحة للعناصر ثنائية الذرة عند الحاجة','נוסחאות נכונות של יסודות דו-אטומיים כאשר הדבר רלוונטי');
+  add('Count atoms on both sides','عُدّ الذرات على كلا الجانبين','ספור את האטומים בשני הצדדים');
+  add('Add coefficients instead of changing formulas','أضف المعاملات بدلًا من تغيير الصيغ','הוסף מקדמים במקום לשנות נוסחאות');
+  add('Recount every element','أعد عَدّ جميع العناصر','ספור מחדש את כל היסודות');
+  add('Use the smallest whole-number ratio','استخدم أصغر نسبة ممكنة من الأعداد الصحيحة','השתמש ביחס הקטן ביותר של מספרים שלמים');
+
   const current = language.get();
   language.set(current);
 })();
