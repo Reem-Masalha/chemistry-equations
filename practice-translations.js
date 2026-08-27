@@ -27,15 +27,14 @@
     ['Why must you avoid changing subscripts?','لماذا يجب تجنّب تغيير الأرقام السفلية؟','מדוע יש להימנע משינוי מספרים תחתונים?'],
     ['What should you check after adding all coefficients?','ماذا يجب أن تتحقق منه بعد إضافة جميع المعاملات؟','מה צריך לבדוק לאחר הוספת כל המקדמים?'],
     ['Which formula represents elemental oxygen?','أي صيغة تمثل الأكسجين العنصري؟','איזו נוסחה מייצגת חמצן יסודי?'],
-    ['Which formula represents elemental chlorine?','أي صيغة تمثل الكلور العنصري؟','איזו נוסחה מייצגת כלור יסודי?'],
-    ['Why does O₂ contain two oxygen atoms?','لماذا يحتوي O₂ على ذرتي أكسجين؟','מדוע O₂ מכיל שני אטומי חמצן?'],
+    ['Which formula represents elemental chlorine?','أي صيغة تمثل الكلور العنصري؟','איזו נוסחה מייצגת כלור יסודי؟'],
+    ['Why does O₂ contain two oxygen atoms?','لماذا يحتوي O₂ على ذرتي أكسجين؟','מדוע O₂ מכיל שני אטומי חמצן؟'],
     ['Balance H₂ + O₂ → H₂O.','وازن H₂ + O₂ → H₂O.','אזן את H₂ + O₂ → H₂O.'],
     ['Balance N₂ + H₂ → NH₃.','وازن N₂ + H₂ → NH₃.','אזן את N₂ + H₂ → NH₃.']
   ];
 
   entries.forEach(x=>add(...x));
 
-  // Make the balancing checklist part of the same translation dictionary.
   add('Balancing checklist','قائمة تحقق للموازنة','רשימת בדיקה לאיזון');
   add('Correct element symbols','رموز العناصر الصحيحة','סמלי היסודות הנכונים');
   add('Correct chemical formulas and subscripts','الصيغ الكيميائية الصحيحة والأرقام السفلية الصحيحة','נוסחאות כימיות ומספרים תחתונים נכונים');
@@ -45,6 +44,27 @@
   add('Recount every element','أعد عَدّ جميع العناصر','ספור מחדש את כל היסודות');
   add('Use the smallest whole-number ratio','استخدم أصغر نسبة ممكنة من الأعداد الصحيحة','השתמש ביחס הקטן ביותר של מספרים שלמים');
 
-  const current = language.get();
+  function fixChecklist(){
+    const l=language.get();
+    const lines=[
+      'Correct element symbols',
+      'Correct chemical formulas and subscripts',
+      'Correct diatomic formulas when applicable',
+      'Count atoms on both sides',
+      'Add coefficients instead of changing formulas',
+      'Recount every element',
+      'Use the smallest whole-number ratio'
+    ];
+    document.querySelectorAll('.i18n-checklist').forEach(el=>{
+      el.innerHTML=lines.map(x=>`✓ ${t[l]?.[x]||x}`).join('<br>');
+    });
+  }
+
+  const current=language.get();
   language.set(current);
+  setTimeout(fixChecklist,0);
+  window.addEventListener('chemistry-language-change',fixChecklist);
+  if(document.body){
+    new MutationObserver(()=>fixChecklist()).observe(document.body,{childList:true,subtree:true});
+  }
 })();
