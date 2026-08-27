@@ -1,15 +1,9 @@
 (()=>{
-  const language = window.ChemistryLanguage;
+  const language=window.ChemistryLanguage;
   if(!language?.translate) return;
-
-  const t = language.translate;
-  const add = (en, ar, he) => {
-    t.en[en] = en;
-    t.ar[en] = ar;
-    t.he[en] = he;
-  };
-
-  const entries = [
+  const t=language.translate;
+  const add=(en,ar,he)=>{t.en[en]=en;t.ar[en]=ar;t.he[en]=he;};
+  const entries=[
     ['What does the arrow in a chemical equation show?','ماذا يُظهر السهم في المعادلة الكيميائية؟','מה מראה החץ במשוואה כימית؟'],
     ['What are the substances on the left called?','ماذا تُسمّى المواد الموجودة على اليسار؟','כיצד נקראים החומרים שבצד שמאל?'],
     ['What are the substances on the right called?','ماذا تُسمّى المواد الموجودة على اليمين؟','כיצד נקראים החומרים שבצד ימין?'],
@@ -27,14 +21,12 @@
     ['Why must you avoid changing subscripts?','لماذا يجب تجنّب تغيير الأرقام السفلية؟','מדוע יש להימנע משינוי מספרים תחתונים?'],
     ['What should you check after adding all coefficients?','ماذا يجب أن تتحقق منه بعد إضافة جميع المعاملات؟','מה צריך לבדוק לאחר הוספת כל המקדמים?'],
     ['Which formula represents elemental oxygen?','أي صيغة تمثل الأكسجين العنصري؟','איזו נוסחה מייצגת חמצן יסודי?'],
-    ['Which formula represents elemental chlorine?','أي صيغة تمثل الكلور العنصري؟','איזו נוסחה מייצגת כלור יסודי؟'],
-    ['Why does O₂ contain two oxygen atoms?','لماذا يحتوي O₂ على ذرتي أكسجين؟','מדוע O₂ מכיל שני אטומי חמצן؟'],
+    ['Which formula represents elemental chlorine?','أي صيغة تمثل الكلور العنصري؟','איזו נוסחה מייצגת כלור יסודי?'],
+    ['Why does O₂ contain two oxygen atoms?','لماذا يحتوي O₂ على ذرتي أكسجين؟','מדוע O₂ מכיל שני אטומי חמצן?'],
     ['Balance H₂ + O₂ → H₂O.','وازن H₂ + O₂ → H₂O.','אזן את H₂ + O₂ → H₂O.'],
     ['Balance N₂ + H₂ → NH₃.','وازن N₂ + H₂ → NH₃.','אזן את N₂ + H₂ → NH₃.']
   ];
-
   entries.forEach(x=>add(...x));
-
   add('Balancing checklist','قائمة تحقق للموازنة','רשימת בדיקה לאיזון');
   add('Correct element symbols','رموز العناصر الصحيحة','סמלי היסודות הנכונים');
   add('Correct chemical formulas and subscripts','الصيغ الكيميائية الصحيحة والأرقام السفلية الصحيحة','נוסחאות כימיות ומספרים תחתונים נכונים');
@@ -43,28 +35,12 @@
   add('Add coefficients instead of changing formulas','أضف المعاملات بدلًا من تغيير الصيغ','הוסף מקדמים במקום לשנות נוסחאות');
   add('Recount every element','أعد عَدّ جميع العناصر','ספור מחדש את כל היסודות');
   add('Use the smallest whole-number ratio','استخدم أصغر نسبة ممكنة من الأعداد الصحيحة','השתמש ביחס הקטן ביותר של מספרים שלמים');
-
   function fixChecklist(){
     const l=language.get();
-    const lines=[
-      'Correct element symbols',
-      'Correct chemical formulas and subscripts',
-      'Correct diatomic formulas when applicable',
-      'Count atoms on both sides',
-      'Add coefficients instead of changing formulas',
-      'Recount every element',
-      'Use the smallest whole-number ratio'
-    ];
-    document.querySelectorAll('.i18n-checklist').forEach(el=>{
-      el.innerHTML=lines.map(x=>`✓ ${t[l]?.[x]||x}`).join('<br>');
-    });
+    const lines=['Correct element symbols','Correct chemical formulas and subscripts','Correct diatomic formulas when applicable','Count atoms on both sides','Add coefficients instead of changing formulas','Recount every element','Use the smallest whole-number ratio'];
+    document.querySelectorAll('.i18n-checklist').forEach(el=>{const value=lines.map(x=>`✓ ${t[l]?.[x]||x}`).join('<br>');if(el.innerHTML!==value)el.innerHTML=value;});
   }
-
-  const current=language.get();
-  language.set(current);
-  setTimeout(fixChecklist,0);
+  const apply=()=>{language.set(language.get());fixChecklist();};
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',apply,{once:true});else apply();
   window.addEventListener('chemistry-language-change',fixChecklist);
-  if(document.body){
-    new MutationObserver(()=>fixChecklist()).observe(document.body,{childList:true,subtree:true});
-  }
 })();
