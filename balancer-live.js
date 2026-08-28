@@ -32,18 +32,12 @@ function parseStage(raw,offset=0){
  if(arrows.length!==1){const e=new Error('Each reaction stage must contain exactly one reaction arrow (→ or ->).');e.kind='arrow';e.arrowCount=arrows.length;e.index=offset+(arrows[0]?.index??0);e.length=arrows[0]?.[0]?.length||0;throw e}
  const a=arrows[0],idx=a.index,L=s.slice(0,idx).trim(),R=s.slice(idx+a[0].length).trim();
  if(!L||!R){const e=new Error(!L?'The left side is empty.':'The right side is empty.');e.kind='side';e.index=offset+(!L?0:idx+a[0].length);e.length=1;throw e}
- const side=(t,base)=>t.split('+').map(x=>{
-  const z=x.trim();if(!z){const e=new Error('An empty formula was found between “+” signs.');e.kind='formula';e.index=offset+base;e.length=1;throw e}
-  const m=z.match(/^(\d+)\s*(.+)$/),f=(m?m[2]:z).trim();
-  try{return{f,a:formula(f)}}catch(e){e.kind='formula';e.problem=f;e.index=offset+base+x.indexOf(f);e.length=Math.max(1,f.length);throw e}
- });
+ const side=(t,base)=>t.split('+').map(x=>{const z=x.trim();if(!z){const e=new Error('An empty formula was found between “+” signs.');e.kind='formula';e.index=offset+base;e.length=1;throw e}const m=z.match(/^(\d+)\s*(.+)$/),f=(m?m[2]:z).trim();try{return{f,a:formula(f)}}catch(e){e.kind='formula';e.problem=f;e.index=offset+base+x.indexOf(f);e.length=Math.max(1,f.length);throw e}});
  return{left:side(L,0),right:side(R,idx+a[0].length)};
 }
 
-// A chain A -> B -> C represents separate reaction stages A -> B and B -> C.
 function splitStages(raw){
- const s=String(raw||'').trim(),arrows=[...s.matchAll(ARROW_RE)];
- if(arrows.length<=1)return[{text:s,offset:0}];
+ const s=String(raw||'').trim(),arrows=[...s.matchAll(ARROW_RE)];if(arrows.length<=1)return[{text:s,offset:0}];
  const result=[];
  for(let i=0;i<arrows.length;i++){
   const leftStart=i===0?0:arrows[i-1].index+arrows[i-1][0].length;
@@ -55,45 +49,52 @@ function splitStages(raw){
  return result;
 }
 
-// Find a positive whole-number null-space vector. The previous implementation
-// set only the first free variable to 1, which incorrectly produced zero
-// coefficients for valid reactions such as H2 + O2 -> H + O.
+// Robust positive-integer stoichiometric solver.
+// It uses exact integer atom counts and searches small positive values for the
+// free variables. This avoids rejecting valid reactions merely because an
+// arbitrary null-space choice produces a zero/negative coefficient.
 function solve(eq){
- const all=[...eq.left,...eq.right];
- const els=[...new Set(all.flatMap(x=>Object.keys(x.a)))];
- const rows=els.map(e=>all.map((x,i)=>(i<eq.left.length?1:-1)*(x.a[e]||0)));
- const n=all.length,m=rows.length;if(n<2)return null;
- let r=0,p=[];
+ const all=[...eq.left,...eq.right],els=[...new Set(all.flatMap(x=>Object.keys(x.a)))],n=all.length,m=els.length;
+ if(n<2)return null;
+ const A=els.map(e=>all.map((x,i)=>(i<eq.left.length?1:-1)*(x.a[e]||0)));
+ // Gaussian elimination over numbers, keeping a copy for final verification.
+ const rows=A.map(r=>r.map(Number));let r=0,piv=[];
  for(let c=0;c<n&&r<m;c++){
   let q=r;for(let k=r+1;k<m;k++)if(Math.abs(rows[k][c])>Math.abs(rows[q][c]))q=k;
-  if(Math.abs(rows[q][c])<1e-10)continue;
+  if(Math.abs(rows[q][c])<1e-12)continue;
   [rows[r],rows[q]]=[rows[q],rows[r]];
   const d=rows[r][c];for(let j=c;j<n;j++)rows[r][j]/=d;
-  for(let k=0;k<m;k++)if(k!==r){const f=rows[k][c];if(Math.abs(f)>1e-10)for(let j=c;j<n;j++)rows[k][j]-=f*rows[r][j]}
-  p.push(c);r++;
+  for(let k=0;k<m;k++)if(k!==r){const f=rows[k][c];if(Math.abs(f)>1e-12)for(let j=c;j<n;j++)rows[k][j]-=f*rows[r][j]}
+  piv.push(c);r++;
  }
- // Detect inconsistency: 0 = non-zero.
- for(let k=r;k<m;k++){let nz=false;for(let j=0;j<n;j++)if(Math.abs(rows[k][j])>1e-10){nz=true;break}if(!nz)continue}
- const free=[];for(let c=0;c<n;c++)if(!p.includes(c))free.push(c);if(!free.length)return null;
- // Set ALL free variables to 1. This is crucial for underdetermined but valid
- // reactions; e.g. H2 + O2 -> H + O gives [1,1,2,2].
- const v=Array(n).fill(1);
- for(let q=p.length-1;q>=0;q--){const c=p[q];let z=0;for(let j=c+1;j<n;j++)z+=rows[q][j]*v[j];v[c]=-z}
- if(v.some(x=>!Number.isFinite(x)||Math.abs(x)<1e-10))return null;
- if(v.some(x=>x<0)){
-  // Try the opposite null-space direction.
-  for(let i=0;i<n;i++)v[i]*=-1;
+ for(let k=r;k<m;k++){let nz=false;for(let j=0;j<n;j++)if(Math.abs(rows[k][j])>1e-10){nz=true;break}if(!nz)continue;return null}
+ const free=[];for(let c=0;c<n;c++)if(!piv.includes(c))free.push(c);if(!free.length)return null;
+ // Try combinations for free variables. Most chemical equations need only
+ // very small ratios; 1..12 covers common and intentionally unusual examples.
+ const LIMIT=12;
+ const values=Array(free.length).fill(1);
+ let answer=null;
+ function attempt(pos){
+  if(answer)return;
+  if(pos===free.length){
+   const v=Array(n).fill(0);for(let i=0;i<free.length;i++)v[free[i]]=values[i];
+   for(let q=piv.length-1;q>=0;q--){const c=piv[q];let z=0;for(let j=c+1;j<n;j++)z+=rows[q][j]*v[j];v[c]=-z}
+   if(v.some(x=>!Number.isFinite(x)||x<=1e-10))return;
+   let den=1;
+   for(const x of v){let found=false;for(let d=1;d<=1000;d++){if(Math.abs(x*d-Math.round(x*d))<1e-8){den=lcm(den,d);found=true;break}}if(!found)return}
+   let co=v.map(x=>Math.round(x*den)),g=co.reduce((a,b)=>gcd(a,b),0);if(g)co=co.map(x=>x/g);
+   if(co.some(x=>x<=0||x>100000))return;
+   for(let i=0;i<m;i++){let sum=0;for(let j=0;j<n;j++)sum+=A[i][j]*co[j];if(sum!==0)return}
+   answer=co;return;
+  }
+  for(let x=1;x<=LIMIT&&!answer;x++){values[pos]=x;attempt(pos+1)}
  }
- let den=1;
- for(const x of v){if(Math.abs(x)<1e-10)return null;const maxD=10000;let found=false;for(let d=1;d<=maxD;d++){if(Math.abs(x*d-Math.round(x*d))<1e-7){den=lcm(den,d);found=true;break}}if(!found)return null}
- let co=v.map(x=>Math.round(x*den)),g=co.reduce((a,b)=>gcd(a,b),0);if(g)co=co.map(x=>x/g);if(co.some(x=>x<=0||x>100000))return null;
- // Final exact integer verification.
- for(let i=0;i<els.length;i++){let sum=0;for(let j=0;j<n;j++)sum+=rows[i][j]*co[j];if(Math.abs(sum)>1e-6)return null}
- return co;
+ attempt(0);
+ return answer;
 }
 
 function balanceStage(stage){
- const eq=parseStage(stage.text,stage.offset),co=solve(eq);if(!co){const e=new Error('This reaction stage cannot be balanced with a non-zero whole-number ratio.');e.kind='balance';throw e}
+ const eq=parseStage(stage.text,stage.offset),co=solve(eq);if(!co){const e=new Error('This reaction stage cannot be balanced with a positive whole-number ratio.');e.kind='balance';throw e}
  let k=0;const side=a=>a.map(x=>{const c=co[k++];return(c===1?'':c)+pretty(x.f)}).join(' + ');
  return{html:`${side(eq.left)} → ${side(eq.right)}`,coefficients:co,eq};
 }
@@ -101,7 +102,7 @@ function balanceStage(stage){
 function preview(s,e){const i=Math.max(0,Math.min(e.index||0,s.length)),l=Math.max(0,e.length||0);return `<div class="problem-preview"><code>${esc(s.slice(0,i))}${l?`<mark>${esc(s.slice(i,i+l))}</mark>`:''}${esc(s.slice(i+l))}</code></div>`}
 function showError(e){
  out.classList.remove('hidden');input.setAttribute('aria-invalid','true');
- out.innerHTML=`<div class="validation-error"><b>⚠ Equation needs attention</b><p>${esc(e.message)}</p>${e.arrowCount>1?`<p class="muted">I found ${e.arrowCount} reaction arrows and treated them as sequential reaction stages.</p>`:''}${e.problem?`<p><b>Problem found:</b> ${esc(e.problem)}</p>`:''}${preview(input.value,e)}<p class="muted"><b>Remember:</b> element symbols are case-sensitive. <code>Co</code> is cobalt; <code>CO</code> is carbon + oxygen.</p></div>`;
+ out.innerHTML=`<div class="validation-error"><b>⚠ Equation needs attention</b><p>${esc(e.message)}</p>${e.arrowCount>1?`<p class="muted">I found ${e.arrowCount} arrows and treated them as sequential reaction stages.</p>`:''}${e.problem?`<p><b>Problem found:</b> ${esc(e.problem)}</p>`:''}${preview(input.value,e)}<p class="muted"><b>Remember:</b> element symbols are case-sensitive. <code>Co</code> is cobalt; <code>CO</code> is carbon + oxygen.</p></div>`;
  if(e.length){input.focus();try{input.setSelectionRange(e.index,e.index+e.length)}catch{}}
 }
 
@@ -110,18 +111,11 @@ function balance(){
  try{
   const raw=String(input.value||'').trim();if(!raw)throw Object.assign(new Error('Enter a chemical reaction first.'),{index:0,length:0});
   const stages=splitStages(raw),results=stages.map(balanceStage);
-  if(stages.length===1){
-   out.innerHTML=`<div class="equation">${results[0].html}</div><div class="steps-result"><b>Balanced equation.</b><br><span class="muted">Every element count is conserved.</span></div>`;
-  }else{
-   // Show coefficients on EACH reaction separately. Do not pretend one set of
-   // coefficients applies across the whole chain; intermediate species can
-   // have different stoichiometric amounts in different reactions.
-   out.innerHTML=`<div class="steps-result"><b>Sequential reactions:</b> each reaction stage was balanced independently.</div><div class="multi-stage-equations">${results.map((r,i)=>`<div class="reaction-stage"><div class="stage-label">Stage ${i+1}</div><div class="equation">${r.html}</div><div class="stage-atoms">Coefficients: ${r.coefficients.join(' : ')}</div></div>`).join('')}</div><div class="steps-result"><span class="muted">Every element count is conserved in every stage.</span></div>`;
-  }
+  if(stages.length===1){out.innerHTML=`<div class="equation">${results[0].html}</div><div class="steps-result"><b>Balanced equation.</b><br><span class="muted">Every element count is conserved.</span></div>`}
+  else{out.innerHTML=`<div class="steps-result"><b>Sequential reactions:</b> each reaction stage was balanced independently.</div><div class="multi-stage-equations">${results.map((r,i)=>`<div class="reaction-stage"><div class="stage-label">Stage ${i+1}</div><div class="equation">${r.html}</div><div class="stage-atoms">Coefficients: ${r.coefficients.join(' : ')}</div></div>`).join('')}</div><div class="steps-result"><span class="muted">Every element count is conserved in every stage.</span></div>`}
   out.classList.remove('hidden');
  }catch(e){showError(e)}
 }
-
 btn.addEventListener('click',balance);
 input.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();balance()}});
 document.querySelectorAll('[data-eq]').forEach(b=>b.addEventListener('click',()=>{input.value=normalize(b.dataset.eq);balance()}));
