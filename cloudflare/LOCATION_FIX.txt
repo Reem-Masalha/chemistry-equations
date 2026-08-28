@@ -1,1 +1,0 @@
-The Worker captures country/city through src/main.js once wrangler.toml points to it.
