@@ -15,15 +15,39 @@ async function event(env,p){
   await env.DB.prepare('INSERT INTO analytics_events (visitor_id,user_id,event_type,feature,difficulty,question,correct,score,total,metadata,created_at) VALUES (?,?,?,?,?,?,?,?,?,?,?)')
     .bind(v,u,String(p.eventType||'event'),p.feature?String(p.feature):null,p.difficulty?String(p.difficulty):null,p.question?String(p.question).slice(0,500):null,p.correct==null?null:(p.correct?1:0),p.score==null?null:Number(p.score),p.total==null?null:Number(p.total),p.metadata?JSON.stringify(p.metadata):null,now()).run();
 }
+function cleanLocation(value){return value?String(value).trim().slice(0,120):null;}
+function locationFromRequest(request){
+  const cf=request.cf||{};
+  return {
+    country:cleanLocation(cf.country),
+    region:cleanLocation(cf.region),
+    city:cleanLocation(cf.city),
+    timezone:cleanLocation(cf.timezone),
+    continent:cleanLocation(cf.continent)
+  };
+}
+async function trackVisit(request,env){
+  const body=await request.json();
+  const visitorId=body.visitorId?String(body.visitorId).slice(0,200):'';
+  const path=body.path?String(body.path).slice(0,200):'';
+  if(!visitorId||!path)return json({error:'visitorId and path are required.'},corsHeaders(),400);
+  const created=now();
+  // Deduplicate the same visitor/page for 30 minutes. This prevents refreshes and
+  // navigation loops from inflating page-view counts while still allowing a
+  // genuine later visit to count again.
+  const recent=await env.DB.prepare("SELECT id FROM visits WHERE visitor_id=? AND path=? AND created_at>=datetime('now','-30 minutes') LIMIT 1")
+    .bind(visitorId,path).first();
+  if(!recent)await env.DB.prepare('INSERT INTO visits (visitor_id,path,created_at) VALUES (?,?,?)').bind(visitorId,path,created).run();
+  const loc=locationFromRequest(request);
+  await event(env,{visitorId,eventType:'page_view',feature:null,metadata:{path,location:loc}});
+  return json({ok:true,deduplicated:Boolean(recent),locationAvailable:Boolean(loc.country||loc.city)},corsHeaders());
+}
 export default { async fetch(request,env){
  const url=new URL(request.url),headers=corsHeaders();
  if(request.method==='OPTIONS')return new Response(null,{status:204,headers});
  try{
   if(url.pathname==='/health')return json({ok:true},headers);
-  if(url.pathname==='/api/track-visit'&&request.method==='POST'){
-   const {visitorId,path}=await request.json();if(!visitorId||!path)return json({error:'visitorId and path are required.'},headers,400);
-   await env.DB.prepare('INSERT INTO visits (visitor_id,path,created_at) VALUES (?,?,?)').bind(String(visitorId),String(path).slice(0,200),now()).run();return json({ok:true},headers);
-  }
+  if(url.pathname==='/api/track-visit'&&request.method==='POST')return trackVisit(request,env);
   if(url.pathname==='/api/track-event'&&request.method==='POST'){
    const p=await request.json();if(!p.eventType)return json({error:'eventType is required.'},headers,400);await event(env,p);return json({ok:true},headers);
   }
@@ -53,7 +77,12 @@ export default { async fetch(request,env){
    const features=await env.DB.prepare("SELECT feature,COUNT(*) AS uses FROM analytics_events WHERE feature IS NOT NULL GROUP BY feature ORDER BY uses DESC").all();
    const missed=await env.DB.prepare("SELECT question,COUNT(*) AS misses FROM analytics_events WHERE event_type='question_result' AND correct=0 AND question IS NOT NULL GROUP BY question ORDER BY misses DESC LIMIT 15").all();
    const featurePeriod=await env.DB.prepare("SELECT feature,COUNT(*) AS uses FROM analytics_events WHERE feature IS NOT NULL AND created_at>=datetime('now','-30 day') GROUP BY feature ORDER BY uses DESC").all();
-   return json({users:users.results,totals,periods,active_users:active.active_users,quiz_totals:quizTotals,difficulty:difficulty.results,features:features.results,featurePeriod:featurePeriod.results,missed:missed.results,visitorsByDay:visitorsByDay.results,pages:pages.results,recent:recent.results,scores:scores.results},headers);
+   const locationRows=await env.DB.prepare("SELECT visitor_id,metadata FROM analytics_events WHERE event_type='page_view' AND metadata IS NOT NULL ORDER BY created_at DESC LIMIT 5000").all();
+   const countryMap=new Map(),cityMap=new Map(),seenCountry=new Map(),seenCity=new Map();
+   for(const row of locationRows.results||[]){try{const m=JSON.parse(row.metadata||'{}'),l=m.location||{};if(!l.country&&!l.city)continue;const country=l.country||'Unknown',city=l.city||'Unknown';const ck=country;const sk=city+'|'+country;countryMap.set(ck,(countryMap.get(ck)||0)+1);cityMap.set(sk,(cityMap.get(sk)||0)+1);if(!seenCountry.has(ck))seenCountry.set(ck,new Set());if(!seenCountry.get(ck).has(row.visitor_id)){seenCountry.get(ck).add(row.visitor_id)}if(!seenCity.has(sk))seenCity.set(sk,new Set());if(!seenCity.get(sk).has(row.visitor_id)){seenCity.get(sk).add(row.visitor_id)}}catch{}}
+   const countries=[...countryMap.entries()].map(([country,views])=>({country,views,visitors:seenCountry.get(country)?.size||0})).sort((a,b)=>b.visitors-a.visitors||b.views-a.views);
+   const cities=[...cityMap.entries()].map(([key,views])=>{const i=key.lastIndexOf('|');const city=key.slice(0,i),country=key.slice(i+1);return{city,country,views,visitors:seenCity.get(key)?.size||0}}).sort((a,b)=>b.visitors-a.visitors||b.views-a.views);
+   return json({users:users.results,totals,periods,active_users:active.active_users,quiz_totals:quizTotals,difficulty:difficulty.results,features:features.results,featurePeriod:featurePeriod.results,missed:missed.results,visitorsByDay:visitorsByDay.results,pages:pages.results,recent:recent.results,scores:scores.results,countries,cities},headers);
   }
   return json({error:'Not found'},headers,404);
  }catch(e){return json({error:e?.message||'Server error'},headers,500);}
