@@ -1,0 +1,1 @@
+src/main.js is the location-aware Worker entry point. Keep wrangler main aligned with this file.
