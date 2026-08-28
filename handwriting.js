@@ -1,89 +1,25 @@
-(() => {
-  const pad = document.getElementById('pad');
-  const use = document.getElementById('usePad');
-  const input = document.getElementById('equationInput');
-  if (!pad || !use || !input) return;
-
-  const workerUrl = () => (window.CHEMISTRY_HANDWRITING_WORKER || '').replace(/\/$/, '') + '/recognize';
-
-  function normalize(text) {
-    return (text || '')
-      .replace(/[→⟶➜⇒=]/g, ' -> ')
-      .replace(/[×·]/g, '')
-      .replace(/[₀₁₂₃₄₅₆₇₈₉]/g, c => String('₀₁₂₃₄₅₆₇₈₉'.indexOf(c)))
-      .replace(/\s+/g, ' ')
-      .replace(/\s*\+\s*/g, ' + ')
-      .replace(/\s*->\s*/g, ' -> ')
-      .trim();
-  }
-
-  function canvasData() {
-    // Crop to the drawing's bounding box and add a white margin.
-    const ctx = pad.getContext('2d');
-    const src = ctx.getImageData(0, 0, pad.width, pad.height).data;
-    let minX = pad.width, minY = pad.height, maxX = -1, maxY = -1;
-    for (let y = 0; y < pad.height; y++) for (let x = 0; x < pad.width; x++) {
-      const a = src[(y * pad.width + x) * 4 + 3];
-      if (a > 20) { minX=Math.min(minX,x); maxX=Math.max(maxX,x); minY=Math.min(minY,y); maxY=Math.max(maxY,y); }
-    }
-    if (maxX < 0) return null;
-    const out = document.createElement('canvas');
-    const scale = Math.min(1.5, 900 / Math.max(1, maxX-minX+1));
-    out.width = Math.max(320, Math.ceil((maxX-minX+1)*scale)+80);
-    out.height = Math.max(120, Math.ceil((maxY-minY+1)*scale)+80);
-    const o = out.getContext('2d'); o.fillStyle='white'; o.fillRect(0,0,out.width,out.height);
-    o.drawImage(pad, minX, minY, maxX-minX+1, maxY-minY+1, 40, 40, (maxX-minX+1)*scale, (maxY-minY+1)*scale);
-    return out.toDataURL('image/png');
-  }
-
-  async function cloudflare(image) {
-    const url = workerUrl();
-    if (!url || url === '/recognize') throw new Error('Cloudflare worker URL is not configured');
-    const r = await fetch(url, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({image})});
-    if (!r.ok) throw new Error((await r.text()) || `Worker error ${r.status}`);
-    const data = await r.json();
-    if (!data.text) throw new Error('No equation recognized');
-    return normalize(data.text);
-  }
-
-  async function tesseractFallback(image) {
-    if (!window.Tesseract) {
-      await new Promise((resolve, reject) => {
-        const s=document.createElement('script'); s.src='https://cdn.jsdelivr.net/npm/tesseract.js@6.0.1/dist/tesseract.min.js';
-        s.onload=resolve; s.onerror=()=>reject(new Error('Could not load local OCR engine')); document.head.appendChild(s);
-      });
-    }
-    const worker = await Tesseract.createWorker('eng', 1, {
-      langPath:'https://tessdata.projectnaptha.com/4.0.0',
-      logger: m => { if (m.status === 'recognizing text') use.textContent=`Local OCR ${Math.round((m.progress||0)*100)}%…`; }
-    });
-    await worker.setParameters({ tessedit_char_whitelist:'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+->' });
-    const result = await worker.recognize(image);
-    await worker.terminate();
-    const text = normalize(result?.data?.text || '');
-    if (!text) throw new Error('Local OCR found no text');
-    return text;
-  }
-
-  use.onclick = async () => {
-    const image = canvasData();
-    if (!image) { toast('Draw an equation first.'); return; }
-    const old = use.textContent; use.disabled=true; use.textContent='Recognizing…';
-    try {
-      let text;
-      try { text = await cloudflare(image); toast('Recognized with Cloudflare AI.'); }
-      catch (cloudErr) {
-        console.warn('Cloudflare recognition failed; using in-browser OCR fallback.', cloudErr);
-        use.textContent='Trying local OCR…';
-        text = await tesseractFallback(image);
-        toast('Recognized locally in your browser.');
-      }
-      input.value = text;
-      if (typeof window.showBalance === 'function') window.showBalance(text);
-      else document.getElementById('balanceBtn').click();
-    } catch (err) {
-      toast('Could not recognize it. Try writing larger/clearer symbols or type it instead.');
-      console.error(err);
-    } finally { use.disabled=false; use.textContent=old; }
-  };
+(()=>{
+'use strict';
+const pad=document.getElementById('pad'),use=document.getElementById('usePad'),input=document.getElementById('equationInput');
+if(!pad||!use||!input)return;
+const undo=document.getElementById('undoPad'),redo=document.getElementById('redoPad'),clear=document.getElementById('clearPad'),erase=document.getElementById('erasePad'),status=document.getElementById('recognitionStatus');
+const toastSafe=m=>{if(status)status.textContent=m};
+const ctx=pad.getContext('2d');let drawing=false,erasing=false,history=[],future=[];
+const save=()=>history.push(pad.toDataURL());
+const restore=data=>{if(!data){ctx.clearRect(0,0,pad.width,pad.height);return}const im=new Image();im.onload=()=>{ctx.clearRect(0,0,pad.width,pad.height);ctx.drawImage(im,0,0)};im.src=data};
+save();
+function pos(e){const r=pad.getBoundingClientRect(),p=e.touches?.[0]||e;return{x:(p.clientX-r.left)*pad.width/r.width,y:(p.clientY-r.top)*pad.height/r.height}}
+pad.addEventListener('pointerdown',e=>{drawing=true;pad.setPointerCapture?.(e.pointerId);const p=pos(e);ctx.beginPath();ctx.moveTo(p.x,p.y);ctx.globalCompositeOperation=erasing?'destination-out':'source-over';e.preventDefault()});
+pad.addEventListener('pointermove',e=>{if(!drawing)return;const p=pos(e);ctx.lineTo(p.x,p.y);ctx.stroke();e.preventDefault()});
+pad.addEventListener('pointerup',()=>{if(!drawing)return;drawing=false;ctx.globalCompositeOperation='source-over';history.push(pad.toDataURL());future=[]});
+pad.addEventListener('pointercancel',()=>{drawing=false;ctx.globalCompositeOperation='source-over'});
+undo?.addEventListener('click',()=>{if(history.length<=1){toastSafe('Nothing to undo.');return}future.push(history.pop());restore(history[history.length-1]);toastSafe('Undo')});
+redo?.addEventListener('click',()=>{if(!future.length){toastSafe('Nothing to redo.');return}const d=future.pop();history.push(d);restore(d);toastSafe('Redo')});
+clear?.addEventListener('click',()=>{ctx.clearRect(0,0,pad.width,pad.height);history.push(pad.toDataURL());future=[];toastSafe('Canvas cleared.')});
+erase?.addEventListener('click',e=>{erasing=!erasing;e.currentTarget.textContent=erasing?'Pen':'Eraser';toastSafe(erasing?'Eraser selected.':'Pen selected.')});
+function canvasData(){const src=ctx.getImageData(0,0,pad.width,pad.height).data;let x0=pad.width,y0=pad.height,x1=-1,y1=-1;for(let y=0;y<pad.height;y++)for(let x=0;x<pad.width;x++){if(src[(y*pad.width+x)*4+3]>20){x0=Math.min(x0,x);x1=Math.max(x1,x);y0=Math.min(y0,y);y1=Math.max(y1,y)}}if(x1<0)return null;const c=document.createElement('canvas'),w=x1-x0+1,h=y1-y0+1,scale=Math.min(1.5,900/Math.max(1,w));c.width=Math.max(320,Math.ceil(w*scale)+80);c.height=Math.max(120,Math.ceil(h*scale)+80);const o=c.getContext('2d');o.fillStyle='white';o.fillRect(0,0,c.width,c.height);o.drawImage(pad,x0,y0,w,h,40,40,w*scale,h*scale);return c.toDataURL('image/png')}
+function normalize(t){return(t||'').replace(/[→⟶➜⇒=]/g,' -> ').replace(/[₀₁₂₃₄₅₆₇₈₉]/g,c=>'0123456789'['₀₁₂₃₄₅₆₇₈₉'.indexOf(c)]).replace(/\s+/g,' ').replace(/\s*\+\s*/g,' + ').replace(/\s*->\s*/g,' -> ').trim()}
+async function recognize(){const image=canvasData();if(!image){toastSafe('Draw an equation first.');return}const worker=(window.CHEMISTRY_HANDWRITING_WORKER||'').replace(/\/$/,'')+'/recognize';use.disabled=true;const old=use.textContent;use.textContent='Recognizing…';toastSafe('Recognizing handwriting…');try{const r=await fetch(worker,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({image})});if(!r.ok)throw Error('Recognition service returned '+r.status);const d=await r.json();const text=normalize(d.text);if(!text)throw Error('No equation recognized');input.value=text;const edit=document.getElementById('recognizedEdit'),corr=document.getElementById('recognitionCorrection');if(edit){edit.value=text;corr?.classList.remove('hidden')}document.getElementById('recognitionResult')?.classList.remove('hidden');toastSafe('Recognition complete. Check the equation before balancing.');input.focus()}catch(e){console.error(e);toastSafe('Recognition failed. Check the handwriting worker connection and try again.')}finally{use.disabled=false;use.textContent=old}}
+use.addEventListener('click',recognize);
+document.getElementById('balanceRecognized')?.addEventListener('click',()=>{const e=document.getElementById('recognizedEdit');if(e){input.value=e.value;document.getElementById('balanceBtn')?.click()}});
 })();
