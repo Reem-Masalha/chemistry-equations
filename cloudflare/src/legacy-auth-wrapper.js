@@ -33,6 +33,24 @@ async function sha256Hex(value) {
   return Array.from(bytes).map(b => b.toString(16).padStart(2, '0')).join('');
 }
 
+async function hmacSha256Hex(key, value) {
+  const cryptoKey = await crypto.subtle.importKey(
+    'raw',
+    encoder.encode(String(key)),
+    { name: 'HMAC', hash: 'SHA-256' },
+    false,
+    ['sign']
+  );
+  const signature = await crypto.subtle.sign(
+    'HMAC',
+    cryptoKey,
+    encoder.encode(String(value))
+  );
+  return Array.from(new Uint8Array(signature))
+    .map(b => b.toString(16).padStart(2, '0'))
+    .join('');
+}
+
 async function pbkdf2Hex(password, salt, iterations) {
   const key = await crypto.subtle.importKey(
     'raw',
@@ -66,10 +84,18 @@ async function legacyMatch(password, user) {
   const passwordLower = passwordExact.toLowerCase();
   const username = String(user.username || '');
 
+  // IMPORTANT: the original account hashes use Werkzeug's legacy
+  // "sha256$salt$hash" format. Werkzeug computes HMAC-SHA256(password)
+  // with the stored salt as the HMAC key. This is the exact legacy
+  // verification needed for existing accounts.
+  const werkzeug = await hmacSha256Hex(salt, passwordExact);
+  if (safeEqual(werkzeug, expected)) return true;
+
+  // Compatibility with older/custom salted SHA-256 variants that may
+  // exist in the database from intermediate migrations.
   const candidates = new Set();
   const addHash = async (text) => candidates.add((await sha256Hex(text)).toLowerCase());
 
-  // Common legacy salted SHA-256 constructions.
   const values = [
     salt + passwordExact,
     passwordExact + salt,
@@ -103,7 +129,6 @@ async function legacyMatch(password, user) {
 
   for (const value of values) await addHash(value);
 
-  // Common double-hash constructions.
   const pHash = await sha256Hex(passwordExact);
   const pTrimHash = await sha256Hex(passwordTrim);
   const combinations = [
@@ -113,18 +138,17 @@ async function legacyMatch(password, user) {
     pHash + ':' + salt,
     salt + pTrimHash,
     pTrimHash + salt,
-    sha256Hex(salt + passwordExact),
+    await sha256Hex(salt + passwordExact),
   ];
 
   for (const value of combinations) {
-    const resolved = value instanceof Promise ? await value : value;
-    candidates.add((await sha256Hex(resolved)).toLowerCase());
+    const resolved = String(value);
     if (safeEqual(resolved, expected)) return true;
+    candidates.add((await sha256Hex(resolved)).toLowerCase());
   }
 
   if (candidates.has(expected)) return true;
 
-  // A few practical PBKDF2-SHA256 iteration counts used by older systems.
   for (const iterations of [1000, 2000, 5000, 10000, 20000]) {
     const hashes = [
       await pbkdf2Hex(passwordExact, salt, iterations),
