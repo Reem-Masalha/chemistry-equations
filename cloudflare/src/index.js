@@ -40,7 +40,6 @@ async function sha256(value) {
     .join("");
 }
 
-// Legacy Werkzeug 'sha256$salt$hash' uses HMAC-SHA256 with the salt as the key.
 async function hmacSha256Hex(key, message) {
   const cryptoKey = await crypto.subtle.importKey(
     "raw",
@@ -68,14 +67,14 @@ async function verifyPassword(password, user) {
 
   const stored = String(user.password_hash);
 
-  // Current format: SHA-256(salt:password), with the salt stored separately.
+  // Current records: SHA-256(salt:password) with a separate password_salt.
   if (user.password_salt) {
     const hash = await modernHash(password, user.password_salt);
     return safeEqual(hash, stored);
   }
 
-  // Exact legacy Werkzeug format:
-  // sha256$SALT$64_HEX_HASH
+  // Legacy Werkzeug format: sha256$salt$hash.
+  // Werkzeug's legacy sha256 method is HMAC-SHA256 with the salt as the key.
   if (stored.toLowerCase().startsWith("sha256$")) {
     const parts = stored.split("$");
     if (parts.length === 3) {
@@ -83,11 +82,10 @@ async function verifyPassword(password, user) {
       const expected = parts[2];
 
       if (/^[a-f0-9]{64}$/i.test(expected)) {
-        // Werkzeug's legacy sha256 method is HMAC-SHA256(password, key=salt).
-        const hmac = await hmacSha256Hex(salt, password);
-        if (safeEqual(hmac, expected)) return true;
+        const werkzeugHash = await hmacSha256Hex(salt, password);
+        if (safeEqual(werkzeugHash, expected)) return true;
 
-        // Keep compatibility with any custom records that used direct SHA-256.
+        // Compatibility with any custom SHA-256 records created before migration.
         const candidates = [
           await sha256(salt + password),
           await sha256(salt + ":" + password),
@@ -99,7 +97,7 @@ async function verifyPassword(password, user) {
     }
   }
 
-  // Other legacy delimiter-based forms.
+  // Other legacy delimiter-based records.
   for (const sep of ["$", ":", "|", "."]) {
     const parts = stored.split(sep);
     if (parts.length === 2) {
@@ -127,7 +125,6 @@ async function verifyPassword(password, user) {
     }
   }
 
-  // Unsalted SHA-256 fallback.
   return safeEqual(await sha256(password), stored);
 }
 
@@ -168,17 +165,13 @@ async function trackVisit(request, env) {
   }
 
   const existing = await env.DB.prepare(`
-    SELECT id
-    FROM visits
-    WHERE visitor_id = ?
-      AND path = ?
+    SELECT id FROM visits
+    WHERE visitor_id = ? AND path = ?
       AND created_at >= datetime('now', '-30 minutes')
     LIMIT 1
   `).bind(visitorId, path).first();
 
-  if (existing) {
-    return json({ ok: true, counted: false });
-  }
+  if (existing) return json({ ok: true, counted: false });
 
   const created = now();
 
@@ -195,14 +188,8 @@ async function trackVisit(request, env) {
       (visitor_id, path, country, region, city, timezone, continent, created_at)
     VALUES (?, ?, ?, ?, ?, ?, ?, ?)
   `).bind(
-    visitorId,
-    path,
-    loc.country,
-    loc.region,
-    loc.city,
-    loc.timezone,
-    loc.continent,
-    created
+    visitorId, path, loc.country, loc.region, loc.city,
+    loc.timezone, loc.continent, created
   ).run();
 
   return json({ ok: true, counted: true });
@@ -218,29 +205,23 @@ async function signIn(env, body) {
 
   const user = await env.DB.prepare(`
     SELECT id, name, username, password_hash, password_salt
-    FROM users
-    WHERE username = ?
-    LIMIT 1
+    FROM users WHERE username = ? LIMIT 1
   `).bind(username).first();
 
   if (!(await verifyPassword(password, user))) {
     return json({ error: "Incorrect username or password." }, 401);
   }
 
-  // Migrate legacy password records after successful verification.
+  // Convert a verified legacy password to the current format.
   if (!user.password_salt) {
     const salt = crypto.randomUUID();
     const hash = await modernHash(password, salt);
-
     await env.DB.prepare(`
-      UPDATE users
-      SET password_hash = ?, password_salt = ?
-      WHERE id = ?
+      UPDATE users SET password_hash = ?, password_salt = ? WHERE id = ?
     `).bind(hash, salt, user.id).run();
   }
 
   const sessionToken = token();
-
   return json({
     ok: true,
     token: sessionToken,
@@ -261,47 +242,30 @@ async function createAccount(env, body) {
   if (!name || !username || !password) {
     return json({ error: "Name, username and password are required." }, 400);
   }
-
   if (password.length < 8) {
     return json({ error: "Password must be at least 8 characters." }, 400);
   }
 
-  const exists = await env.DB.prepare(`
-    SELECT id FROM users WHERE username = ? LIMIT 1
-  `).bind(username).first();
+  const exists = await env.DB.prepare(
+    `SELECT id FROM users WHERE username = ? LIMIT 1`
+  ).bind(username).first();
 
-  if (exists) {
-    return json({ error: "Username already exists." }, 409);
-  }
+  if (exists) return json({ error: "Username already exists." }, 409);
 
   const id = crypto.randomUUID();
   const salt = crypto.randomUUID();
   const hash = await modernHash(password, salt);
 
   await env.DB.prepare(`
-    INSERT INTO users
-      (id, name, username, password_hash, password_salt, created_at)
-    VALUES (?, ?, ?, ?, ?, ?)
-  `).bind(
-    id,
-    name,
-    username,
-    hash,
-    salt,
-    now()
-  ).run();
+    INSERT INTO users (id,name,username,password_hash,password_salt,created_at)
+    VALUES (?,?,?,?,?,?)
+  `).bind(id, name, username, hash, salt, now()).run();
 
   const sessionToken = token();
-
   return json({
     ok: true,
     token: sessionToken,
-    user: {
-      id,
-      name,
-      username,
-      token: sessionToken,
-    },
+    user: { id, name, username, token: sessionToken },
   });
 }
 
@@ -311,61 +275,40 @@ async function setPassword(env, body) {
   const confirmPassword = String(body?.confirmPassword ?? "");
 
   if (!username) return json({ error: "Username is required." }, 400);
-  if (password.length < 8) {
-    return json({ error: "Passwords must be at least 8 characters." }, 400);
-  }
-  if (password !== confirmPassword) {
-    return json({ error: "Passwords do not match." }, 400);
-  }
+  if (password.length < 8) return json({ error: "Password must be at least 8 characters." }, 400);
+  if (password !== confirmPassword) return json({ error: "Passwords do not match." }, 400);
 
   const user = await env.DB.prepare(`
-    SELECT id, name, username
-    FROM users
-    WHERE username = ?
-    LIMIT 1
+    SELECT id,name,username FROM users WHERE username = ? LIMIT 1
   `).bind(username).first();
 
-  if (!user) {
-    return json({ error: "No existing account was found with that username." }, 404);
-  }
+  if (!user) return json({ error: "No existing account was found with that username." }, 404);
 
   const salt = crypto.randomUUID();
   const hash = await modernHash(password, salt);
 
   await env.DB.prepare(`
-    UPDATE users
-    SET password_hash = ?, password_salt = ?
-    WHERE id = ?
+    UPDATE users SET password_hash = ?, password_salt = ? WHERE id = ?
   `).bind(hash, salt, user.id).run();
 
   const sessionToken = token();
-
   return json({
     ok: true,
     token: sessionToken,
-    user: {
-      id: user.id,
-      name: user.name,
-      username: user.username,
-      token: sessionToken,
-    },
+    user: { id: user.id, name: user.name, username: user.username, token: sessionToken },
   });
 }
 
 async function stats(env, request) {
   const adminKey = request.headers.get("X-Admin-Key") || "";
-  if (!env.ADMIN_KEY) {
-    return json({ error: "ADMIN_KEY is not configured." }, 500);
-  }
-  if (!safeEqual(adminKey, env.ADMIN_KEY)) {
-    return json({ error: "Incorrect admin key." }, 401);
-  }
+  if (!env.ADMIN_KEY) return json({ error: "ADMIN_KEY is not configured." }, 500);
+  if (!safeEqual(adminKey, env.ADMIN_KEY)) return json({ error: "Incorrect admin key." }, 401);
 
   await ensureLocationTable(env);
 
   const [users, totals, periods, pages, visitorsByDay, scores, countries, cities, recent] = await Promise.all([
     env.DB.prepare(`SELECT id,name,username,created_at FROM users ORDER BY created_at DESC`).all(),
-    env.DB.prepare(`SELECT COUNT(*) AS visits,COUNT(DISTINCT visitor_id) AS unique_visitors FROM visits`).first(),
+    env.DB.prepare(`SELECT COUNT(*) AS visits, COUNT(DISTINCT visitor_id) AS unique_visitors FROM visits`).first(),
     env.DB.prepare(`SELECT COUNT(DISTINCT CASE WHEN created_at>=datetime('now','-1 day') THEN visitor_id END) AS daily,COUNT(DISTINCT CASE WHEN created_at>=datetime('now','-7 day') THEN visitor_id END) AS weekly,COUNT(DISTINCT CASE WHEN created_at>=datetime('now','-30 day') THEN visitor_id END) AS monthly FROM visits`).first(),
     env.DB.prepare(`SELECT path,COUNT(*) AS views,COUNT(DISTINCT visitor_id) AS visitors FROM visits GROUP BY path ORDER BY views DESC`).all(),
     env.DB.prepare(`SELECT date(created_at) AS day,COUNT(*) AS views,COUNT(DISTINCT visitor_id) AS visitors FROM visits WHERE created_at>=datetime('now','-30 day') GROUP BY date(created_at) ORDER BY day`).all(),
@@ -390,10 +333,7 @@ async function stats(env, request) {
 
 export default {
   async fetch(request, env) {
-    if (request.method === "OPTIONS") {
-      return new Response(null, { status: 204, headers: CORS });
-    }
-
+    if (request.method === "OPTIONS") return new Response(null, { status: 204, headers: CORS });
     const url = new URL(request.url);
 
     try {
@@ -406,8 +346,18 @@ export default {
       if (url.pathname === "/api/track-event" && request.method === "POST") {
         const p = await request.json();
         if (!p?.eventType) return json({ error: "eventType is required." }, 400);
-        await env.DB.prepare(`INSERT INTO analytics_events (visitor_id,user_id,event_type,feature,difficulty,question,correct,score,total,metadata,created_at) VALUES (?,?,?,?,?,?,?,?,?,?,?)`)
-          .bind(clean(p.visitorId,200),clean(p.userId,200),clean(p.eventType,120),clean(p.feature,120),clean(p.difficulty,120),clean(p.question,500),p.correct==null?null:(p.correct?1:0),p.score==null?null:Number(p.score),p.total==null?null:Number(p.total),p.metadata==null?null:JSON.stringify(p.metadata),now()).run();
+        await env.DB.prepare(`
+          INSERT INTO analytics_events
+            (visitor_id,user_id,event_type,feature,difficulty,question,correct,score,total,metadata,created_at)
+          VALUES (?,?,?,?,?,?,?,?,?,?,?)
+        `).bind(
+          clean(p.visitorId,200), clean(p.userId,200), clean(p.eventType,120),
+          clean(p.feature,120), clean(p.difficulty,120), clean(p.question,500),
+          p.correct == null ? null : (p.correct ? 1 : 0),
+          p.score == null ? null : Number(p.score),
+          p.total == null ? null : Number(p.total),
+          p.metadata == null ? null : JSON.stringify(p.metadata), now()
+        ).run();
         return json({ ok: true });
       }
 
