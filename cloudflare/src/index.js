@@ -143,17 +143,18 @@ async function trackEvent(request,env){
 }
 async function stats(env,request){
   const key=String(request.headers.get("X-Admin-Key")||""); if(!env.ADMIN_KEY||!safeEqual(key,env.ADMIN_KEY))return json({error:"Unauthorized."},401); await ensureLocationTable(env);
-  const [users,totals,periods,pages,days,scores,countries,cities]=await Promise.all([
+  const [users,totals,periods,activeUsers,pages,days,scores,countries,cities]=await Promise.all([
     env.DB.prepare(`SELECT id,name,username,created_at FROM users ORDER BY created_at DESC`).all(),
     env.DB.prepare(`SELECT COUNT(*) AS visits,COUNT(DISTINCT visitor_id) AS unique_visitors FROM visits`).first(),
     env.DB.prepare(`SELECT COUNT(DISTINCT CASE WHEN created_at>=datetime('now','-1 day') THEN visitor_id END) AS daily,COUNT(DISTINCT CASE WHEN created_at>=datetime('now','-7 day') THEN visitor_id END) AS weekly,COUNT(DISTINCT CASE WHEN created_at>=datetime('now','-30 day') THEN visitor_id END) AS monthly FROM visits`).first(),
+    env.DB.prepare(`SELECT COUNT(DISTINCT visitor_id) AS active_users FROM visits WHERE visitor_id LIKE 'account:%' AND created_at>=datetime('now','-30 minutes')`).first(),
     env.DB.prepare(`SELECT path,COUNT(*) AS views,COUNT(DISTINCT visitor_id) AS visitors FROM visits GROUP BY path ORDER BY views DESC`).all(),
     env.DB.prepare(`SELECT date(created_at) AS day,COUNT(*) AS views,COUNT(DISTINCT visitor_id) AS visitors FROM visits WHERE created_at>=datetime('now','-30 day') GROUP BY date(created_at) ORDER BY day`).all(),
     env.DB.prepare(`SELECT u.username,u.name,s.stage,s.score,s.total,s.created_at FROM scores s JOIN users u ON u.id=s.user_id ORDER BY s.created_at DESC LIMIT 500`).all(),
     env.DB.prepare(`SELECT COALESCE(NULLIF(country,''),'Unknown') AS country,COUNT(DISTINCT visitor_id) AS visitors,COUNT(*) AS views FROM visitor_locations GROUP BY COALESCE(NULLIF(country,''),'Unknown') ORDER BY visitors DESC,views DESC`).all(),
     env.DB.prepare(`SELECT COALESCE(NULLIF(city,''),'Unknown') AS city,COALESCE(NULLIF(country,''),'Unknown') AS country,COUNT(DISTINCT visitor_id) AS visitors,COUNT(*) AS views FROM visitor_locations GROUP BY COALESCE(NULLIF(city,''),'Unknown'),COALESCE(NULLIF(country,''),'Unknown') ORDER BY visitors DESC,views DESC`).all()
   ]);
-  return json({users:users.results,totals,periods,pages:pages.results,visitorsByDay:days.results,scores:scores.results,countries:countries.results,cities:cities.results});
+  return json({users:users.results,totals,periods,active_users:Number(activeUsers?.active_users||0),pages:pages.results,visitorsByDay:days.results,scores:scores.results,countries:countries.results,cities:cities.results});
 }
 
 export default { async fetch(request,env){
