@@ -40,6 +40,25 @@ async function sha256(value) {
     .join("");
 }
 
+// Legacy Werkzeug 'sha256$salt$hash' uses HMAC-SHA256 with the salt as the key.
+async function hmacSha256Hex(key, message) {
+  const cryptoKey = await crypto.subtle.importKey(
+    "raw",
+    encoder.encode(String(key)),
+    { name: "HMAC", hash: "SHA-256" },
+    false,
+    ["sign"]
+  );
+  const signature = await crypto.subtle.sign(
+    "HMAC",
+    cryptoKey,
+    encoder.encode(String(message))
+  );
+  return Array.from(new Uint8Array(signature))
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
+}
+
 async function modernHash(password, salt) {
   return sha256(String(salt) + ":" + String(password));
 }
@@ -49,34 +68,43 @@ async function verifyPassword(password, user) {
 
   const stored = String(user.password_hash);
 
-  // Current records: SHA-256(salt:password) with a separate password_salt.
+  // Current format: SHA-256(salt:password), with the salt stored separately.
   if (user.password_salt) {
     const hash = await modernHash(password, user.password_salt);
     return safeEqual(hash, stored);
   }
 
-  // Legacy records used a self-contained value such as:
-  // sha256$SALT$HASH
+  // Exact legacy Werkzeug format:
+  // sha256$SALT$64_HEX_HASH
   if (stored.toLowerCase().startsWith("sha256$")) {
     const parts = stored.split("$");
     if (parts.length === 3) {
       const salt = parts[1];
       const expected = parts[2];
-      const candidates = [
-        await sha256(salt + password),
-        await sha256(salt + ":" + password),
-        await sha256(password + salt),
-        await sha256(password + ":" + salt),
-      ];
-      if (candidates.some((x) => safeEqual(x, expected))) return true;
+
+      if (/^[a-f0-9]{64}$/i.test(expected)) {
+        // Werkzeug's legacy sha256 method is HMAC-SHA256(password, key=salt).
+        const hmac = await hmacSha256Hex(salt, password);
+        if (safeEqual(hmac, expected)) return true;
+
+        // Keep compatibility with any custom records that used direct SHA-256.
+        const candidates = [
+          await sha256(salt + password),
+          await sha256(salt + ":" + password),
+          await sha256(password + salt),
+          await sha256(password + ":" + salt),
+        ];
+        if (candidates.some((x) => safeEqual(x, expected))) return true;
+      }
     }
   }
 
-  // Other legacy forms with a delimiter.
+  // Other legacy delimiter-based forms.
   for (const sep of ["$", ":", "|", "."]) {
     const parts = stored.split(sep);
     if (parts.length === 2) {
       const [a, b] = parts;
+
       if (/^[a-f0-9]{64}$/i.test(b)) {
         const candidates = [
           await sha256(a + password),
@@ -86,6 +114,7 @@ async function verifyPassword(password, user) {
         ];
         if (candidates.some((x) => safeEqual(x, b))) return true;
       }
+
       if (/^[a-f0-9]{64}$/i.test(a)) {
         const candidates = [
           await sha256(b + password),
@@ -98,7 +127,7 @@ async function verifyPassword(password, user) {
     }
   }
 
-  // Final fallback: plain SHA-256(password).
+  // Unsalted SHA-256 fallback.
   return safeEqual(await sha256(password), stored);
 }
 
@@ -283,14 +312,14 @@ async function setPassword(env, body) {
 
   if (!username) return json({ error: "Username is required." }, 400);
   if (password.length < 8) {
-    return json({ error: "Password must be at least 8 characters." }, 400);
+    return json({ error: "Passwords must be at least 8 characters." }, 400);
   }
   if (password !== confirmPassword) {
     return json({ error: "Passwords do not match." }, 400);
   }
 
   const user = await env.DB.prepare(`
-    SELECT id, name, username, password_hash, password_salt
+    SELECT id, name, username
     FROM users
     WHERE username = ?
     LIMIT 1
@@ -334,56 +363,15 @@ async function stats(env, request) {
 
   await ensureLocationTable(env);
 
-  const [
-    users,
-    totals,
-    periods,
-    pages,
-    visitorsByDay,
-    scores,
-    countries,
-    cities,
-    recent,
-  ] = await Promise.all([
+  const [users, totals, periods, pages, visitorsByDay, scores, countries, cities, recent] = await Promise.all([
     env.DB.prepare(`SELECT id,name,username,created_at FROM users ORDER BY created_at DESC`).all(),
-    env.DB.prepare(`SELECT COUNT(*) AS visits, COUNT(DISTINCT visitor_id) AS unique_visitors FROM visits`).first(),
-    env.DB.prepare(`
-      SELECT
-        COUNT(DISTINCT CASE WHEN created_at >= datetime('now','-1 day') THEN visitor_id END) AS daily,
-        COUNT(DISTINCT CASE WHEN created_at >= datetime('now','-7 day') THEN visitor_id END) AS weekly,
-        COUNT(DISTINCT CASE WHEN created_at >= datetime('now','-30 day') THEN visitor_id END) AS monthly
-      FROM visits
-    `).first(),
+    env.DB.prepare(`SELECT COUNT(*) AS visits,COUNT(DISTINCT visitor_id) AS unique_visitors FROM visits`).first(),
+    env.DB.prepare(`SELECT COUNT(DISTINCT CASE WHEN created_at>=datetime('now','-1 day') THEN visitor_id END) AS daily,COUNT(DISTINCT CASE WHEN created_at>=datetime('now','-7 day') THEN visitor_id END) AS weekly,COUNT(DISTINCT CASE WHEN created_at>=datetime('now','-30 day') THEN visitor_id END) AS monthly FROM visits`).first(),
     env.DB.prepare(`SELECT path,COUNT(*) AS views,COUNT(DISTINCT visitor_id) AS visitors FROM visits GROUP BY path ORDER BY views DESC`).all(),
-    env.DB.prepare(`
-      SELECT date(created_at) AS day,COUNT(*) AS views,COUNT(DISTINCT visitor_id) AS visitors
-      FROM visits
-      WHERE created_at >= datetime('now','-30 day')
-      GROUP BY date(created_at)
-      ORDER BY day
-    `).all(),
-    env.DB.prepare(`
-      SELECT u.username,u.name,s.stage,s.score,s.total,s.created_at
-      FROM scores s JOIN users u ON u.id=s.user_id
-      ORDER BY s.created_at DESC LIMIT 500
-    `).all(),
-    env.DB.prepare(`
-      SELECT COALESCE(NULLIF(country,''),'Unknown') AS country,
-             COUNT(DISTINCT visitor_id) AS visitors,
-             COUNT(*) AS views
-      FROM visitor_locations
-      GROUP BY COALESCE(NULLIF(country,''),'Unknown')
-      ORDER BY visitors DESC,views DESC
-    `).all(),
-    env.DB.prepare(`
-      SELECT COALESCE(NULLIF(city,''),'Unknown') AS city,
-             COALESCE(NULLIF(country,''),'Unknown') AS country,
-             COUNT(DISTINCT visitor_id) AS visitors,
-             COUNT(*) AS views
-      FROM visitor_locations
-      GROUP BY COALESCE(NULLIF(city,''),'Unknown'), COALESCE(NULLIF(country,''),'Unknown')
-      ORDER BY visitors DESC,views DESC
-    `).all(),
+    env.DB.prepare(`SELECT date(created_at) AS day,COUNT(*) AS views,COUNT(DISTINCT visitor_id) AS visitors FROM visits WHERE created_at>=datetime('now','-30 day') GROUP BY date(created_at) ORDER BY day`).all(),
+    env.DB.prepare(`SELECT u.username,u.name,s.stage,s.score,s.total,s.created_at FROM scores s JOIN users u ON u.id=s.user_id ORDER BY s.created_at DESC LIMIT 500`).all(),
+    env.DB.prepare(`SELECT COALESCE(NULLIF(country,''),'Unknown') AS country,COUNT(DISTINCT visitor_id) AS visitors,COUNT(*) AS views FROM visitor_locations GROUP BY COALESCE(NULLIF(country,''),'Unknown') ORDER BY visitors DESC,views DESC`).all(),
+    env.DB.prepare(`SELECT COALESCE(NULLIF(city,''),'Unknown') AS city,COALESCE(NULLIF(country,''),'Unknown') AS country,COUNT(DISTINCT visitor_id) AS visitors,COUNT(*) AS views FROM visitor_locations GROUP BY COALESCE(NULLIF(city,''),'Unknown'),COALESCE(NULLIF(country,''),'Unknown') ORDER BY visitors DESC,views DESC`).all(),
     env.DB.prepare(`SELECT path,created_at FROM visits ORDER BY created_at DESC LIMIT 100`).all(),
   ]);
 
@@ -409,86 +397,39 @@ export default {
     const url = new URL(request.url);
 
     try {
-      if (url.pathname === "/health" && request.method === "GET") {
-        return json({ ok: true });
-      }
-
-      if (url.pathname === "/api/track-visit" && request.method === "POST") {
-        return await trackVisit(request, env);
-      }
-
-      if (url.pathname === "/api/create-account" && request.method === "POST") {
-        return await createAccount(env, await request.json());
-      }
-
-      if (url.pathname === "/api/sign-in" && request.method === "POST") {
-        return await signIn(env, await request.json());
-      }
-
-      if (url.pathname === "/api/set-password" && request.method === "POST") {
-        return await setPassword(env, await request.json());
-      }
+      if (url.pathname === "/health" && request.method === "GET") return json({ ok: true });
+      if (url.pathname === "/api/track-visit" && request.method === "POST") return await trackVisit(request, env);
+      if (url.pathname === "/api/create-account" && request.method === "POST") return await createAccount(env, await request.json());
+      if (url.pathname === "/api/sign-in" && request.method === "POST") return await signIn(env, await request.json());
+      if (url.pathname === "/api/set-password" && request.method === "POST") return await setPassword(env, await request.json());
 
       if (url.pathname === "/api/track-event" && request.method === "POST") {
         const p = await request.json();
         if (!p?.eventType) return json({ error: "eventType is required." }, 400);
-        await env.DB.prepare(`
-          INSERT INTO analytics_events
-            (visitor_id,user_id,event_type,feature,difficulty,question,correct,score,total,metadata,created_at)
-          VALUES (?,?,?,?,?,?,?,?,?,?,?)
-        `).bind(
-          clean(p.visitorId, 200),
-          clean(p.userId, 200),
-          clean(p.eventType, 120),
-          clean(p.feature, 120),
-          clean(p.difficulty, 120),
-          clean(p.question, 500),
-          p.correct == null ? null : (p.correct ? 1 : 0),
-          p.score == null ? null : Number(p.score),
-          p.total == null ? null : Number(p.total),
-          p.metadata == null ? null : JSON.stringify(p.metadata),
-          now()
-        ).run();
+        await env.DB.prepare(`INSERT INTO analytics_events (visitor_id,user_id,event_type,feature,difficulty,question,correct,score,total,metadata,created_at) VALUES (?,?,?,?,?,?,?,?,?,?,?)`)
+          .bind(clean(p.visitorId,200),clean(p.userId,200),clean(p.eventType,120),clean(p.feature,120),clean(p.difficulty,120),clean(p.question,500),p.correct==null?null:(p.correct?1:0),p.score==null?null:Number(p.score),p.total==null?null:Number(p.total),p.metadata==null?null:JSON.stringify(p.metadata),now()).run();
         return json({ ok: true });
       }
 
       if (url.pathname === "/api/scores" && request.method === "GET") {
         const userId = url.searchParams.get("userId");
         if (!userId) return json({ scores: [] });
-        const rows = await env.DB.prepare(`
-          SELECT stage,score,total,created_at
-          FROM scores
-          WHERE user_id = ?
-          ORDER BY created_at DESC
-        `).bind(userId).all();
+        const rows = await env.DB.prepare(`SELECT stage,score,total,created_at FROM scores WHERE user_id=? ORDER BY created_at DESC`).bind(userId).all();
         return json({ scores: rows.results });
       }
 
       if (url.pathname === "/api/scores" && request.method === "POST") {
         const p = await request.json();
-        await env.DB.prepare(`
-          INSERT INTO scores (user_id,stage,score,total,created_at)
-          VALUES (?,?,?,?,?)
-        `).bind(
-          clean(p.userId, 200),
-          clean(p.stage, 120),
-          Number(p.score),
-          Number(p.total),
-          now()
-        ).run();
+        await env.DB.prepare(`INSERT INTO scores (user_id,stage,score,total,created_at) VALUES (?,?,?,?,?)`).bind(clean(p.userId,200),clean(p.stage,120),Number(p.score),Number(p.total),now()).run();
         return json({ ok: true });
       }
 
-      if (url.pathname === "/api/admin/stats" && request.method === "POST") {
-        return await stats(env, request);
-      }
+      if (url.pathname === "/api/admin/stats" && request.method === "POST") return await stats(env, request);
 
       return json({ error: "Not found" }, 404);
     } catch (error) {
       console.error("Worker error:", error);
-      return json({
-        error: error?.message || "Internal Worker error"
-      }, 500);
+      return json({ error: error?.message || "Internal Worker error" }, 500);
     }
   }
 };
