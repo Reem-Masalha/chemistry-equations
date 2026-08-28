@@ -23,14 +23,9 @@ function safeEqual(a, b) {
   return d === 0;
 }
 
-async function sha256Bytes(value) {
-  const digest = await crypto.subtle.digest('SHA-256', encoder.encode(String(value)));
-  return new Uint8Array(digest);
-}
-
 async function sha256Hex(value) {
-  const bytes = await sha256Bytes(value);
-  return Array.from(bytes).map(b => b.toString(16).padStart(2, '0')).join('');
+  const digest = await crypto.subtle.digest('SHA-256', encoder.encode(String(value)));
+  return Array.from(new Uint8Array(digest)).map(b => b.toString(16).padStart(2, '0')).join('');
 }
 
 async function hmacSha256Hex(key, value) {
@@ -41,14 +36,8 @@ async function hmacSha256Hex(key, value) {
     false,
     ['sign']
   );
-  const signature = await crypto.subtle.sign(
-    'HMAC',
-    cryptoKey,
-    encoder.encode(String(value))
-  );
-  return Array.from(new Uint8Array(signature))
-    .map(b => b.toString(16).padStart(2, '0'))
-    .join('');
+  const signature = await crypto.subtle.sign('HMAC', cryptoKey, encoder.encode(String(value)));
+  return Array.from(new Uint8Array(signature)).map(b => b.toString(16).padStart(2, '0')).join('');
 }
 
 async function pbkdf2Hex(password, salt, iterations) {
@@ -84,18 +73,16 @@ async function legacyMatch(password, user) {
   const passwordLower = passwordExact.toLowerCase();
   const username = String(user.username || '');
 
-  // IMPORTANT: the original account hashes use Werkzeug's legacy
-  // "sha256$salt$hash" format. Werkzeug computes HMAC-SHA256(password)
-  // with the stored salt as the HMAC key. This is the exact legacy
-  // verification needed for existing accounts.
+  // Exact legacy Werkzeug sha256$salt$hash format.
   const werkzeug = await hmacSha256Hex(salt, passwordExact);
   if (safeEqual(werkzeug, expected)) return true;
 
-  // Compatibility with older/custom salted SHA-256 variants that may
-  // exist in the database from intermediate migrations.
-  const candidates = new Set();
-  const addHash = async (text) => candidates.add((await sha256Hex(text)).toLowerCase());
+  // Also support the less-common reversed HMAC convention.
+  if (safeEqual(await hmacSha256Hex(passwordExact, salt), expected)) return true;
+  if (passwordTrim !== passwordExact && safeEqual(await hmacSha256Hex(salt, passwordTrim), expected)) return true;
+  if (passwordLower !== passwordExact && safeEqual(await hmacSha256Hex(salt, passwordLower), expected)) return true;
 
+  // Compatibility with salted SHA-256 variants.
   const values = [
     salt + passwordExact,
     passwordExact + salt,
@@ -127,34 +114,30 @@ async function legacyMatch(password, user) {
     passwordLower + ':' + salt,
   ];
 
-  for (const value of values) await addHash(value);
+  for (const value of values) {
+    if (safeEqual(await sha256Hex(value), expected)) return true;
+  }
 
+  // Double-hash variants.
   const pHash = await sha256Hex(passwordExact);
   const pTrimHash = await sha256Hex(passwordTrim);
-  const combinations = [
+  const doubleValues = [
     salt + pHash,
     pHash + salt,
     salt + ':' + pHash,
     pHash + ':' + salt,
     salt + pTrimHash,
     pTrimHash + salt,
-    await sha256Hex(salt + passwordExact),
   ];
 
-  for (const value of combinations) {
-    const resolved = String(value);
-    if (safeEqual(resolved, expected)) return true;
-    candidates.add((await sha256Hex(resolved)).toLowerCase());
+  for (const value of doubleValues) {
+    if (safeEqual(await sha256Hex(value), expected)) return true;
   }
 
-  if (candidates.has(expected)) return true;
-
-  for (const iterations of [1000, 2000, 5000, 10000, 20000]) {
-    const hashes = [
-      await pbkdf2Hex(passwordExact, salt, iterations),
-      await pbkdf2Hex(passwordTrim, salt, iterations),
-    ];
-    if (hashes.some(h => safeEqual(h, expected))) return true;
+  // Legacy PBKDF2-SHA256 variants.
+  for (const iterations of [1000, 2000, 5000, 10000, 20000, 60000, 80000, 150000, 260000]) {
+    if (safeEqual(await pbkdf2Hex(passwordExact, salt, iterations), expected)) return true;
+    if (passwordTrim !== passwordExact && safeEqual(await pbkdf2Hex(passwordTrim, salt, iterations), expected)) return true;
   }
 
   return false;
@@ -193,24 +176,25 @@ async function signInLegacy(request, env) {
     return json({ error: 'Incorrect username or password.' }, 401);
   }
 
-  // Upgrade only after the password has been successfully verified.
+  // Upgrade only after successful verification.
   const salt = crypto.randomUUID();
   const hash = await sha256Hex(salt + ':' + password);
+
   await env.DB.prepare(`
     UPDATE users
     SET password_hash = ?, password_salt = ?
     WHERE id = ?
   `).bind(hash, salt, user.id).run();
 
-  const token = crypto.randomUUID() + '.' + crypto.randomUUID();
+  const sessionToken = crypto.randomUUID() + '.' + crypto.randomUUID();
   const safeUser = {
     id: user.id,
     name: user.name,
     username: user.username,
-    token,
+    token: sessionToken,
   };
 
-  return json({ ok: true, token, user: safeUser });
+  return json({ ok: true, token: sessionToken, user: safeUser });
 }
 
 export default {
