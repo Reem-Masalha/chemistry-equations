@@ -1,0 +1,10 @@
+/* Stable multilingual layout */
+html[dir="rtl"] body{direction:rtl;text-align:right}
+html[dir="ltr"] body{direction:ltr;text-align:left}
+html[dir="rtl"] .topbar,html[dir="rtl"] .section-head,html[dir="rtl"] .hero,html[dir="rtl"] .hero-card,html[dir="rtl"] .card,html[dir="rtl"] .lesson,html[dir="rtl"] .quiz-q,html[dir="rtl"] .challenge-feature,html[dir="rtl"] .experience-card,html[dir="rtl"] .invite-panel,html[dir="rtl"] .profile-page,html[dir="rtl"] .dashboard-card,html[dir="rtl"] .stats-card{direction:rtl;text-align:right}
+html[dir="rtl"] .main-nav,html[dir="rtl"] .brand,html[dir="rtl"] .site-language-control,html[dir="rtl"] .quiz-actions,html[dir="rtl"] .history-actions,html[dir="rtl"] .result-actions,html[dir="rtl"] .hand-actions,html[dir="rtl"] .certificate-actions{direction:ltr}
+.topbar{gap:12px}.main-nav{flex-wrap:wrap}.site-language-control{display:inline-flex;align-items:center;gap:7px;margin-inline-start:auto;flex:0 0 auto}.site-language-control select{min-height:38px;padding:7px 10px;border:1px solid var(--line,#dfe5ee);border-radius:9px;background:var(--surface,#fff);color:inherit;font:inherit}.site-language-icon{font-size:17px;line-height:1}.site-language-label{font-size:12px;font-weight:800}
+html[dir="rtl"] input:not([type="radio"]):not([type="checkbox"]),html[dir="rtl"] textarea{direction:rtl;text-align:right}
+.equation,.chemical-equation,.formula,.practice-equation,.practice-choice,.history-equation,.history-solution,.checker-equation,.math,[data-equation],[data-chemical]{direction:ltr!important;unicode-bidi:isolate;text-align:center}
+html[dir="rtl"] .grid-2,html[dir="rtl"] .grid,html[dir="rtl"] .lesson-grid,html[dir="rtl"] .course-map,html[dir="rtl"] .mistakes-grid,html[dir="rtl"] .dashboard-grid{direction:rtl}html[dir="rtl"] .progress-grid>div{text-align:center}html[dir="rtl"] footer{direction:rtl;text-align:center}html[dir="rtl"] .certificate{direction:ltr;text-align:center}html[dir="rtl"] canvas{direction:ltr}
+@media(max-width:760px){.topbar{flex-wrap:wrap}.site-language-control{margin-inline-start:0}.site-language-label{display:none}html[dir="rtl"] .main-nav{width:100%;justify-content:flex-start}}
