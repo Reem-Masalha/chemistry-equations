@@ -1,2 +1,2 @@
-Fresh Pages deployment trigger 2026-08-29-v34.
-Deploy unified Practice and Quiz learning system.
+Fresh Pages deployment trigger 2026-08-29-v35.
+Deploy unified Practice and Quiz learning system fixes.
