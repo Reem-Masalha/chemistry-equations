@@ -1,2 +1,2 @@
-Fresh Pages deployment trigger 2026-08-29-v31.
-Deploy current main with grouped-formula subscripts and improved equations' history.
+Fresh Pages deployment trigger 2026-08-29-v33.
+Deploy current main with coefficient/subscript formatting guard and improved equation history.
