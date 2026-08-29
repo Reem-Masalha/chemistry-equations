@@ -39,6 +39,19 @@ jobs:
           test -s _site/learn.html
           test -s _site/admin.html
           test -s _site/visitor-tracker.js
+
+          # Never ship the old freeze-prone language cleaner. Inject one safe
+          # shared language layer into every HTML page, including admin/future pages.
+          find _site -type f -name '*.html' -print0 | while IFS= read -r -d '' f; do
+            sed -i 's#<script[^>]*language-clean\.js[^>]*></script>##g' "$f"
+            if ! grep -q 'site-language.js' "$f"; then
+              sed -i 's#</body>#<script src="site-language.js?v=20260829-40" defer></script></body>#' "$f"
+            fi
+          done
+
+          # Prevent stale HTML/CSS/JS from being mistaken for a new build.
+          find _site -type f -name '*.html' -exec sed -i 's/20260829-[0-9A-Za-z-]*/20260829-40/g' {} +
+
           printf '%s\n' "$GITHUB_SHA" > _site/DEPLOYMENT_COMMIT.txt
           printf 'chemistry-equations-pages-%s\n' "$GITHUB_SHA" > _site/SITE_BUILD_VERSION.txt
           echo "PAGES_SOURCE_COMMIT=$GITHUB_SHA"
