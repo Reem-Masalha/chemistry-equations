@@ -1,7 +1,6 @@
 (()=>{
 'use strict';
 const box=document.getElementById('checkResult');
-const input=document.getElementById('checkInput');
 if(!box)return;
 function fixInvalid(){
  const s=box.querySelector('.checker-status-error');
@@ -22,10 +21,11 @@ function moveCTA(){
  const eq=correction.querySelector('.checker-equation')?.textContent.replace(/\s+/g,' ').trim();
  if(!eq){old?.remove();return}
  if(old){const a=old.querySelector('a');if(a)a.href='index.html?equation='+encodeURIComponent(eq);return}
- const wrap=document.createElement('div');wrap.className='checker-balance-cta';wrap.innerHTML='<div class="checker-balance-cta-copy"><b>Need to balance it?</b><small>Open the Balancer with this equation ready to edit.</small></div><a class="primary checker-balance-button" href="index.html?equation='+encodeURIComponent(eq)+'">Balance this equation →</a>';
+ const wrap=document.createElement('div');
+ wrap.className='checker-balance-cta';
+ wrap.innerHTML='<div class="checker-balance-cta-copy"><b>Need the balanced equation?</b><small>Open the Balancer to calculate the correct coefficients and see the solution.</small></div><a class="primary checker-balance-button" href="index.html?equation='+encodeURIComponent(eq)+'">Open Balancer →</a>';
  correction.appendChild(wrap);
 }
 new MutationObserver(()=>{fixInvalid();moveCTA()}).observe(box,{subtree:true,childList:true,characterData:true});
 fixInvalid();moveCTA();
-input?.addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.value.includes('=>'))e.target.value=e.target.value.replace(/\s*=>\s*/g,' → ')},{capture:true});
 })();
