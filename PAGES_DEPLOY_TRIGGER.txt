@@ -1,2 +1,2 @@
-Fresh Pages deployment trigger 2026-08-29-v33.
-Deploy current main with coefficient/subscript formatting guard and improved equation history.
+Fresh Pages deployment trigger 2026-08-29-v32.
+Deploy universal coefficient/subscript formatting fix for all molecules in equations' history.
