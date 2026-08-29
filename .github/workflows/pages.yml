@@ -40,16 +40,23 @@ jobs:
           test -s _site/admin.html
           test -s _site/visitor-tracker.js
 
-          # Build every HTML page from one language system only.
+          # Remove the conflicting/recursive site-wide language runtimes.
           find _site -type f -name '*.html' -print0 | while IFS= read -r -d '' f; do
-            sed -i -E 's#<script[^>]*src="[^"]*(language-clean|language-safe|language-final-fix|language-switch-fix|language-v2|language\.js|site-i18n-fix|i18n-site-hotfix|i18n-universal-fix|translation-runtime-fix|learn-content-i18n|learn-mini-course-i18n|language-button|site-language\.js|site-language-v2|site-language-final)\.js[^>]*></script>##g' "$f"
+            sed -i -E 's#<script[^>]*src="[^"]*(language-clean|language-safe|language-final-fix|language-switch-fix|language-v2|language\.js|site-i18n-fix|i18n-site-hotfix|i18n-universal-fix|translation-runtime-fix|language-button|site-language\.js|site-language-v2|site-language-final|site-language-ultimate)\.js[^>]*></script>##g' "$f"
             sed -i -E 's#<link[^>]*site-language[^>]*>##g' "$f"
             sed -i -E 's#<script[^>]*history-equation-(stability|fix-v2|final)\.js[^>]*></script>##g' "$f"
-            sed -i 's#</head>#<link rel="stylesheet" href="site-language-final.css?v=20260829-50"></head>#' "$f"
-            sed -i 's#</body>#<script src="site-language-final.js?v=20260829-50" defer></script></body>#' "$f"
+            sed -i 's#</head>#<link rel="stylesheet" href="site-language-final.css?v=20260829-51"></head>#' "$f"
+            sed -i 's#</body>#<script src="site-language-final.js?v=20260829-51" defer></script></body>#' "$f"
           done
 
-          sed -i 's#</body>#<script src="history-equation-final.js?v=20260829-50" defer></script></body>#' _site/index.html
+          # Learning content has a useful dictionary of lesson text. Keep it,
+          # but remove its recursive whole-body observer so it cannot freeze.
+          if [ -f _site/learn-content-i18n.js ]; then
+            sed -i '/new MutationObserver.*observe(document.body.*subtree:true).*;/d' _site/learn-content-i18n.js
+          fi
+
+          # The final history renderer is loaded last on the Balancer page.
+          sed -i 's#</body>#<script src="history-equation-final.js?v=20260829-51" defer></script></body>#' _site/index.html
 
           printf '%s\n' "$GITHUB_SHA" > _site/DEPLOYMENT_COMMIT.txt
           printf 'chemistry-equations-pages-%s\n' "$GITHUB_SHA" > _site/SITE_BUILD_VERSION.txt
