@@ -1,0 +1,24 @@
+/* Stable RTL/LTR layout shared by every page. No JavaScript inline layout manipulation. */
+html[dir="rtl"] body{direction:rtl;text-align:right}
+html[dir="ltr"] body{direction:ltr;text-align:left}
+html[dir="rtl"] main,html[dir="rtl"] footer{direction:rtl}
+html[dir="rtl"] .topbar{direction:ltr}
+html[dir="rtl"] .main-nav{direction:ltr}
+html[dir="rtl"] .brand{direction:ltr}
+.site-language-control{display:inline-flex;align-items:center;gap:7px;flex:0 0 auto;margin-inline-start:12px;direction:ltr}
+.site-language-control select{min-height:38px;padding:7px 10px;border:1px solid var(--line,#dfe5ee);border-radius:9px;background:var(--surface,#fff);color:inherit;font:inherit;cursor:pointer}
+.site-language-label{font-size:12px;font-weight:800}
+html[dir="rtl"] .section-head,html[dir="rtl"] .card,html[dir="rtl"] .lesson,html[dir="rtl"] .hero-card,html[dir="rtl"] .quiz-question,html[dir="rtl"] .practice-question-card,html[dir="rtl"] .stats-card,html[dir="rtl"] .profile-page,html[dir="rtl"] .profile-card,html[dir="rtl"] .challenge-card,html[dir="rtl"] .challenge-feature,html[dir="rtl"] .handwriting-card,html[dir="rtl"] .checker-section,html[dir="rtl"] .balance-card,html[dir="rtl"] .result-card{direction:rtl;text-align:right}
+html[dir="rtl"] .grid-2,html[dir="rtl"] .grid,html[dir="rtl"] .lesson-grid,html[dir="rtl"] .course-map,html[dir="rtl"] .stage-list,html[dir="rtl"] .experience-options,html[dir="rtl"] .type-options{direction:rtl}
+html[dir="rtl"] .quiz-actions,html[dir="rtl"] .history-actions,html[dir="rtl"] .result-actions,html[dir="rtl"] .finish-actions,html[dir="rtl"] .handwriting-actions{direction:rtl;justify-content:flex-start}
+html[dir="rtl"] input:not([type="radio"]):not([type="checkbox"]),html[dir="rtl"] textarea{direction:rtl;text-align:right}
+html[dir="rtl"] #equationInput,html[dir="rtl"] #checkInput,html[dir="rtl"] .equation-input,html[dir="rtl"] .checker-input,[dir="rtl"] .coefficient-entry input{direction:ltr;text-align:left}
+.equation,.chemical-equation,.formula,.practice-equation,.practice-choice,.history-equation,.history-solution,.checker-equation,.math,[data-equation],[data-chemical],.equation-display{direction:ltr!important;unicode-bidi:isolate;text-align:center!important;}
+.history-equation,.history-solution{font-variant-numeric:tabular-nums;white-space:normal;overflow-wrap:anywhere}
+html[dir="rtl"] .history-equation,html[dir="rtl"] .history-solution{direction:ltr!important;text-align:center!important}
+html[dir="rtl"] canvas{direction:ltr}
+html[dir="rtl"] table{direction:rtl}
+html[dir="rtl"] th,html[dir="rtl"] td{text-align:right}
+html[dir="rtl"] .certificate,html[dir="rtl"] .certificate-content{direction:ltr;text-align:center}
+html[dir="rtl"] .lesson p,html[dir="rtl"] .lesson li,html[dir="rtl"] .learn-content,html[dir="rtl"] .checker-explanation{line-height:1.75}
+@media(max-width:760px){.topbar{flex-wrap:wrap;gap:10px}.site-language-control{margin-inline-start:0}.site-language-label{display:none}.main-nav{width:100%;justify-content:center}}
