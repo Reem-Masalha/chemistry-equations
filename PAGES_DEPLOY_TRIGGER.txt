@@ -1,2 +1,2 @@
-Fresh Pages deployment trigger 2026-08-25-v13.
-Live balancer and analytics are expected in this deployment.
+Fresh Pages deployment trigger 2026-08-29-v29.
+Deploy current main with PDF export and latest Balancer fixes.
