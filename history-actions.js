@@ -7,18 +7,48 @@ const getUser=()=>{try{return JSON.parse(localStorage.getItem('chemistryCurrentU
 const storageKey=()=>{const u=getUser();return KEY+':'+(u?.id||u?.username||'guest')};
 const readRaw=()=>{try{return JSON.parse(localStorage.getItem(storageKey())||'[]')}catch{return[]}};
 const normalizeArrow=s=>String(s??'').replace(/[⟶⇒➜⟹⟾]/g,'→').replace(/\s*(?:=>|->|→)\s*/g,' → ').replace(/\s+/g,' ').trim();
-const repairComponent=component=>{let s=String(component??'').trim();s=s.replace(/^([₀₁₂₃₄₅₆₇₈₉]+)/,m=>m.replace(/[₀₁₂₃₄₅₆₇₈₉]/g,d=>subToDigit[d]));return s};
-const repairEquation=eq=>normalizeArrow(eq).split(' → ').map(side=>side.split(/\s*\+\s*/).map(repairComponent).join(' + ')).join(' → ');
+const fromSubscripts=s=>String(s??'').replace(/[₀₁₂₃₄₅₆₇₈₉]/g,d=>subToDigit[d]);
+const repairMolecule=component=>{
+  let s=String(component??'').trim();
+  // A leading number, whether written normally or as Unicode subscripts, is always a coefficient.
+  let m=s.match(/^([0-9]+)/);
+  if(!m){m=s.match(/^([₀₁₂₃₄₅₆₇₈₉]+)/);if(m)s=fromSubscripts(s);}
+  return s;
+};
+const repairEquation=eq=>normalizeArrow(eq).split(' → ').map(side=>side.split(/\s*\+\s*/).map(repairMolecule).join(' + ')).join(' → ');
 const write=a=>{try{localStorage.setItem(storageKey(),JSON.stringify(a.slice(0,30)))}catch{}};
 const read=()=>{const a=readRaw();const fixed=a.map(x=>({...x,input:repairEquation(x?.input),solution:repairEquation(x?.solution)}));if(JSON.stringify(a)!==JSON.stringify(fixed))write(fixed);return fixed};
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const formulaPretty=src=>{let s=String(src??'').replace(/[₀₁₂₃₄₅₆₇₈₉]/g,d=>subToDigit[d]);let out='';for(let i=0;i<s.length;i++){if(/\d/.test(s[i])){let j=i;while(j<s.length&&/\d/.test(s[j]))j++;out+=s.slice(i,j).replace(/\d/g,d=>digitToSub[d]);i=j-1}else out+=s[i]}return esc(out)};
-const formatMolecule=part=>{const s=String(part??'').trim();const m=s.match(/^(\d+)\s*(.*)$/);return m?`${m[1]==='1'?'':m[1]}${formulaPretty(m[2])}`:formulaPretty(s)};
+const prettyFormula=src=>{
+  const raw=fromSubscripts(String(src??''));
+  let out='',i=0;
+  while(i<raw.length){
+    const ch=raw[i];
+    if(/\d/.test(ch)){
+      let j=i;while(j<raw.length&&/\d/.test(raw[j]))j++;
+      out+=raw.slice(i,j).replace(/\d/g,d=>digitToSub[d]);
+      i=j;
+    }else{out+=ch;i++;}
+  }
+  return out;
+};
+const formatMolecule=part=>{
+  const s=String(part??'').trim();
+  const normal=fromSubscripts(s);
+  const m=normal.match(/^(\d+)\s*(.*)$/);
+  if(m){const coef=m[1];const formula=m[2];return `${coef==='1'?'':coef}${prettyFormula(formula)}`;}
+  return prettyFormula(normal);
+};
 const prettyEquation=s=>normalizeArrow(repairEquation(s)).split(' → ').map(side=>side.split(/\s*\+\s*/).map(formatMolecule).join(' + ')).join(' → ');
 const copy=async(text,button)=>{try{await navigator.clipboard.writeText(text)}catch{const ta=document.createElement('textarea');ta.value=text;document.body.appendChild(ta);ta.select();document.execCommand('copy');ta.remove()}if(button){const old=button.textContent;button.textContent='Copied ✓';setTimeout(()=>button.textContent=old,1000)}};
 const share=async(text)=>{try{if(navigator.share)await navigator.share({title:'Chemistry Equation',text});else await copy(text)}catch{}};
 function add(item){if(!item?.input||!item?.solution)return;let a=read();const input=repairEquation(item.input),solution=repairEquation(item.solution);a=a.filter(x=>x.input!==input);a.unshift({...item,input,solution,id:crypto.randomUUID?.()||String(Date.now()+Math.random()),time:Date.now()});write(a);render()}
-function render(){const host=document.getElementById('equationHistory');if(!host)return;const a=read();host.innerHTML=`<div class="history-head"><div><b>Equations' history</b><span>${a.length?`${a.length} recent equation${a.length===1?'':'s'}`:'No saved equations yet.'}</span></div>${a.length?'<button type="button" class="secondary" id="clearEquationHistory">Clear history</button>':''}</div>`+(a.length?a.map((x,i)=>`<article class="history-item" data-id="${esc(x.id)}"><div class="history-index">${i+1}</div><div class="history-content"><div class="history-label">Equation</div><div class="history-equation">${prettyEquation(x.input)}</div><div class="history-label history-label-solution">Balanced result</div><div class="history-solution">${prettyEquation(x.solution)}</div><div class="history-actions"><button type="button" class="secondary" data-action="reopen">Reopen</button><button type="button" class="secondary" data-action="copy-eq">Copy equation</button><button type="button" class="secondary" data-action="copy-solution">Copy solution</button><button type="button" class="secondary" data-action="share">Share</button><button type="button" class="secondary danger-history" data-action="delete">Delete</button></div></div></article>`).join(''):'<p class="muted history-empty">Balance an equation to start your history.</p>');host.querySelector('#clearEquationHistory')?.addEventListener('click',()=>{write([]);render()});host.querySelectorAll('.history-item').forEach(row=>{const x=a.find(v=>v.id===row.dataset.id);row.querySelectorAll('[data-action]').forEach(b=>b.addEventListener('click',()=>{const act=b.dataset.action;if(act==='delete'){write(a.filter(v=>v.id!==x.id));render()}else if(act==='copy-eq')copy(repairEquation(x.input),b);else if(act==='copy-solution')copy(repairEquation(x.solution),b);else if(act==='share')share(`Equation: ${repairEquation(x.input)}\nBalanced: ${repairEquation(x.solution)}`);else if(act==='reopen'){const input=document.getElementById('equationInput');if(input){input.value=repairEquation(x.input);document.getElementById('balanceBtn')?.click();window.scrollTo({top:input.getBoundingClientRect().top+scrollY-120,behavior:'smooth'})}}}))})}
+function render(){
+  const host=document.getElementById('equationHistory');if(!host)return;const a=read();
+  host.innerHTML=`<div class="history-head"><div><b>Equations' history</b><span>${a.length?`${a.length} recent equation${a.length===1?'':'s'}`:'No saved equations yet.'}</span></div>${a.length?'<button type="button" class="secondary" id="clearEquationHistory">Clear history</button>':''}</div>`+
+  (a.length?a.map((x,i)=>`<article class="history-item" data-id="${esc(x.id)}"><div class="history-index">${i+1}</div><div class="history-content"><div class="history-label">Equation</div><div class="history-equation">${prettyEquation(x.input)}</div><div class="history-label history-label-solution">Balanced result</div><div class="history-solution">${prettyEquation(x.solution)}</div><div class="history-actions"><button type="button" class="secondary" data-action="reopen">Reopen</button><button type="button" class="secondary" data-action="copy-eq">Copy equation</button><button type="button" class="secondary" data-action="copy-solution">Copy solution</button><button type="button" class="secondary" data-action="share">Share</button><button type="button" class="secondary danger-history" data-action="delete">Delete</button></div></div></article>`).join(''):'<p class="muted history-empty">Balance an equation to start your history.</p>');
+  host.querySelector('#clearEquationHistory')?.addEventListener('click',()=>{write([]);render()});
+  host.querySelectorAll('.history-item').forEach(row=>{const x=a.find(v=>v.id===row.dataset.id);row.querySelectorAll('[data-action]').forEach(b=>b.addEventListener('click',()=>{const act=b.dataset.action;if(act==='delete'){write(a.filter(v=>v.id!==x.id));render()}else if(act==='copy-eq')copy(repairEquation(x.input),b);else if(act==='copy-solution')copy(repairEquation(x.solution),b);else if(act==='share')share(`Equation: ${repairEquation(x.input)}\nBalanced: ${repairEquation(x.solution)}`);else if(act==='reopen'){const input=document.getElementById('equationInput');if(input){input.value=repairEquation(x.input);document.getElementById('balanceBtn')?.click();window.scrollTo({top:input.getBoundingClientRect().top+scrollY-120,behavior:'smooth'})}}}))})}
 function installResultActions(){const out=document.getElementById('balanceResult');if(out&&!out.querySelector('.result-actions')){const box=document.createElement('div');box.className='result-actions';box.innerHTML='<button type="button" class="secondary" data-copy-input>Copy equation</button><button type="button" class="secondary" data-copy-solution>Copy solution</button><button type="button" class="secondary" data-share-result>Share</button>';out.appendChild(box);const input=document.getElementById('equationInput');box.querySelector('[data-copy-input]').onclick=()=>copy(input?.value||'',box.querySelector('[data-copy-input]'));box.querySelector('[data-copy-solution]').onclick=()=>{const eq=out.querySelector('.balance-correction .equation,.equation');copy(eq?.innerText||'',box.querySelector('[data-copy-solution]'))};box.querySelector('[data-share-result]').onclick=()=>{const eq=out.querySelector('.balance-correction .equation,.equation')?.innerText||'';share(`Equation: ${input?.value||''}\nBalanced: ${eq}`)}}}
 function observe(){const out=document.getElementById('balanceResult');if(!out)return;new MutationObserver(()=>{if(!out.classList.contains('hidden')){installResultActions();const eq=out.querySelector('.balance-correction .equation,.equation');const text=eq?.innerText?.trim();const input=document.getElementById('equationInput')?.value?.trim();if(text&&input)add({input,solution:text})}}).observe(out,{childList:true,subtree:true})}
 function init(){const balance=document.getElementById('balanceResult');if(balance){const card=document.querySelector('.balancer');if(card&&!document.getElementById('equationHistory')){const section=document.createElement('section');section.id='equationHistory';section.className='card equation-history';card.insertAdjacentElement('afterend',section)}render();observe()}const check=document.getElementById('checkResult');if(check){new MutationObserver(()=>{if(!check.classList.contains('hidden')&&!check.querySelector('.result-actions')){const b=document.createElement('div');b.className='result-actions';b.innerHTML='<button type="button" class="secondary">Copy equation</button><button type="button" class="secondary">Share</button>';check.appendChild(b);const txt=()=>document.getElementById('checkInput')?.value||'';b.children[0].onclick=()=>copy(txt(),b.children[0]);b.children[1].onclick=()=>share(`Equation: ${txt()}\n${check.innerText}`)}}).observe(check,{childList:true,subtree:true})}}
