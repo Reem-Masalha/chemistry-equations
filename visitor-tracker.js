@@ -13,7 +13,7 @@
   if(params.has('adminReplay')||params.has('adminFresh')){
     const prefixes=['chemistrydailyv6:','chemistrydaily','dailychallenge','dailystreak','dailyxp','daily-home-challenge','dailyhomechallenge','dhc','dc5','spentry','dailychallengecard','ce3-daily-card','real-daily'];
     try{const keys=[];for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k&&prefixes.some(p=>k.toLowerCase().includes(p.toLowerCase())))keys.push(k)}keys.forEach(remove)}catch{}
-    try{const s=document.createElement('script');s.src='admin-replay.js?v=2680beb49eba34086cc011875d79848392fc115a';s.defer=false;document.head.appendChild(s)}catch{}
+    try{sessionStorage.setItem('chemistryAdminReplayRequested','1')}catch{}
     try{history.replaceState({},document.title,location.pathname)}catch{}
   }
   let visitorId=get(KEY);if(!visitorId){visitorId=(crypto.randomUUID?crypto.randomUUID():(Date.now().toString(36)+'-'+Math.random().toString(36).slice(2)));set(KEY,visitorId)}
