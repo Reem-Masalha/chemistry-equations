@@ -36,7 +36,6 @@ jobs:
           git archive HEAD | tar -x -C _site
           touch _site/.nojekyll
 
-          # Keep language runtime cache-busted and load the same visual design on every page.
           python3 - <<'PY'
           import pathlib, re
           root=pathlib.Path('_site')
@@ -47,9 +46,12 @@ jobs:
               if 'data-site-modern-refresh' not in text:
                   marker='</head>'
                   link='<link rel="stylesheet" href="modern-refresh.css?v='+sha+'" data-site-modern-refresh="1">'
-                  if marker in text:
-                      text=text.replace(marker, link+'\n'+marker, 1)
-              html.write_text(text, encoding='utf-8')
+                  if marker in text:text=text.replace(marker,link+'\n'+marker,1)
+              if 'data-student-engagement' not in text:
+                  marker='</body>'
+                  script='<script src="student-engagement.js?v='+sha+'" defer data-student-engagement="1"></script>'
+                  if marker in text:text=text.replace(marker,script+'\n'+marker,1)
+              html.write_text(text,encoding='utf-8')
           PY
 
           test -s _site/index.html
@@ -62,39 +64,35 @@ jobs:
           test -s _site/i18n-safe.js
           test -s _site/account.js
           test -s _site/modern-refresh.css
+          test -s _site/student-engagement.js
 
           python3 - <<'PY'
-          import re, pathlib
-          root=pathlib.Path('_site')
-          scripts=set()
-          for html in root.glob('*.html'):
-              text=html.read_text(encoding='utf-8', errors='ignore')
-              for src in re.findall(r'<script[^>]+src=[\"\']([^\"\']+)[\"\']', text, re.I):
-                  src=src.split('?',1)[0].split('#',1)[0]
-                  if src.endswith('.js'):
-                      scripts.add(src.lstrip('./'))
-          scripts.update({'site-language-v2.js','learn-full-i18n.js','learn-extra-i18n.js'})
-          missing=[]
-          for src in sorted(scripts):
-              p=root/src
-              if p.exists(): print(p)
-              else: missing.append(src)
-          if missing:
-              raise SystemExit('Missing referenced/dynamic scripts: '+', '.join(missing))
-          PY
-
-          while IFS= read -r f; do
-            node --check "$f" >/dev/null
-          done < <(python3 - <<'PY'
           import re, pathlib
           root=pathlib.Path('_site'); scripts=set()
           for html in root.glob('*.html'):
               text=html.read_text(encoding='utf-8', errors='ignore')
               for src in re.findall(r'<script[^>]+src=[\"\']([^\"\']+)[\"\']', text, re.I):
                   src=src.split('?',1)[0].split('#',1)[0]
-                  if src.endswith('.js'): scripts.add(src.lstrip('./'))
-          scripts.update({'site-language-v2.js','learn-full-i18n.js','learn-extra-i18n.js'})
-          for src in sorted(scripts): print(root/src)
+                  if src.endswith('.js'):scripts.add(src.lstrip('./'))
+          scripts.update({'site-language-v2.js','learn-full-i18n.js','learn-extra-i18n.js','student-engagement.js'})
+          missing=[]
+          for src in sorted(scripts):
+              p=root/src
+              if p.exists():print(p)
+              else:missing.append(src)
+          if missing:raise SystemExit('Missing referenced/dynamic scripts: '+', '.join(missing))
+          PY
+
+          while IFS= read -r f; do node --check "$f" >/dev/null; done < <(python3 - <<'PY'
+          import re,pathlib
+          root=pathlib.Path('_site');scripts=set()
+          for html in root.glob('*.html'):
+              text=html.read_text(encoding='utf-8',errors='ignore')
+              for src in re.findall(r'<script[^>]+src=[\"\']([^\"\']+)[\"\']',text,re.I):
+                  src=src.split('?',1)[0].split('#',1)[0]
+                  if src.endswith('.js'):scripts.add(src.lstrip('./'))
+          scripts.update({'site-language-v2.js','learn-full-i18n.js','learn-extra-i18n.js','student-engagement.js'})
+          for src in sorted(scripts):print(root/src)
           PY
           )
 
