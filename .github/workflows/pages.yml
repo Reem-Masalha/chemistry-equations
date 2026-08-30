@@ -45,18 +45,50 @@ jobs:
             sed -i "s/:open;/:()=>render('signin');/g" _site/account.js
           fi
 
+          # Repair known syntax errors that previously prevented page scripts from loading.
+          python3 - <<'PY'
+          from pathlib import Path
+
+          p = Path('_site/site-language-final.js')
+          if p.exists():
+              s = p.read_text(encoding='utf-8')
+              bad = ".history-equation,.history-solution,[data-equation],[data-chemical],#site-language-control)}"
+              good = ".history-equation,.history-solution,[data-equation],[data-chemical],#site-language-control') }"
+              if bad in s:
+                  p.write_text(s.replace(bad, good, 1), encoding='utf-8')
+
+          p = Path('_site/personal-quiz.js')
+          if p.exists():
+              s = p.read_text(encoding='utf-8')
+              bad = "if($('timerText'))$('timerText').textContent=mode==='timed'?'You have 5 minutes.':'mode==='challenge'?'You have 60 seconds.':'Unlimited fresh quizzes. Your mistakes are saved for review.';"
+              good = "if($('timerText'))$('timerText').textContent=mode==='timed'?'You have 5 minutes.':mode==='challenge'?'You have 60 seconds.':'Unlimited fresh quizzes. Your mistakes are saved for review.';"
+              if bad in s:
+                  p.write_text(s.replace(bad, good, 1), encoding='utf-8')
+
+          p = Path('_site/history-equation-fix-v2.js')
+          if p.exists():
+              s = p.read_text(encoding='utf-8')
+              if '\\n' in s:
+                  p.write_text(s.replace('\\n', '\n'), encoding='utf-8')
+          PY
+
+          # Fail the Pages build instead of publishing broken JavaScript.
+          while IFS= read -r -d '' f; do
+            node --check "$f" >/dev/null
+done < <(find _site -type f -name '*.js' -print0)
+
           find _site -type f -name '*.html' -print0 | while IFS= read -r -d '' f; do
             sed -i -E 's#<script[^>]*src="[^"]*(challenge-language-live|challenge-auto-i18n)\.js[^>]*></script>##g' "$f"
             sed -i -E 's#<script[^>]*src="[^"]*rtl-layout-fix\.js[^>]*></script>##g' "$f"
             sed -i -E 's#<script[^>]*src="[^"]*history-actions-v2\.js[^>]*></script>##g' "$f"
             sed -i -E 's#<script[^>]*src="[^"]*history-equation-(stability|fix-v2|final)\.js[^>]*></script>##g' "$f"
             sed -i -E 's#<link[^>]*href="[^"]*site-language[^>]*>##g' "$f"
-            sed -i 's#</head>#<link rel="stylesheet" href="site-language-final.css?v=20260830-121"><link rel="stylesheet" href="balancer-layout-language-fix.css?v=20260830-121"><link rel="stylesheet" href="rtl-font-size-fix.css?v=20260830-121"><link rel="stylesheet" href="balancer-history-label-fix.css?v=20260830-121"></head>#' "$f"
-            sed -i 's#</body>#<script src="site-language-final.js?v=20260830-121" defer></script><script src="language-balancer-patch.js?v=20260830-121" defer></script><script src="balancer-final-layout.js?v=20260830-121" defer></script><script src="challenge-language-complete.js?v=20260830-121" defer></script><script src="challenge-language-final.js?v=20260830-121" defer></script><script src="site-final-runtime-v2.js?v=20260830-121" defer></script><script src="site-language-complete-v2.js?v=20260830-121" defer></script></body>#' "$f"
+            sed -i 's#</head>#<link rel="stylesheet" href="site-language-final.css?v=20260830-122"><link rel="stylesheet" href="balancer-layout-language-fix.css?v=20260830-122"><link rel="stylesheet" href="rtl-font-size-fix.css?v=20260830-122"><link rel="stylesheet" href="balancer-history-label-fix.css?v=20260830-122"></head>#' "$f"
+            sed -i 's#</body>#<script src="site-language-final.js?v=20260830-122" defer></script><script src="language-balancer-patch.js?v=20260830-122" defer></script><script src="balancer-final-layout.js?v=20260830-122" defer></script><script src="challenge-language-complete.js?v=20260830-122" defer></script><script src="challenge-language-final.js?v=20260830-122" defer></script><script src="site-final-runtime-v2.js?v=20260830-122" defer></script><script src="site-language-complete-v2.js?v=20260830-122" defer></script></body>#' "$f"
           done
 
           # History management belongs only to the Balancer page.
-          sed -i 's#</body>#<script src="history-actions-v2.js?v=20260830-121" defer></script><script src="history-language-guard.js?v=20260830-121" defer></script></body>#' _site/index.html
+          sed -i 's#</body>#<script src="history-actions-v2.js?v=20260830-122" defer></script><script src="history-language-guard.js?v=20260830-122" defer></script></body>#' _site/index.html
 
           printf '%s\n' "$GITHUB_SHA" > _site/DEPLOYMENT_COMMIT.txt
           printf 'chemistry-equations-pages-%s\n' "$GITHUB_SHA" > _site/SITE_BUILD_VERSION.txt
