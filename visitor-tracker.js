@@ -18,4 +18,11 @@
     heartbeat();
     setInterval(heartbeat,60000);
   }
+  if(!document.querySelector('script[data-daily-home-challenge]')){
+    const s=document.createElement('script');
+    s.src='daily-home-challenge.js?v=20260830-1';
+    s.defer=true;
+    s.dataset.dailyHomeChallenge='1';
+    document.head.appendChild(s);
+  }
 })();
