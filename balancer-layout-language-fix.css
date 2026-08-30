@@ -13,7 +13,7 @@
 .balancer #balanceResult .balance-correction{width:100%}
 .balancer #balanceResult .balance-correction .equation{width:100%;box-sizing:border-box}
 
-/* History number and equation: fixed left-to-right order and shared left edge. */
+/* History number and content keep one fixed left-to-right row. */
 .equation-history .history-item{
   display:flex!important;
   flex-direction:row!important;
@@ -30,7 +30,6 @@
   margin:1px 0 0 0!important;
   direction:ltr!important;
   text-align:center!important;
-  justify-self:auto!important;
 }
 .equation-history .history-content{
   order:1!important;
@@ -39,16 +38,22 @@
   direction:ltr!important;
   text-align:left!important;
 }
-.equation-history .history-label{
+
+/* Labels are RTL words but share the exact same left content edge as their equations. */
+.equation-history .history-label,
+.equation-history .history-label-solution{
+  display:block!important;
+  width:100%!important;
+  box-sizing:border-box!important;
   direction:rtl!important;
-  text-align:right!important;
-  unicode-bidi:plaintext;
+  unicode-bidi:plaintext!important;
+  text-align:left!important;
   font-size:18px!important;
   line-height:1.35!important;
   font-weight:900!important;
   letter-spacing:0!important;
   text-transform:none!important;
-  margin-bottom:7px!important;
+  margin:0 0 7px 0!important;
 }
 .equation-history .history-equation{
   direction:ltr!important;
@@ -61,6 +66,7 @@
   overflow-x:auto;
   white-space:nowrap;
 }
+.equation-history .history-label-solution{margin-top:17px!important}
 .equation-history .history-solution{
   direction:ltr!important;
   unicode-bidi:isolate!important;
@@ -72,7 +78,6 @@
   overflow-x:auto;
   white-space:nowrap;
 }
-.equation-history .history-label-solution{margin-top:17px!important}
 
 /* RTL typography: explicit readable sizes, including history labels. */
 html[dir="rtl"] .balancer h1,html[dir="rtl"] .balancer h1 *{font-size:clamp(48px,6vw,70px)!important;line-height:1.02!important;letter-spacing:0!important}
@@ -81,7 +86,7 @@ html[dir="rtl"] .balancer h3,html[dir="rtl"] .balancer h3 *{font-size:22px!impor
 html[dir="rtl"] .balancer .eyebrow{font-size:13px!important;line-height:1.3!important;letter-spacing:.04em!important}
 html[dir="rtl"] .equation-history .history-head b{font-size:22px!important;font-weight:900!important;line-height:1.25!important}
 html[dir="rtl"] .equation-history .history-head span{font-size:15px!important;line-height:1.4!important}
-html[dir="rtl"] .equation-history .history-label{font-size:18px!important}
+html[dir="rtl"] .equation-history .history-label,html[dir="rtl"] .equation-history .history-label-solution{font-size:18px!important;line-height:1.35!important}
 html[dir="rtl"] .equation-history .history-equation{font-size:25px!important}
 html[dir="rtl"] .equation-history .history-solution{font-size:22px!important}
 html[dir="rtl"] .explanation-title>b{font-size:20px!important;font-weight:800!important}
@@ -93,7 +98,7 @@ html[dir="rtl"] .explanation-step p{font-size:15px!important}
   .balancer #balanceResult .equation,.balancer #balanceResult .balance-correction .equation,.balancer .balancing-explanation .explanation-equation{text-align:left!important;overflow-x:auto;white-space:nowrap}
   .equation-history .history-item{flex-direction:row!important;direction:ltr!important;gap:12px!important}
   .equation-history .history-index{flex-basis:28px!important;width:28px!important;height:28px!important;font-size:14px!important}
-  .equation-history .history-label{font-size:17px!important}
+  .equation-history .history-label,.equation-history .history-label-solution{font-size:17px!important}
   .equation-history .history-equation{font-size:22px!important}
   .equation-history .history-solution{font-size:20px!important}
   html[dir="rtl"] .balancer h1,html[dir="rtl"] .balancer h1 *{font-size:clamp(38px,11vw,50px)!important;line-height:1.02!important}
