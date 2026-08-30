@@ -1,0 +1,8 @@
+(()=>{
+'use strict';
+const KEY='chemistryLanguage';
+const T={ar:{"Equations' history":'سجل المعادلات','recent equation':'معادلة حديثة','recent equations':'معادلات حديثة','No saved equations yet.':'لا توجد معادلات محفوظة بعد.','Clear history':'مسح السجل','Equation':'المعادلة','Balanced result':'المعادلة الموازنة','Reopen':'إعادة فتح','Copy equation':'نسخ المعادلة','Copy solution':'نسخ الحل','Share':'مشاركة','Delete':'حذف','Balance an equation to start your history.':'وازن معادلة لبدء السجل.'},he:{"Equations' history":'היסטוריית משוואות','recent equation':'משוואה אחרונה','recent equations':'משוואות אחרונות','No saved equations yet.':'אין עדיין משוואות שמורות.','Clear history':'ניקוי ההיסטוריה','Equation':'משוואה','Balanced result':'משוואה מאוזנת','Reopen':'פתיחה מחדש','Copy equation':'העתקת המשוואה','Copy solution':'העתקת הפתרון','Share':'שיתוף','Delete':'מחיקה','Balance an equation to start your history.':'אזנו משוואה כדי להתחיל את ההיסטוריה.'}};
+function run(){const l=localStorage.getItem(KEY)||'en';if(!T[l])return;const root=document.getElementById('equationHistory');if(!root)return;const m=T[l];root.querySelectorAll('.history-head b,.history-head span,.history-label,.history-label-solution,.history-empty,.history-actions button,.history-actions [data-action]').forEach(el=>{const raw=el.textContent.trim();if(m[raw])el.textContent=m[raw]});}
+function start(){run();const root=document.getElementById('equationHistory');if(root)new MutationObserver(run).observe(root,{childList:true,subtree:true});window.addEventListener('chemistryLanguageChanged',run);window.addEventListener('storage',e=>{if(e.key===KEY)run()});}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();
+})();
