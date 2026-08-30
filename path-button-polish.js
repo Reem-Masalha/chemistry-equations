@@ -1,23 +1,6 @@
 (()=>{
-  'use strict';
-  const SELECTOR='a.path-button, .path-card a.primary, #beginner .section-head a.primary, #intermediate .section-head a.primary, #advanced .section-head a.primary';
-  function polish(root=document){
-    root.querySelectorAll(SELECTOR).forEach(a=>{
-      const raw=(a.textContent||'').replace(/\s+/g,' ').trim();
-      if(!raw)return;
-      const arrow=raw.endsWith('→')?'→':(raw.endsWith('➜')?'➜':null);
-      const label=(arrow?raw.slice(0,-1):raw).trim();
-      a.classList.add('path-button-polished');
-      if(a.dataset.polishedLabel===label && a.querySelector(':scope > .path-button-label'))return;
-      a.textContent='';
-      const s=document.createElement('span'); s.className='path-button-label'; s.textContent=label; a.appendChild(s);
-      const ar=document.createElement('span'); ar.className='path-button-arrow'; ar.setAttribute('aria-hidden','true'); ar.textContent=arrow||'→'; a.appendChild(ar);
-      a.dataset.polishedLabel=label;
-    });
-  }
-  const start=()=>{
-    polish();
-    new MutationObserver(()=>polish()).observe(document.body,{subtree:true,childList:true,characterData:true});
-  };
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();
+'use strict';
+const SELECTOR='a.path-button, .path-card a.primary, #beginner .section-head a.primary, #intermediate .section-head a.primary, #advanced .section-head a.primary';
+function polish(root=document){root.querySelectorAll(SELECTOR).forEach(a=>{const raw=(a.textContent||'').replace(/\s+/g,' ').trim();if(!raw)return;const arrow=raw.endsWith('→')?'→':raw.endsWith('➜')?'➜':null;const label=(arrow?raw.slice(0,-1):raw).trim();a.classList.add('path-button-polished');if(a.dataset.polishedLabel===label&&a.querySelector(':scope > .path-button-label'))return;a.textContent='';const s=document.createElement('span');s.className='path-button-label';s.textContent=label;a.appendChild(s);const ar=document.createElement('span');ar.className='path-button-arrow';ar.setAttribute('aria-hidden','true');ar.textContent=arrow||'→';a.appendChild(ar);a.dataset.polishedLabel=label})}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>polish(),{once:true});else polish();
 })();
