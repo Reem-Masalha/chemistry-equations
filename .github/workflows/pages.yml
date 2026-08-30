@@ -48,7 +48,7 @@ jobs:
               if 'data-student-experience-v3' not in text:
                   text=text.replace('</body>','<script src="student-experience-v3.js?v='+sha+'" defer data-student-experience-v3="1"></script>\n</body>',1)
               if html.name == 'learn.html' and 'data-daily-question' not in text:
-                  text=text.replace('</body>','<script src="daily-question.js?v='+sha+'" defer data-daily-question="1"></script>\n</body>',1)
+                  text=text.replace('</body>','<script src="daily-question-real.js?v='+sha+'" defer data-daily-question="1"></script>\n</body>',1)
               html.write_text(text,encoding='utf-8')
           PY
 
@@ -61,6 +61,7 @@ jobs:
           test -s _site/modern-refresh.css
           test -s _site/student-experience-v3.js
           test -s _site/daily-question.js
+          test -s _site/daily-challenge-real.js
 
           python3 - <<'PY'
           import re, pathlib
@@ -71,7 +72,7 @@ jobs:
               for src in re.findall(r'<script[^>]+src=[\"\']([^\"\']+)[\"\']', text, re.I):
                   src=src.split('?',1)[0].split('#',1)[0]
                   if src.endswith('.js'): scripts.add(src.lstrip('./'))
-          scripts.update({'site-language-v2.js','learn-full-i18n.js','learn-extra-i18n.js','student-experience-v3.js','daily-question.js'})
+          scripts.update({'site-language-v2.js','learn-full-i18n.js','learn-extra-i18n.js','student-experience-v3.js','daily-question.js','daily-challenge-real.js'})
           missing=[src for src in sorted(scripts) if not (root/src).exists()]
           if missing: raise SystemExit('Missing referenced/dynamic scripts: '+', '.join(missing))
           PY
@@ -84,7 +85,7 @@ jobs:
               for src in re.findall(r'<script[^>]+src=[\"\']([^\"\']+)[\"\']', text, re.I):
                   src=src.split('?',1)[0].split('#',1)[0]
                   if src.endswith('.js'): scripts.add(src.lstrip('./'))
-          scripts.update({'site-language-v2.js','learn-full-i18n.js','learn-extra-i18n.js','student-experience-v3.js','daily-question.js'})
+          scripts.update({'site-language-v2.js','learn-full-i18n.js','learn-extra-i18n.js','student-experience-v3.js','daily-question.js','daily-challenge-real.js'})
           for src in sorted(scripts): print(root/src)
           PY
           )
