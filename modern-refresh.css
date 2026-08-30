@@ -1,56 +1,108 @@
 /* Modern visual refresh: presentation only, no application logic changes. */
 :root{
-  --modern-radius:18px;
-  --modern-shadow:0 14px 34px rgba(31,48,82,.08);
+  --modern-radius:20px;
+  --modern-shadow:0 18px 45px rgba(31,48,82,.10);
+  --modern-shadow-soft:0 8px 25px rgba(31,48,82,.07);
+}
+html{background:var(--bg)}
+body{
+  background:
+    radial-gradient(circle at 8% 0%,rgba(108,77,232,.07),transparent 32rem),
+    radial-gradient(circle at 92% 8%,rgba(49,88,214,.08),transparent 30rem),
+    var(--bg)!important;
 }
 .topbar{
-  background:rgba(255,255,255,.86)!important;
-  box-shadow:0 2px 18px rgba(31,48,82,.05);
-  border-bottom-color:rgba(220,227,238,.75);
+  background:rgba(255,255,255,.88)!important;
+  box-shadow:0 2px 20px rgba(31,48,82,.055);
+  border-bottom-color:rgba(220,227,238,.8);
+  backdrop-filter:blur(18px)!important;
 }
+/* Keep the navigation tabs' existing proportions/layout; only polish their container. */
 .main-nav{
-  padding:4px;
-  border:1px solid rgba(220,227,238,.9);
-  border-radius:14px;
-  background:rgba(245,247,251,.78);
+  padding:3px;
+  border:1px solid rgba(220,227,238,.82);
+  border-radius:12px;
+  background:rgba(245,247,251,.72);
 }
-.main-nav a{
-  transition:background .18s ease,color .18s ease,box-shadow .18s ease,transform .18s ease;
-}
-.main-nav a.active{
-  background:#fff;
-  box-shadow:0 3px 10px rgba(31,48,82,.08);
-}
-.main-nav a:hover{transform:translateY(-1px)}
+.main-nav a{transition:background .18s ease,color .18s ease,box-shadow .18s ease}
+.main-nav a.active{background:#fff;box-shadow:0 3px 12px rgba(31,48,82,.08)}
 .account-top{
-  background:rgba(255,255,255,.9)!important;
+  background:rgba(255,255,255,.92)!important;
+  box-shadow:0 3px 12px rgba(31,48,82,.035);
   transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease;
 }
-.account-top:hover{transform:translateY(-1px);box-shadow:0 6px 16px rgba(31,48,82,.08)}
+.account-top:hover{transform:translateY(-1px);box-shadow:0 8px 20px rgba(31,48,82,.09)}
+.page-title{
+  padding-top:66px;
+  position:relative;
+}
+.page-title:after{
+  content:"";
+  display:block;
+  width:72px;
+  height:4px;
+  margin-top:24px;
+  border-radius:99px;
+  background:linear-gradient(90deg,var(--accent),var(--accent2));
+}
+.page-title h1{letter-spacing:-.045em}
+.page-title p{max-width:760px}
+.section-head{margin-bottom:30px}
 .card,.hero-card,.achievement,.quiz-q,.steps article,.challenge-feature,.experience-card{
   border-radius:var(--modern-radius);
-  transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease;
+  box-shadow:var(--modern-shadow-soft);
+  transition:transform .2s ease,box-shadow .2s ease,border-color .2s ease;
 }
+.card,.hero-card{border-color:rgba(220,227,238,.95)}
 .card:hover,.hero-card:hover,.achievement:hover,.experience-card:hover{
-  transform:translateY(-2px);
+  transform:translateY(-3px);
   box-shadow:var(--modern-shadow);
-  border-color:#d3ddeb;
+  border-color:#cfd9e8;
 }
-.hero-card{background:linear-gradient(135deg,#fff 0%,#f8f9ff 100%)}
-.atom{box-shadow:inset 0 0 0 1px rgba(49,88,214,.06),0 8px 20px rgba(49,88,214,.1)}
-.primary{
-  transition:transform .18s ease,box-shadow .18s ease,filter .18s ease;
+.hero-card{
+  background:linear-gradient(145deg,#fff 0%,#f8f9ff 100%);
+  border-color:rgba(211,220,236,.95);
 }
-.primary:hover{transform:translateY(-2px);box-shadow:0 12px 26px rgba(49,88,214,.22);filter:saturate(1.05)}
-.secondary{
-  transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease,background .18s ease;
+.atom{
+  box-shadow:inset 0 0 0 1px rgba(49,88,214,.07),0 10px 24px rgba(49,88,214,.12);
 }
-.secondary:hover{transform:translateY(-1px);box-shadow:0 6px 16px rgba(31,48,82,.07);background:#fbfcff}
-.page-title{padding-top:64px}
+.primary,.secondary,.chips button{
+  border-radius:12px;
+  transition:transform .18s ease,box-shadow .18s ease,filter .18s ease,border-color .18s ease,background .18s ease;
+}
+.primary:hover{transform:translateY(-2px);box-shadow:0 13px 28px rgba(49,88,214,.22);filter:saturate(1.05)}
+.secondary:hover,.chips button:hover{transform:translateY(-1px);box-shadow:0 7px 18px rgba(31,48,82,.08)}
+input,select,textarea{
+  border-color:#d5deea!important;
+  transition:border-color .18s ease,box-shadow .18s ease,background .18s ease;
+}
+input:focus,select:focus,textarea:focus{
+  outline:none!important;
+  border-color:var(--accent)!important;
+  box-shadow:0 0 0 4px rgba(49,88,214,.10)!important;
+}
+.lesson,.challenge-feature,.experience-card,.quiz-q{background:rgba(255,255,255,.86)}
+.lesson a{transition:color .18s ease}
+.lesson a:hover{color:var(--accent2)}
 .eyebrow{letter-spacing:.16em}
+.equation{letter-spacing:.01em}
+footer{background:rgba(255,255,255,.45)}
+body.dark{
+  background:
+    radial-gradient(circle at 8% 0%,rgba(108,77,232,.10),transparent 30rem),
+    radial-gradient(circle at 92% 8%,rgba(49,88,214,.10),transparent 28rem),
+    var(--bg)!important;
+}
+body.dark .topbar{background:rgba(16,22,34,.84)!important}
+body.dark .main-nav{background:rgba(20,29,43,.82)}
+body.dark .main-nav a.active{background:#1b2637}
+body.dark .account-top{background:rgba(23,31,45,.92)!important}
+body.dark .hero-card{background:linear-gradient(145deg,#171f2d 0%,#1b2435 100%)}
+body.dark .lesson,body.dark .challenge-feature,body.dark .experience-card,body.dark .quiz-q{background:rgba(23,31,45,.9)}
+body.dark footer{background:rgba(16,22,34,.35)}
 @media(max-width:760px){
-  .topbar{background:rgba(255,255,255,.92)!important;box-shadow:0 2px 14px rgba(31,48,82,.06)}
-  .main-nav{background:rgba(245,247,251,.88);border-radius:12px}
-  .main-nav a.active{background:#fff}
-  .card:hover,.hero-card:hover,.achievement:hover,.experience-card:hover{transform:none;box-shadow:var(--shadow)}
+  .page-title{padding-top:42px}
+  .page-title:after{margin-top:18px}
+  .card,.hero-card,.achievement,.quiz-q,.steps article,.challenge-feature,.experience-card{border-radius:17px}
+  .card:hover,.hero-card:hover,.achievement:hover,.experience-card:hover{transform:none;box-shadow:var(--modern-shadow-soft)}
 }
