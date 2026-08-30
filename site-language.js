@@ -1,1 +1,1 @@
-(()=>{if(window.__CHEM_LANG_LOADER)return;window.__CHEM_LANG_LOADER=true;const s=document.createElement('script');s.src='site-language-final.js?v=20260830-99';s.defer=true;document.head.appendChild(s)})();
+(()=>{if(window.__CHEM_LANG_LOADER)return;window.__CHEM_LANG_LOADER=true;const css=document.createElement('link');css.rel='stylesheet';css.href='site-language-final.css?v=20260830-99';document.head.appendChild(css);const s=document.createElement('script');s.src='site-language-final.js?v=20260830-99';s.defer=true;document.head.appendChild(s)})();
