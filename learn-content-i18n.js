@@ -1,12 +1,9 @@
 (()=>{
 'use strict';
-const load=()=>{
- if(window.learnFullI18n){window.learnFullI18n();return}
- const s=document.createElement('script');
- s.src='learn-full-i18n.js?v=20260830-1';
- s.async=false;
- s.onload=()=>window.learnFullI18n?.();
- document.head.appendChild(s);
+const load=(src,done)=>{const s=document.createElement('script');s.src=src;s.async=false;s.defer=false;s.onload=done;s.onerror=()=>{};document.head.appendChild(s)};
+const boot=()=>{
+ if(window.learnFullI18n){window.learnFullI18n();load('learn-extra-i18n.js?v=20260830-1');return}
+ load('learn-full-i18n.js?v=20260830-1',()=>load('learn-extra-i18n.js?v=20260830-1'));
 };
-if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',load,{once:true});else load();
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
 })();
