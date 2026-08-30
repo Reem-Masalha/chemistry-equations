@@ -1,0 +1,59 @@
+(()=>{
+'use strict';
+const KEY='chemistryLanguage';
+const MAP={
+ ar:{
+  'Practice solo.':'تدرّب بمفردك.','Challenge someone.':'تحدَّ شخصًا ما.','Solo Practice':'التدريب الفردي','Challenge':'التحدي','Choose how to play':'اختر طريقة اللعب',
+  'Same questions • 60-second challenge • live progress • final comparison':'الأسئلة نفسها • تحدٍ لمدة 60 ثانية • تقدّم مباشر • مقارنة نهائية','Random opponent':'خصم عشوائي','Match with an available player.':'تنافس مع لاعب متاح.',
+  'Invite a specific player':'دعوة لاعب محدد','Join with challenge code':'الانضمام باستخدام رمز التحدي','Specific player':'لاعب محدد','Create a private room and send the player your challenge code or link.':'أنشئ غرفة خاصة وأرسل للاعب رمز التحدي أو الرابط.',
+  'Same questions':'الأسئلة نفسها','Both players receive the identical question set.':'يحصل كلا اللاعبين على مجموعة الأسئلة نفسها.','Live competition':'منافسة مباشرة','Timer and progress update while you solve.':'يتحدّث المؤقت والتقدّم أثناء الحل.',
+  'Live score':'النتيجة المباشرة','Track your progress during the match.':'تابع تقدّمك أثناء المباراة.','Final comparison':'المقارنة النهائية','See both scores and who won after a real challenge.':'شاهد نتيجتي اللاعبين ومن فاز بعد التحدي.',
+  'How inviting works':'كيفية عمل الدعوة','Choose “Invite a specific player”, create a private challenge, then send the generated challenge code or share link to that player. They can join from this page.':'اختر «دعوة لاعب محدد»، وأنشئ تحديًا خاصًا، ثم أرسل رمز التحدي أو رابط المشاركة الناتج إلى اللاعب. يمكنه الانضمام من هذه الصفحة.',
+  'LEADERBOARD':'لوحة المتصدرين','Fastest solvers':'أسرع المحلّلين','Ranked by challenge solve time.':'مرتبة حسب وقت حل التحدي.','Refresh':'تحديث','Loading…':'جارٍ التحميل…',
+  '03 · MULTIPLAYER':'03 · لاعبان','Practice at your own pace with Easy, Medium and Hard quizzes.':'تدرّب بالسرعة التي تناسبك مع اختبارات سهلة ومتوسطة وصعبة.','Compete head-to-head with another player in a live timed match.':'تنافس وجهًا لوجه مع لاعب آخر في مباراة مباشرة محددة الوقت.',
+  'HOST A CHALLENGE':'استضافة تحدٍ','Question source':'مصدر الأسئلة','Random questions':'أسئلة عشوائية','Select from suggestions':'الاختيار من المقترحات','Insert my own equations':'إدخال معادلاتي الخاصة','Number':'العدد',
+  'Enter an equation and its correct balanced answer for each row.':'أدخل معادلة وإجابتها الموزونة الصحيحة لكل صف.','+ Add equation':'+ إضافة معادلة','Create challenge':'إنشاء التحدي',
+  'Enter the challenge code:':'أدخل رمز التحدي:','Your name:':'اسمك:','Your name for the challenge:':'اسمك للتحدي:','Choose the questions':'اختر الأسئلة','Both players will receive exactly the same questions.':'سيحصل كلا اللاعبين على الأسئلة نفسها تمامًا.',
+  'Create private challenge link':'إنشاء رابط تحدٍ خاص','INVITE A PLAYER':'دعوة لاعب','PRIVATE INVITE':'دعوة خاصة','Send the room code or the share link to your opponent.':'أرسل رمز الغرفة أو رابط المشاركة إلى خصمك.',
+  'Copy share link':'نسخ رابط المشاركة','Copy room code':'نسخ رمز الغرفة','MATCH FOUND':'تم العثور على خصم','Waiting for the second player…':'بانتظار اللاعب الثاني…','Starting…':'جارٍ البدء…','JOINED CHALLENGE':'تم الانضمام إلى التحدي',
+  'Balance this equation':'وازن هذه المعادلة','Your balanced equation':'المعادلة الموازنة','Submit answer':'إرسال الإجابة','Your total time is measured until all questions are solved.':'يُقاس وقتك الإجمالي حتى حل جميع الأسئلة.',
+  'Not correct — try again.':'الإجابة غير صحيحة — حاول مرة أخرى.','CHALLENGE FINISHED':'انتهى التحدي','wins!':'يفوز!','New challenge':'تحدٍ جديد','No challenge results yet. Be the first!':'لا توجد نتائج تحديات بعد. كن الأول!',
+  'Could not load leaderboard.':'تعذر تحميل لوحة المتصدرين.','Still searching…':'لا يزال البحث جاريًا…','No opponent found yet. Try again.':'لم يتم العثور على خصم بعد. حاول مرة أخرى.','Finding an opponent…':'جارٍ البحث عن خصم…','Searching for an opponent…':'جارٍ البحث عن خصم…','Waiting for the other player…':'بانتظار اللاعب الآخر…','Opponent found. Get ready…':'تم العثور على خصم. استعد…',
+  'Copy link':'نسخ الرابط','Link copied':'تم نسخ الرابط','Code copied':'تم نسخ الرمز','Your name for the random match:':'اسمك للمباراة العشوائية:','Player 2':'اللاعب 2','Host':'المضيف','Player':'اللاعب',
+  'Select at least one suggested question.':'اختر سؤالًا مقترحًا واحدًا على الأقل.','Enter at least one equation and balanced answer.':'أدخل معادلة واحدة وإجابة موزونة واحدة على الأقل.','The multiplayer service is not connected yet.':'خدمة اللعب الجماعي غير متصلة بعد.',
+  'Draw an equation, then tap Recognize.':'ارسم معادلة، ثم اضغط «تعرّف».','Recognition failed.':'فشل التعرّف.'
+ },
+ he:{
+  'Practice solo.':'תרגלו לבד.','Challenge someone.':'אתגרו מישהו.','Solo Practice':'תרגול אישי','Challenge':'אתגר','Choose how to play':'בחרו איך לשחק',
+  'Same questions • 60-second challenge • live progress • final comparison':'אותן שאלות • אתגר של 60 שניות • התקדמות בזמן אמת • השוואה סופית','Random opponent':'יריב אקראי','Match with an available player.':'התאימו לשחקן זמין.',
+  'Invite a specific player':'הזמנת שחקן מסוים','Join with challenge code':'הצטרפות באמצעות קוד אתגר','Specific player':'שחקן מסוים','Create a private room and send the player your challenge code or link.':'צרו חדר פרטי ושלחו לשחקן את קוד האתגר או הקישור.',
+  'Same questions':'אותן שאלות','Both players receive the identical question set.':'שני השחקנים מקבלים את אותו סט שאלות.','Live competition':'תחרות בזמן אמת','Timer and progress update while you solve.':'הטיימר וההתקדמות מתעדכנים בזמן הפתרון.',
+  'Live score':'ניקוד בזמן אמת','Track your progress during the match.':'עקבו אחר ההתקדמות שלכם במהלך המשחק.','Final comparison':'השוואה סופית','See both scores and who won after a real challenge.':'ראו את שני הניקודים ומי ניצח לאחר אתגר אמיתי.',
+  'How inviting works':'איך ההזמנה עובדת','Choose “Invite a specific player”, create a private challenge, then send the generated challenge code or share link to that player. They can join from this page.':'בחרו «הזמנת שחקן מסוים», צרו אתגר פרטי ואז שלחו לשחקן את קוד האתגר או קישור השיתוף. הוא יכול להצטרף מהעמוד הזה.',
+  'LEADERBOARD':'טבלת מובילים','Fastest solvers':'הפותרים המהירים ביותר','Ranked by challenge solve time.':'מדורג לפי זמן פתרון האתגר.','Refresh':'רענון','Loading…':'טוען…',
+  '03 · MULTIPLAYER':'03 · מרובה משתתפים','Practice at your own pace with Easy, Medium and Hard quizzes.':'תרגלו בקצב שלכם עם חידונים קלים, בינוניים וקשים.','Compete head-to-head with another player in a live timed match.':'התחרו ראש בראש מול שחקן אחר במשחק חי ומוגבל בזמן.',
+  'HOST A CHALLENGE':'אירוח אתגר','Question source':'מקור השאלות','Random questions':'שאלות אקראיות','Select from suggestions':'בחירה מהצעות','Insert my own equations':'הוספת משוואות משלי','Number':'מספר',
+  'Enter an equation and its correct balanced answer for each row.':'הזינו משוואה ואת התשובה המאוזנת הנכונה שלה בכל שורה.','+ Add equation':'+ הוספת משוואה','Create challenge':'יצירת אתגר',
+  'Enter the challenge code:':'הזינו את קוד האתגר:','Your name:':'השם שלכם:','Your name for the challenge:':'השם שלכם לאתגר:','Choose the questions':'בחרו את השאלות','Both players will receive exactly the same questions.':'שני השחקנים יקבלו בדיוק את אותן השאלות.',
+  'Create private challenge link':'יצירת קישור לאתגר פרטי','INVITE A PLAYER':'הזמנת שחקן','PRIVATE INVITE':'הזמנה פרטית','Send the room code or the share link to your opponent.':'שלחו ליריב את קוד החדר או את קישור השיתוף.',
+  'Copy share link':'העתקת קישור שיתוף','Copy room code':'העתקת קוד חדר','MATCH FOUND':'נמצא יריב','Waiting for the second player…':'ממתינים לשחקן השני…','Starting…':'מתחילים…','JOINED CHALLENGE':'הצטרפות לאתגר',
+  'Balance this equation':'אזנו את המשוואה','Your balanced equation':'המשוואה המאוזנת שלכם','Submit answer':'שליחת תשובה','Your total time is measured until all questions are solved.':'הזמן הכולל נמדד עד שכל השאלות נפתרות.',
+  'Not correct — try again.':'לא נכון — נסו שוב.','CHALLENGE FINISHED':'האתגר הסתיים','wins!':'ניצח!','New challenge':'אתגר חדש','No challenge results yet. Be the first!':'אין עדיין תוצאות אתגר. היו הראשונים!',
+  'Could not load leaderboard.':'לא ניתן לטעון את טבלת המובילים.','Still searching…':'עדיין מחפשים…','No opponent found yet. Try again.':'לא נמצא יריב עדיין. נסו שוב.','Finding an opponent…':'מחפשים יריב…','Searching for an opponent…':'מחפשים יריב…','Waiting for the other player…':'ממתינים לשחקן השני…','Opponent found. Get ready…':'נמצא יריב. התכוננו…',
+  'Copy link':'העתקת קישור','Link copied':'הקישור הועתק','Code copied':'הקוד הועתק','Your name for the random match:':'השם שלכם למשחק האקראי:','Player 2':'שחקן 2','Host':'מארח','Player':'שחקן',
+  'Select at least one suggested question.':'בחרו לפחות שאלה אחת מההצעות.','Enter at least one equation and balanced answer.':'הזינו לפחות משוואה אחת ותשובה מאוזנת אחת.','The multiplayer service is not connected yet.':'שירות המשחקים מרובי המשתתפים עדיין אינו מחובר.',
+  'Draw an equation, then tap Recognize.':'ציירו משוואה ואז לחצו על «זיהוי».','Recognition failed.':'הזיהוי נכשל.'
+ }
+};
+function getLang(){const x=localStorage.getItem(KEY)||'en';return MAP[x]?x:'en'}
+function translateRoot(root){const map=MAP[getLang()];const walker=document.createTreeWalker(root||document.body,NodeFilter.SHOW_TEXT);const nodes=[];while(walker.nextNode())nodes.push(walker.currentNode);for(const n of nodes){const raw=n.nodeValue||'';const text=raw.trim();if(text&&map[text])n.nodeValue=raw.replace(text,map[text])}}
+function patch(){translateRoot(document.body)}
+function init(){
+ patch();
+ document.addEventListener('change',e=>{if(e.target.closest('.site-language-control'))setTimeout(patch,40)},true);
+ document.addEventListener('click',e=>{if(e.target.closest('#randomChallenge,#hostChallenge,#joinChallenge,#refreshLeaderboard,#startHost,#startInvite,#challengeSubmit,#addRow,#copyRoomLink,#copyRoomCode'))setTimeout(patch,60)},true);
+ const p=window.prompt;window.prompt=function(msg,def){const map=MAP[getLang()];return p.call(window,map[msg]||msg,def)};
+ const a=window.alert;window.alert=function(msg){const map=MAP[getLang()];return a.call(window,map[msg]||msg)};
+}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
+})();
