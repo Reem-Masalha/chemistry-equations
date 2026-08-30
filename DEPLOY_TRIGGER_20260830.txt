@@ -1,0 +1,1 @@
+Force GitHub Pages deployment after restoring the approved Learn Daily Challenge and removing the legacy challenge card from non-Learn pages.
