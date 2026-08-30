@@ -47,12 +47,9 @@ jobs:
                   text=text.replace('</head>','<link rel="stylesheet" href="modern-refresh.css?v='+sha+'" data-site-modern-refresh="1">\n</head>',1)
               if 'data-student-experience-v3' not in text:
                   text=text.replace('</body>','<script src="student-experience-v3.js?v='+sha+'" defer data-student-experience-v3="1"></script>\n</body>',1)
-              # The v6 Daily Challenge is the single challenge implementation.
-              # It belongs on Learn only, not on the Balancer/Home page.
-              if html.name == 'learn.html' and 'data-daily-challenge-v6' not in text:
-                  text=text.replace('</body>','<script src="daily-challenge-v6.js?v='+sha+'" defer data-daily-challenge-v6="1"></script>\n</body>',1)
-              if html.name == 'learn.html' and 'data-admin-replay-bridge' not in text:
-                  text=text.replace('</body>','<script src="admin-replay-bridge.js?v='+sha+'" defer data-admin-replay-bridge="1"></script>\n</body>',1)
+              # Single Daily Challenge implementation: Learn only.
+              if html.name == 'learn.html' and 'data-daily-challenge-final' not in text:
+                  text=text.replace('</body>','<script src="daily-challenge-final.js?v='+sha+'" defer data-daily-challenge-final="1"></script>\n</body>',1)
               if html.name == 'admin.html' and 'data-admin-tools' not in text:
                   text=text.replace('</body>','<script src="admin-tools.js?v='+sha+'" defer data-admin-tools="1"></script>\n</body>',1)
               if html.name == 'profile.html' and 'data-admin-tools-profile' not in text:
@@ -69,9 +66,8 @@ jobs:
           test -s _site/admin.html
           test -s _site/modern-refresh.css
           test -s _site/student-experience-v3.js
-          test -s _site/daily-challenge-v6.js
+          test -s _site/daily-challenge-final.js
           test -s _site/admin-tools.js
-          test -s _site/admin-replay-bridge.js
 
           python3 - <<'PY'
           import re, pathlib
@@ -82,7 +78,7 @@ jobs:
               for src in re.findall(r'<script[^>]+src=[\"\']([^\"\']+)[\"\']', text, re.I):
                   src=src.split('?',1)[0].split('#',1)[0]
                   if src.endswith('.js'): scripts.add(src.lstrip('./'))
-          scripts.update({'student-experience-v3.js','daily-challenge-v6.js','admin-tools.js','admin-replay-bridge.js'})
+          scripts.update({'student-experience-v3.js','daily-challenge-final.js','admin-tools.js'})
           missing=[src for src in sorted(scripts) if not (root/src).exists()]
           if missing: raise SystemExit('Missing referenced/dynamic scripts: '+', '.join(missing))
           PY
@@ -95,14 +91,13 @@ jobs:
               for src in re.findall(r'<script[^>]+src=[\"\']([^\"\']+)[\"\']', text, re.I):
                   src=src.split('?',1)[0].split('#',1)[0]
                   if src.endswith('.js'): scripts.add(src.lstrip('./'))
-          scripts.update({'student-experience-v3.js','daily-challenge-v6.js','admin-tools.js','admin-replay-bridge.js'})
+          scripts.update({'student-experience-v3.js','daily-challenge-final.js','admin-tools.js'})
           for src in sorted(scripts): print(root/src)
           PY
           )
 
           printf '%s\n' "$GITHUB_SHA" > _site/DEPLOYMENT_COMMIT.txt
           printf 'chemistry-equations-pages-%s\n' "$GITHUB_SHA" > _site/SITE_BUILD_VERSION.txt
-          echo "PAGES_SOURCE_COMMIT=$GITHUB_SHA"
 
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v6
