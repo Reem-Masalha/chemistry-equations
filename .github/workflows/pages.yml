@@ -36,8 +36,6 @@ jobs:
           git archive HEAD | tar -x -C _site
           touch _site/.nojekyll
 
-          # Publish the repository source as-is. Do not rewrite account, language,
-          # history, challenge, quiz, or layout scripts during deployment.
           test -s _site/index.html
           test -s _site/learn.html
           test -s _site/personal-quiz.html
@@ -48,10 +46,46 @@ jobs:
           test -s _site/i18n-core.js
           test -s _site/account.js
 
-          # Fail the deployment rather than publishing broken JavaScript.
-          find _site -type f -name '*.js' -print0 | while IFS= read -r -d '' f; do
+          # Validate JavaScript that is actually referenced by the published pages,
+          # plus the small set of known dynamically loaded localization scripts.
+          python3 - <<'PY'
+          import re, pathlib
+          root=pathlib.Path('_site')
+          scripts=set()
+          for html in root.glob('*.html'):
+              text=html.read_text(encoding='utf-8', errors='ignore')
+              for src in re.findall(r'<script[^>]+src=[\"\']([^\"\']+)[\"\']', text, re.I):
+                  src=src.split('?',1)[0].split('#',1)[0]
+                  if src.endswith('.js'):
+                      scripts.add(src.lstrip('./'))
+          scripts.update({
+              'site-language-v2.js',
+              'i18n-enhancements.js',
+              'learn-full-i18n.js',
+              'learn-extra-i18n.js',
+          })
+          missing=[]
+          for src in sorted(scripts):
+              p=root/src
+              if p.exists(): print(p)
+              else: missing.append(src)
+          if missing:
+              raise SystemExit('Missing referenced/dynamic scripts: '+', '.join(missing))
+          PY
+          while IFS= read -r f; do
             node --check "$f" >/dev/null
-          done
+          done < <(python3 - <<'PY'
+          import re, pathlib
+          root=pathlib.Path('_site'); scripts=set()
+          for html in root.glob('*.html'):
+              text=html.read_text(encoding='utf-8', errors='ignore')
+              for src in re.findall(r'<script[^>]+src=[\"\']([^\"\']+)[\"\']', text, re.I):
+                  src=src.split('?',1)[0].split('#',1)[0]
+                  if src.endswith('.js'): scripts.add(src.lstrip('./'))
+          scripts.update({'site-language-v2.js','i18n-enhancements.js','learn-full-i18n.js','learn-extra-i18n.js'})
+          for src in sorted(scripts): print(root/src)
+          PY
+          )
 
           printf '%s\n' "$GITHUB_SHA" > _site/DEPLOYMENT_COMMIT.txt
           printf 'chemistry-equations-pages-%s\n' "$GITHUB_SHA" > _site/SITE_BUILD_VERSION.txt
