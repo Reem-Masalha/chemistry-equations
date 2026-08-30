@@ -42,12 +42,13 @@ jobs:
           sha='${GITHUB_SHA}'
           for html in root.glob('*.html'):
               text=html.read_text(encoding='utf-8', errors='ignore')
-              # The older loader creates the placeholder card; the Pages build uses the single new experience layer instead.
               text=text.replace('loadStudentProduct();','')
               if 'data-site-modern-refresh' not in text:
                   text=text.replace('</head>','<link rel="stylesheet" href="modern-refresh.css?v='+sha+'" data-site-modern-refresh="1">\n</head>',1)
               if 'data-student-experience-v3' not in text:
-                  text=text.replace('</body>','<script src="student-experience-v3.js?v='+sha+'" defer data-student-experience-v3="1"></script>\n<script src="daily-question.js?v='+sha+'" defer data-daily-question="1"></script>\n</body>',1)
+                  text=text.replace('</body>','<script src="student-experience-v3.js?v='+sha+'" defer data-student-experience-v3="1"></script>\n</body>',1)
+              if html.name == 'learn.html' and 'data-daily-question' not in text:
+                  text=text.replace('</body>','<script src="daily-question.js?v='+sha+'" defer data-daily-question="1"></script>\n</body>',1)
               html.write_text(text,encoding='utf-8')
           PY
 
