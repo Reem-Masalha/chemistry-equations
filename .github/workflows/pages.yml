@@ -36,26 +36,19 @@ jobs:
           git archive HEAD | tar -x -C _site
           touch _site/.nojekyll
 
-          # Inject the shared visual system and the single student experience layer into every page.
           python3 - <<'PY'
           import pathlib, re
           root=pathlib.Path('_site')
           sha='${GITHUB_SHA}'
           for html in root.glob('*.html'):
               text=html.read_text(encoding='utf-8', errors='ignore')
-              text=re.sub(r'language-clean\.js(?:\?[^\"\']*)?', 'language-clean.js?v='+sha, text)
+              text=re.sub(r'language-clean\\.js(?:\\?[^\\"\\']*)?', 'language-clean.js?v='+sha, text)
               if 'data-site-modern-refresh' not in text:
-                  marker='</head>'
-                  link='<link rel="stylesheet" href="modern-refresh.css?v='+sha+'" data-site-modern-refresh="1">'
-                  if marker in text:
-                      text=text.replace(marker,link+'\n'+marker,1)
-              text=re.sub(r'\s*<script[^>]+student-engagement\.js(?:\?[^>\"\']*)?[^>]*></script>', '', text, flags=re.I)
-              text=re.sub(r'\s*<script[^>]+daily-challenge\.js(?:\?[^>\"\']*)?[^>]*></script>', '', text, flags=re.I)
+                  text=text.replace('</head>','<link rel="stylesheet" href="modern-refresh.css?v='+sha+'" data-site-modern-refresh="1">\\n</head>',1)
+              text=re.sub(r'\\s*<script[^>]+student-engagement\\.js(?:\\?[^>\\"\\']*)?[^>]*></script>', '', text, flags=re.I)
+              text=re.sub(r'\\s*<script[^>]+daily-challenge\\.js(?:\\?[^>\\"\\']*)?[^>]*></script>', '', text, flags=re.I)
               if 'data-student-experience-v3' not in text:
-                  marker='</body>'
-                  script='<script src="student-experience-v3.js?v='+sha+'" defer data-student-experience-v3="1"></script>'
-                  if marker in text:
-                      text=text.replace(marker,script+'\n'+marker,1)
+                  text=text.replace('</body>','<script src="student-experience-v3.js?v='+sha+'" defer data-student-experience-v3="1"></script>\\n<script src="daily-question.js?v='+sha+'" defer data-daily-question="1"></script>\\n</body>',1)
               html.write_text(text,encoding='utf-8')
           PY
 
@@ -70,6 +63,7 @@ jobs:
           test -s _site/account.js
           test -s _site/modern-refresh.css
           test -s _site/student-experience-v3.js
+          test -s _site/daily-question.js
 
           python3 - <<'PY'
           import re, pathlib
@@ -79,21 +73,16 @@ jobs:
               text=html.read_text(encoding='utf-8', errors='ignore')
               for src in re.findall(r'<script[^>]+src=[\"\']([^\"\']+)[\"\']', text, re.I):
                   src=src.split('?',1)[0].split('#',1)[0]
-                  if src.endswith('.js'):
-                      scripts.add(src.lstrip('./'))
-          scripts.update({'site-language-v2.js','learn-full-i18n.js','learn-extra-i18n.js','student-experience-v3.js'})
+                  if src.endswith('.js'): scripts.add(src.lstrip('./'))
+          scripts.update({'site-language-v2.js','learn-full-i18n.js','learn-extra-i18n.js','student-experience-v3.js','daily-question.js'})
           missing=[]
           for src in sorted(scripts):
-              p=root/src
-              if p.exists(): print(p)
+              if (root/src).exists(): print(root/src)
               else: missing.append(src)
-          if missing:
-              raise SystemExit('Missing referenced/dynamic scripts: '+', '.join(missing))
+          if missing: raise SystemExit('Missing referenced/dynamic scripts: '+', '.join(missing))
           PY
 
-          while IFS= read -r f; do
-            node --check "$f" >/dev/null
-          done < <(python3 - <<'PY'
+          while IFS= read -r f; do node --check "$f" >/dev/null; done < <(python3 - <<'PY'
           import re, pathlib
           root=pathlib.Path('_site'); scripts=set()
           for html in root.glob('*.html'):
@@ -101,7 +90,7 @@ jobs:
               for src in re.findall(r'<script[^>]+src=[\"\']([^\"\']+)[\"\']', text, re.I):
                   src=src.split('?',1)[0].split('#',1)[0]
                   if src.endswith('.js'): scripts.add(src.lstrip('./'))
-          scripts.update({'site-language-v2.js','learn-full-i18n.js','learn-extra-i18n.js','student-experience-v3.js'})
+          scripts.update({'site-language-v2.js','learn-full-i18n.js','learn-extra-i18n.js','student-experience-v3.js','daily-question.js'})
           for src in sorted(scripts): print(root/src)
           PY
           )
