@@ -1,0 +1,29 @@
+/* Final Balancer history label alignment. */
+.equation-history .history-content{direction:ltr!important;text-align:left!important;}
+.equation-history .history-label,
+.equation-history .history-label-solution{
+  display:block!important;
+  width:max-content!important;
+  max-width:100%!important;
+  margin-left:0!important;
+  margin-right:0!important;
+  direction:rtl!important;
+  unicode-bidi:plaintext!important;
+  text-align:right!important;
+  font-size:18px!important;
+  line-height:1.35!important;
+  font-weight:900!important;
+  letter-spacing:0!important;
+  text-transform:none!important;
+}
+.equation-history .history-equation,
+.equation-history .history-solution{
+  direction:ltr!important;
+  text-align:left!important;
+  margin-left:0!important;
+  margin-right:0!important;
+}
+@media(max-width:760px){
+  .equation-history .history-label,
+  .equation-history .history-label-solution{font-size:17px!important}
+}
