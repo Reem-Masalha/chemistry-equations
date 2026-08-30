@@ -18,4 +18,6 @@
     heartbeat();
     setInterval(heartbeat,60000);
   }
+  const loadProduct=()=>{if(document.querySelector('script[data-student-product]'))return;const s=document.createElement('script');s.src='student-product.js?v=20260830-1';s.defer=true;s.dataset.studentProduct='1';document.head.appendChild(s)};
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',loadProduct,{once:true});else loadProduct();
 })();
