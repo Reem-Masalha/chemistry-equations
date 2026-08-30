@@ -47,13 +47,11 @@ jobs:
                   text=text.replace('</head>','<link rel="stylesheet" href="modern-refresh.css?v='+sha+'" data-site-modern-refresh="1">\n</head>',1)
               if 'data-student-experience-v3' not in text:
                   text=text.replace('</body>','<script src="student-experience-v3.js?v='+sha+'" defer data-student-experience-v3="1"></script>\n</body>',1)
-              if html.name == 'learn.html' and 'data-daily-question' not in text:
-                  text=text.replace('</body>','<script src="daily-challenge-real.js?v='+sha+'" defer data-daily-question="1"></script>\n</body>',1)
-              if html.name == 'index.html' and 'data-daily-home-challenge' not in text:
-                  text=text.replace('</body>','<script src="daily-home-challenge.js?v='+sha+'" defer data-daily-home-challenge="1"></script>\n</body>',1)
-              if html.name in ('index.html','learn.html') and 'data-daily-challenge-v6' not in text:
+              # The v6 Daily Challenge is the single challenge implementation.
+              # It belongs on Learn only, not on the Balancer/Home page.
+              if html.name == 'learn.html' and 'data-daily-challenge-v6' not in text:
                   text=text.replace('</body>','<script src="daily-challenge-v6.js?v='+sha+'" defer data-daily-challenge-v6="1"></script>\n</body>',1)
-              if html.name in ('index.html','learn.html') and 'data-admin-replay-bridge' not in text:
+              if html.name == 'learn.html' and 'data-admin-replay-bridge' not in text:
                   text=text.replace('</body>','<script src="admin-replay-bridge.js?v='+sha+'" defer data-admin-replay-bridge="1"></script>\n</body>',1)
               if html.name == 'admin.html' and 'data-admin-tools' not in text:
                   text=text.replace('</body>','<script src="admin-tools.js?v='+sha+'" defer data-admin-tools="1"></script>\n</body>',1)
@@ -71,9 +69,6 @@ jobs:
           test -s _site/admin.html
           test -s _site/modern-refresh.css
           test -s _site/student-experience-v3.js
-          test -s _site/daily-question.js
-          test -s _site/daily-challenge-real.js
-          test -s _site/daily-home-challenge.js
           test -s _site/daily-challenge-v6.js
           test -s _site/admin-tools.js
           test -s _site/admin-replay-bridge.js
@@ -87,7 +82,7 @@ jobs:
               for src in re.findall(r'<script[^>]+src=[\"\']([^\"\']+)[\"\']', text, re.I):
                   src=src.split('?',1)[0].split('#',1)[0]
                   if src.endswith('.js'): scripts.add(src.lstrip('./'))
-          scripts.update({'site-language-v2.js','learn-full-i18n.js','learn-extra-i18n.js','student-experience-v3.js','daily-question.js','daily-challenge-real.js','daily-home-challenge.js','daily-challenge-v6.js','admin-tools.js','admin-replay-bridge.js'})
+          scripts.update({'student-experience-v3.js','daily-challenge-v6.js','admin-tools.js','admin-replay-bridge.js'})
           missing=[src for src in sorted(scripts) if not (root/src).exists()]
           if missing: raise SystemExit('Missing referenced/dynamic scripts: '+', '.join(missing))
           PY
@@ -100,7 +95,7 @@ jobs:
               for src in re.findall(r'<script[^>]+src=[\"\']([^\"\']+)[\"\']', text, re.I):
                   src=src.split('?',1)[0].split('#',1)[0]
                   if src.endswith('.js'): scripts.add(src.lstrip('./'))
-          scripts.update({'site-language-v2.js','learn-full-i18n.js','learn-extra-i18n.js','student-experience-v3.js','daily-question.js','daily-challenge-real.js','daily-home-challenge.js','daily-challenge-v6.js','admin-tools.js','admin-replay-bridge.js'})
+          scripts.update({'student-experience-v3.js','daily-challenge-v6.js','admin-tools.js','admin-replay-bridge.js'})
           for src in sorted(scripts): print(root/src)
           PY
           )
