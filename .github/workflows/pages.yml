@@ -45,7 +45,7 @@ jobs:
             sed -i "s/:open;/:()=>render('signin');/g" _site/account.js
           fi
 
-          # Repair known syntax errors that previously prevented page scripts from loading.
+          # Repair known syntax errors before publishing.
           python3 - <<'PY'
           from pathlib import Path
 
@@ -73,9 +73,7 @@ jobs:
           PY
 
           # Fail the Pages build instead of publishing broken JavaScript.
-          while IFS= read -r -d '' f; do
-            node --check "$f" >/dev/null
-done < <(find _site -type f -name '*.js' -print0)
+          find _site -type f -name '*.js' -print0 | while IFS= read -r -d '' f; do node --check "$f" >/dev/null; done
 
           find _site -type f -name '*.html' -print0 | while IFS= read -r -d '' f; do
             sed -i -E 's#<script[^>]*src="[^"]*(challenge-language-live|challenge-auto-i18n)\.js[^>]*></script>##g' "$f"
