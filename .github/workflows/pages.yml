@@ -47,12 +47,12 @@ jobs:
             sed -i -E 's#<script[^>]*src="[^"]*history-actions-v2\.js[^>]*></script>##g' "$f"
             sed -i -E 's#<script[^>]*src="[^"]*history-equation-(stability|fix-v2|final)\.js[^>]*></script>##g' "$f"
             sed -i -E 's#<link[^>]*href="[^"]*site-language[^>]*>##g' "$f"
-            sed -i 's#</head>#<link rel="stylesheet" href="site-language-final.css?v=20260830-108"><link rel="stylesheet" href="balancer-layout-language-fix.css?v=20260830-108"><link rel="stylesheet" href="rtl-font-size-fix.css?v=20260830-108"></head>#' "$f"
-            sed -i 's#</body>#<script src="site-language-final.js?v=20260830-108" defer></script><script src="language-balancer-patch.js?v=20260830-108" defer></script><script src="balancer-final-layout.js?v=20260830-108" defer></script><script src="challenge-language-fix.js?v=20260830-108" defer></script></body>#' "$f"
+            sed -i 's#</head>#<link rel="stylesheet" href="site-language-final.css?v=20260830-109"><link rel="stylesheet" href="balancer-layout-language-fix.css?v=20260830-109"><link rel="stylesheet" href="rtl-font-size-fix.css?v=20260830-109"></head>#' "$f"
+            sed -i 's#</body>#<script src="site-language-final.js?v=20260830-109" defer></script><script src="language-balancer-patch.js?v=20260830-109" defer></script><script src="balancer-final-layout.js?v=20260830-109" defer></script><script src="challenge-language-fix.js?v=20260830-109" defer></script></body>#' "$f"
           done
 
           # History management belongs only to the Balancer page.
-          sed -i 's#</body>#<script src="history-actions-v2.js?v=20260830-108" defer></script></body>#' _site/index.html
+          sed -i 's#</body>#<script src="history-actions-v2.js?v=20260830-109" defer></script></body>#' _site/index.html
 
           printf '%s\n' "$GITHUB_SHA" > _site/DEPLOYMENT_COMMIT.txt
           printf 'chemistry-equations-pages-%s\n' "$GITHUB_SHA" > _site/SITE_BUILD_VERSION.txt
