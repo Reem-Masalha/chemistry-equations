@@ -14,9 +14,11 @@ html[dir="rtl"] th,html[dir="rtl"] td{text-align:right}
 /* Chemical notation must never inherit RTL bidi ordering. */
 .equation,.chemical-equation,.formula,.practice-equation,.practice-choice,.history-equation,.history-solution,.checker-equation,.math,[data-equation],[data-chemical],.equation-display,.coefficient-entry{direction:ltr!important;unicode-bidi:isolate;}
 .equation,.chemical-equation,.formula,.practice-equation,.history-equation,.history-solution,.checker-equation,.equation-display{text-align:center!important;white-space:normal;overflow-wrap:anywhere}
+/* Keep the Balancer's actual equations aligned with the Balancer content instead of centering them. */
+.balancer .equation,#balanceResult .equation,#balanceResult .balance-correction .equation,.balancing-explanation .explanation-equation,.equation-history .history-equation,.equation-history .history-solution{text-align:left!important;}
 .history-equation,.history-solution{font-variant-numeric:tabular-nums;word-break:normal}
 .site-language-control{display:inline-flex;align-items:center;gap:8px;flex:0 0 auto;margin-inline-start:12px;direction:ltr;z-index:1000}
 .site-language-control select{min-height:38px;padding:7px 10px;border:1px solid var(--line,#dfe5ee);border-radius:9px;background:var(--surface,#fff);color:inherit;font:inherit;cursor:pointer}
 .site-language-label{font-size:12px;font-weight:800;white-space:nowrap}
 html[dir="rtl"] .site-language-control{direction:ltr;margin-inline-start:12px;margin-inline-end:0}
-@media(max-width:760px){.topbar{flex-wrap:wrap;gap:10px}.main-nav{width:100%;justify-content:center;flex-wrap:wrap}.site-language-control{margin-inline-start:0}.site-language-label{display:none}}
+@media(max-width:760px){.topbar{flex-wrap:wrap;gap:10px}.main-nav{width:100%;justify-content:flex-start;flex-wrap:wrap}.site-language-control{margin-inline-start:0}.site-language-label{display:none}}
