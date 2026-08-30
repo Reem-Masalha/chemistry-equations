@@ -25,5 +25,8 @@
   let first=false;try{first=sessionStorage.getItem(visitKey)!=='1';if(first)sessionStorage.setItem(visitKey,'1')}catch{first=true}
   if(first)sendVisit();
   if(user?.id){const heartbeat=()=>{sendVisit();post('/api/track-event',{visitorId:identity,userId:String(user.id),eventType:'heartbeat',feature:null,metadata:{path}})};heartbeat();setInterval(heartbeat,60000)}
-  if(!document.querySelector('script[data-daily-home-challenge]')){const s=document.createElement('script');s.src='daily-home-challenge.js?v=20260830-1';s.defer=true;s.dataset.dailyHomeChallenge='1';document.head.appendChild(s)}
+  const pageFile=(location.pathname||'').split('/').pop()||'';
+  const isHome=pageFile===''||pageFile==='index.html';
+  const isLearn=pageFile==='learn.html';
+  if((isHome||isLearn)&&!document.querySelector('script[data-daily-home-challenge]')){const s=document.createElement('script');s.src='daily-home-challenge.js?v=20260830-1';s.defer=true;s.dataset.dailyHomeChallenge='1';document.head.appendChild(s)}
 })();
