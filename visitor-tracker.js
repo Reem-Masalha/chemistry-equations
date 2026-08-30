@@ -11,7 +11,7 @@
   function set(k,v){try{localStorage.setItem(k,v)}catch{}}
   function remove(k){try{localStorage.removeItem(k)}catch{}}
   if(params.has('adminReplay')||params.has('adminFresh')){
-    const prefixes=['chemistrydailyv6:','chemistrydaily','dailychallenge','dailystreak','dailyxp','daily-home-challenge','dailyhomechallenge','dhc','dc5','spentry','dailychallengecard','ce3-daily-card','real-daily'];
+    const prefixes=['chemistrydailyv6:','chemistrydaily','chemistrydailyfinal:','dailychallenge','dailystreak','dailyxp','daily-home-challenge','dailyhomechallenge','dhc','dc5','spentry','dailychallengecard','ce3-daily-card','real-daily'];
     try{const keys=[];for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k&&prefixes.some(p=>k.toLowerCase().includes(p.toLowerCase())))keys.push(k)}keys.forEach(remove)}catch{}
     try{sessionStorage.setItem('chemistryAdminReplayRequested','1')}catch{}
     try{history.replaceState({},document.title,location.pathname)}catch{}
@@ -25,8 +25,4 @@
   let first=false;try{first=sessionStorage.getItem(visitKey)!=='1';if(first)sessionStorage.setItem(visitKey,'1')}catch{first=true}
   if(first)sendVisit();
   if(user?.id){const heartbeat=()=>{sendVisit();post('/api/track-event',{visitorId:identity,userId:String(user.id),eventType:'heartbeat',feature:null,metadata:{path}})};heartbeat();setInterval(heartbeat,60000)}
-  const pageFile=(location.pathname||'').split('/').pop()||'';
-  const isHome=pageFile===''||pageFile==='index.html';
-  const isLearn=pageFile==='learn.html';
-  if((isHome||isLearn)&&!document.querySelector('script[data-daily-home-challenge]')){const s=document.createElement('script');s.src='daily-home-challenge.js?v=20260830-1';s.defer=true;s.dataset.dailyHomeChallenge='1';document.head.appendChild(s)}
 })();
