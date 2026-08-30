@@ -6,23 +6,23 @@ const T={
 'ar':{'Balance checklist':'قائمة تحقق للموازنة','Correct element symbols':'رموز العناصر الصحيحة','Correct chemical formulas and subscripts':'الصيغ الكيميائية والأرقام السفلية الصحيحة','Correct diatomic formulas when applicable':'الصيغ ثنائية الذرة الصحيحة عند انطباقها','Count atoms on both sides':'عدّ الذرات على الجانبين','Add coefficients instead of changing formulas':'أضف المعاملات بدلًا من تغيير الصيغ','Recount every element':'أعد عدّ كل عنصر','Use the smallest whole-number ratio':'استخدم أصغر نسبة صحيحة بأعداد كلية','Step-by-step balancing':'الموازنة خطوة بخطوة','Each step explains why the coefficient changes and how the atom counts stay conserved.':'تشرح كل خطوة سبب تغيير المعامل وكيف يبقى عدد الذرات محفوظًا.','Explanation':'الشرح','Hide explanation':'إخفاء الشرح','Final:':'النتيجة النهائية:','Step':'الخطوة','Balance':'وازن',"Equations' history":'سجل المعادلات','recent equation':'معادلة حديثة','recent equations':'معادلات حديثة','No saved equations yet.':'لا توجد معادلات محفوظة بعد.','Clear history':'مسح السجل','Equation':'المعادلة','Balanced result':'النتيجة الموزونة','Reopen':'إعادة فتح','Copy equation':'نسخ المعادلة','Copy solution':'نسخ الحل','Share':'مشاركة','Delete':'حذف','Balance an equation to start your history.':'وازن معادلة لبدء السجل.','Copied ✓':'تم النسخ ✓'},
 'he':{'Balance checklist':'רשימת בדיקה לאיזון','Correct element symbols':'סמלי היסודות הנכונים','Correct chemical formulas and subscripts':'נוסחאות כימיות ומספרים תחתיים נכונים','Correct diatomic formulas when applicable':'נוסחאות דו-אטומיות נכונות כאשר הן נדרשות','Count atoms on both sides':'ספרו את האטומים בשני הצדדים','Add coefficients instead of changing formulas':'הוסיפו מקדמים במקום לשנות נוסחאות','Recount every element':'ספרו מחדש כל יסוד','Use the smallest whole-number ratio':'השתמשו ביחס השלם הקטן ביותר','Step-by-step balancing':'איזון שלב אחר שלב','Each step explains why the coefficient changes and how the atom counts stay conserved.':'כל שלב מסביר מדוע המקדם משתנה וכיצד מספר האטומים נשמר.','Explanation':'הסבר','Hide explanation':'הסתרת ההסבר','Final:':'סופי:','Step':'שלב','Balance':'אזן',"Equations' history":'היסטוריית משוואות','recent equation':'משוואה אחרונה','recent equations':'משוואות אחרונות','No saved equations yet.':'אין עדיין משוואות שמורות.','Clear history':'ניקוי ההיסטוריה','Equation':'משוואה','Balanced result':'תוצאה מאוזנת','Reopen':'פתיחה מחדש','Copy equation':'העתקת המשוואה','Copy solution':'העתקת הפתרון','Share':'שיתוף','Delete':'מחיקה','Balance an equation to start your history.':'אזנו משוואה כדי להתחיל את ההיסטוריה.','Copied ✓':'הועתק ✓'}
 };
-const PAT={
-'en':[(e)=>e,(e)=>e,(e)=>e,(e)=>e],
-'ar':[
- e=>e.replace(/^Adjust the coefficient\(s\) containing (.+) so the number of \1 atoms matches on both sides\.$/,'عدّل المعاملات التي تحتوي على $1$ حتى يتساوى عدد ذرات $1$ على الجانبين.'),
- e=>e.replace(/^The temporary ratio contains fractions, so multiply every coefficient by (.+)\. This keeps the atom ratios unchanged and converts them to whole numbers\.$/,'تحتوي النسبة المؤقتة على كسور، لذا اضرب كل معامل في $1$ للحفاظ على نسب الذرات وتحويلها إلى أعداد كلية.'),
- e=>e.replace(/^The coefficients are reduced to the smallest whole-number ratio: (.+)\.$/,'تم اختصار المعاملات إلى أصغر نسبة صحيحة بأعداد كلية: $1$.'),
- e=>e==='The equation is already balanced, so no coefficient changes are required.'?'المعادلة موزونة بالفعل، لذلك لا حاجة إلى تغيير أي معاملات.':e],
-'he':[
- e=>e.replace(/^Adjust the coefficient\(s\) containing (.+) so the number of \1 atoms matches on both sides\.$/,'התאימו את המקדמים המכילים את $1$ כך שמספר אטומי $1$ יהיה זהה בשני הצדדים.'),
- e=>e.replace(/^The temporary ratio contains fractions, so multiply every coefficient by (.+)\. This keeps the atom ratios unchanged and converts them to whole numbers\.$/,'היחס הזמני מכיל שברים, לכן הכפילו כל מקדם ב-$1$ כדי לשמור על יחס האטומים ולהפוך אותם למספרים שלמים.'),
- e=>e.replace(/^The coefficients are reduced to the smallest whole-number ratio: (.+)\.$/,'המקדמים צומצמו ליחס השלם הקטן ביותר: $1$.'),
- e=>e==='The equation is already balanced, so no coefficient changes are required.'?'המשוואה כבר מאוזנת, לכן אין צורך לשנות מקדמים.':e]
-};
 function lang(){const v=localStorage.getItem(LANG_KEY)||'en';return T[v]?v:'en'}
 function keyFor(text){for(const key of Object.keys(T.en)){for(const l of Object.keys(T)){if(T[l][key]===text)return key}}return null}
-function special(text,l){if(l==='en')return text;const p=PAT[l];const a=p[0](text);if(a!==text)return a.replace(/\$1\$/g,'$1');const b=p[1](text);if(b!==text)return b.replace(/\$1\$/g,'$1');const c=p[2](text);if(c!==text)return c.replace(/\$1\$/g,'$1');return p[3](text)}
-function replaceText(root){const l=lang(),map=T[l],walker=document.createTreeWalker(root||document.body,NodeFilter.SHOW_TEXT),nodes=[];while(walker.nextNode())nodes.push(walker.currentNode);for(const n of nodes){const raw=n.nodeValue;if(!raw||!raw.trim())continue;const text=raw.trim();const key=keyFor(text);let value=key?map[key]:special(text,l);if(value&&value!==text)n.nodeValue=raw.replace(text,value)}}
+function special(text,l){if(l==='ar'){
+ let m=text.match(/^Adjust the coefficient\(s\) containing (.+) so the number of (.+) atoms matches on both sides\.$/);if(m)return `عدّل المعاملات التي تحتوي على ${m[1]} حتى يتساوى عدد ذرات ${m[2]} على الجانبين.`;
+ m=text.match(/^The temporary ratio contains fractions, so multiply every coefficient by (.+)\. This keeps the atom ratios unchanged and converts them to whole numbers\.$/);if(m)return `تحتوي النسبة المؤقتة على كسور، لذا اضرب كل معامل في ${m[1]} للحفاظ على نسب الذرات وتحويلها إلى أعداد كلية.`;
+ m=text.match(/^The coefficients are reduced to the smallest whole-number ratio: (.+)\.$/);if(m)return `تم اختصار المعاملات إلى أصغر نسبة صحيحة بأعداد كلية: ${m[1]}.`;
+ if(text==='The equation is already balanced, so no coefficient changes are required.')return 'المعادلة موزونة بالفعل، لذلك لا حاجة إلى تغيير أي معاملات.';
+ }
+ if(l==='he'){
+ let m=text.match(/^Adjust the coefficient\(s\) containing (.+) so the number of (.+) atoms matches on both sides\.$/);if(m)return `התאימו את המקדמים המכילים את ${m[1]} כך שמספר אטומי ${m[2]} יהיה זהה בשני הצדדים.`;
+ m=text.match(/^The temporary ratio contains fractions, so multiply every coefficient by (.+)\. This keeps the atom ratios unchanged and converts them to whole numbers\.$/);if(m)return `היחס הזמני מכיל שברים, לכן הכפילו כל מקדם ב-${m[1]} כדי לשמור על יחס האטומים ולהפוך אותם למספרים שלמים.`;
+ m=text.match(/^The coefficients are reduced to the smallest whole-number ratio: (.+)\.$/);if(m)return `המקדמים צומצמו ליחס השלם הקטן ביותר: ${m[1]}.`;
+ if(text==='The equation is already balanced, so no coefficient changes are required.')return 'המשוואה כבר מאוזנת, לכן אין צורך לשנות מקדמים.';
+ }
+ return text;
+}
+function replaceText(root){const l=lang(),map=T[l],walker=document.createTreeWalker(root||document.body,NodeFilter.SHOW_TEXT),nodes=[];while(walker.nextNode())nodes.push(walker.currentNode);for(const n of nodes){const raw=n.nodeValue;if(!raw||!raw.trim())continue;const text=raw.trim();const key=keyFor(text);const value=key?map[key]:special(text,l);if(value&&value!==text)n.nodeValue=raw.replace(text,value)}}
 function patch(){replaceText(document.body)}
 function init(){patch();document.addEventListener('click',e=>{if(e.target.closest('#balanceBtn,#balanceRecognized,[data-eq],#clearEquationHistory'))setTimeout(patch,80);if(e.target.closest('#explanationToggle'))setTimeout(patch,20)},true);document.addEventListener('change',e=>{if(e.target.closest('.site-language-control'))setTimeout(patch,50)},true)}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
