@@ -1,108 +1,96 @@
-/* Modern visual refresh: presentation only, no application logic changes. */
+/* Modern visual refresh — sitewide presentation only. */
 :root{
-  --modern-radius:20px;
-  --modern-shadow:0 18px 45px rgba(31,48,82,.10);
-  --modern-shadow-soft:0 8px 25px rgba(31,48,82,.07);
+  --modern-blue:#3158d6;
+  --modern-purple:#6c4de8;
+  --modern-shadow:0 18px 50px rgba(31,48,82,.12);
+  --modern-shadow-soft:0 8px 24px rgba(31,48,82,.08);
 }
-html{background:var(--bg)}
-body{
-  background:
-    radial-gradient(circle at 8% 0%,rgba(108,77,232,.07),transparent 32rem),
-    radial-gradient(circle at 92% 8%,rgba(49,88,214,.08),transparent 30rem),
-    var(--bg)!important;
-}
+html{background:linear-gradient(180deg,#fbfcff 0%,#f4f7fb 42%,#f9fbfd 100%)}
+body{background:transparent!important}
 .topbar{
-  background:rgba(255,255,255,.88)!important;
-  box-shadow:0 2px 20px rgba(31,48,82,.055);
-  border-bottom-color:rgba(220,227,238,.8);
-  backdrop-filter:blur(18px)!important;
+  background:rgba(255,255,255,.95)!important;
+  border-bottom:1px solid rgba(220,227,238,.9)!important;
+  box-shadow:0 5px 24px rgba(31,48,82,.08)!important;
+  backdrop-filter:blur(16px)!important;
+  -webkit-backdrop-filter:blur(16px)!important;
 }
-/* Keep the navigation tabs' existing proportions/layout; only polish their container. */
+/* Restore the previous simple navigation tabs; do not put them in a pill container. */
 .main-nav{
-  padding:3px;
-  border:1px solid rgba(220,227,238,.82);
-  border-radius:12px;
-  background:rgba(245,247,251,.72);
+  display:flex!important;
+  gap:7px!important;
+  align-items:center!important;
+  padding:0!important;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  overflow:visible!important;
+  flex-wrap:nowrap!important;
 }
-.main-nav a{transition:background .18s ease,color .18s ease,box-shadow .18s ease}
-.main-nav a.active{background:#fff;box-shadow:0 3px 12px rgba(31,48,82,.08)}
+.main-nav a{
+  font-size:14px!important;
+  padding:9px 12px!important;
+  border-radius:10px!important;
+  white-space:nowrap!important;
+  flex:0 0 auto!important;
+  transform:none!important;
+  box-shadow:none!important;
+}
+.main-nav a.active{background:#edf1ff!important;box-shadow:none!important}
 .account-top{
-  background:rgba(255,255,255,.92)!important;
-  box-shadow:0 3px 12px rgba(31,48,82,.035);
+  background:#fff!important;
+  box-shadow:0 4px 14px rgba(31,48,82,.06)!important;
   transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease;
 }
-.account-top:hover{transform:translateY(-1px);box-shadow:0 8px 20px rgba(31,48,82,.09)}
-.page-title{
-  padding-top:66px;
-  position:relative;
-}
+.account-top:hover{transform:translateY(-1px);box-shadow:0 9px 22px rgba(31,48,82,.11)!important}
+.page-title{position:relative;padding-top:76px!important;padding-bottom:46px!important}
 .page-title:after{
-  content:"";
-  display:block;
-  width:72px;
-  height:4px;
-  margin-top:24px;
-  border-radius:99px;
-  background:linear-gradient(90deg,var(--accent),var(--accent2));
+  content:'';display:block;width:86px;height:5px;margin-top:26px;border-radius:99px;
+  background:linear-gradient(90deg,var(--modern-blue),var(--modern-purple));
 }
-.page-title h1{letter-spacing:-.045em}
-.page-title p{max-width:760px}
-.section-head{margin-bottom:30px}
+.page-title p{max-width:780px!important;line-height:1.75!important}
 .card,.hero-card,.achievement,.quiz-q,.steps article,.challenge-feature,.experience-card{
-  border-radius:var(--modern-radius);
-  box-shadow:var(--modern-shadow-soft);
-  transition:transform .2s ease,box-shadow .2s ease,border-color .2s ease;
+  border-radius:20px!important;
+  border-color:rgba(213,222,234,.95)!important;
+  box-shadow:var(--modern-shadow-soft)!important;
+  transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease;
 }
-.card,.hero-card{border-color:rgba(220,227,238,.95)}
 .card:hover,.hero-card:hover,.achievement:hover,.experience-card:hover{
   transform:translateY(-3px);
-  box-shadow:var(--modern-shadow);
-  border-color:#cfd9e8;
+  box-shadow:var(--modern-shadow)!important;
+  border-color:#c8d4e7!important;
 }
-.hero-card{
-  background:linear-gradient(145deg,#fff 0%,#f8f9ff 100%);
-  border-color:rgba(211,220,236,.95);
-}
-.atom{
-  box-shadow:inset 0 0 0 1px rgba(49,88,214,.07),0 10px 24px rgba(49,88,214,.12);
-}
+.hero-card{background:linear-gradient(145deg,#fff 0%,#f6f8ff 100%)!important}
+.atom{box-shadow:inset 0 0 0 1px rgba(49,88,214,.07),0 10px 26px rgba(49,88,214,.14)!important}
 .primary,.secondary,.chips button{
-  border-radius:12px;
-  transition:transform .18s ease,box-shadow .18s ease,filter .18s ease,border-color .18s ease,background .18s ease;
+  border-radius:12px!important;
+  transition:transform .18s ease,box-shadow .18s ease,filter .18s ease,border-color .18s ease!important;
 }
-.primary:hover{transform:translateY(-2px);box-shadow:0 13px 28px rgba(49,88,214,.22);filter:saturate(1.05)}
-.secondary:hover,.chips button:hover{transform:translateY(-1px);box-shadow:0 7px 18px rgba(31,48,82,.08)}
+.primary{box-shadow:0 9px 24px rgba(49,88,214,.20)!important}
+.primary:hover{transform:translateY(-2px);box-shadow:0 14px 30px rgba(49,88,214,.27)!important;filter:saturate(1.06)}
+.secondary:hover,.chips button:hover{transform:translateY(-1px);box-shadow:0 8px 20px rgba(31,48,82,.09)!important}
 input,select,textarea{
-  border-color:#d5deea!important;
-  transition:border-color .18s ease,box-shadow .18s ease,background .18s ease;
+  border-color:#d3ddea!important;
+  box-shadow:inset 0 1px 2px rgba(31,48,82,.025)!important;
 }
 input:focus,select:focus,textarea:focus{
   outline:none!important;
-  border-color:var(--accent)!important;
-  box-shadow:0 0 0 4px rgba(49,88,214,.10)!important;
+  border-color:#7f98e7!important;
+  box-shadow:0 0 0 4px rgba(49,88,214,.11)!important;
 }
-.lesson,.challenge-feature,.experience-card,.quiz-q{background:rgba(255,255,255,.86)}
-.lesson a{transition:color .18s ease}
-.lesson a:hover{color:var(--accent2)}
-.eyebrow{letter-spacing:.16em}
-.equation{letter-spacing:.01em}
-footer{background:rgba(255,255,255,.45)}
-body.dark{
-  background:
-    radial-gradient(circle at 8% 0%,rgba(108,77,232,.10),transparent 30rem),
-    radial-gradient(circle at 92% 8%,rgba(49,88,214,.10),transparent 28rem),
-    var(--bg)!important;
-}
-body.dark .topbar{background:rgba(16,22,34,.84)!important}
-body.dark .main-nav{background:rgba(20,29,43,.82)}
-body.dark .main-nav a.active{background:#1b2637}
-body.dark .account-top{background:rgba(23,31,45,.92)!important}
-body.dark .hero-card{background:linear-gradient(145deg,#171f2d 0%,#1b2435 100%)}
-body.dark .lesson,body.dark .challenge-feature,body.dark .experience-card,body.dark .quiz-q{background:rgba(23,31,45,.9)}
-body.dark footer{background:rgba(16,22,34,.35)}
+.lesson,.challenge-feature,.experience-card,.quiz-q{background:rgba(255,255,255,.92)!important}
+.alt{background:linear-gradient(180deg,#edf2f8 0%,#f5f8fc 100%)!important}
+footer{background:rgba(255,255,255,.58);border-top-color:rgba(213,222,234,.8)!important}
+body.dark .topbar{background:rgba(16,22,34,.92)!important}
+body.dark .main-nav a.active{background:#202b3d!important}
+body.dark .account-top{background:#171f2d!important}
+body.dark .hero-card{background:linear-gradient(145deg,#171f2d 0%,#1e293a 100%)!important}
+body.dark .lesson,body.dark .challenge-feature,body.dark .experience-card,body.dark .quiz-q{background:rgba(23,31,45,.94)!important}
+body.dark footer{background:rgba(16,22,34,.45)}
 @media(max-width:760px){
-  .page-title{padding-top:42px}
-  .page-title:after{margin-top:18px}
-  .card,.hero-card,.achievement,.quiz-q,.steps article,.challenge-feature,.experience-card{border-radius:17px}
-  .card:hover,.hero-card:hover,.achievement:hover,.experience-card:hover{transform:none;box-shadow:var(--modern-shadow-soft)}
+  .main-nav{width:100%!important;overflow-x:auto!important;overflow-y:hidden!important;scrollbar-width:none!important;-webkit-overflow-scrolling:touch!important}
+  .main-nav::-webkit-scrollbar{display:none}
+  .main-nav a{font-size:14px!important;padding:9px 12px!important}
+  .page-title{padding-top:44px!important;padding-bottom:30px!important}
+  .page-title:after{width:70px;height:4px;margin-top:18px}
+  .card:hover,.hero-card:hover,.achievement:hover,.experience-card:hover{transform:none;box-shadow:var(--modern-shadow-soft)!important}
 }
