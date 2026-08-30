@@ -43,6 +43,8 @@ jobs:
           for html in root.glob('*.html'):
               text=html.read_text(encoding='utf-8', errors='ignore')
               text=re.sub(r'language-clean\\.js(?:\\?[^\\"\\']*)?', 'language-clean.js?v='+sha, text)
+              # Disable the older student-product loader so it cannot create a duplicate placeholder card.
+              text=text.replace('loadStudentProduct();','')
               if 'data-site-modern-refresh' not in text:
                   text=text.replace('</head>','<link rel="stylesheet" href="modern-refresh.css?v='+sha+'" data-site-modern-refresh="1">\\n</head>',1)
               text=re.sub(r'\\s*<script[^>]+student-engagement\\.js(?:\\?[^>\\"\\']*)?[^>]*></script>', '', text, flags=re.I)
