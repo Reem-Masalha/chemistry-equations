@@ -49,7 +49,6 @@ jobs:
                   link='<link rel="stylesheet" href="modern-refresh.css?v='+sha+'" data-site-modern-refresh="1">'
                   if marker in text:
                       text=text.replace(marker,link+'\n'+marker,1)
-              # Remove legacy automatic injections from prior iterations.
               text=re.sub(r'\s*<script[^>]+student-engagement\.js(?:\?[^>\"\']*)?[^>]*></script>', '', text, flags=re.I)
               text=re.sub(r'\s*<script[^>]+daily-challenge\.js(?:\?[^>\"\']*)?[^>]*></script>', '', text, flags=re.I)
               if 'data-student-experience-v3' not in text:
