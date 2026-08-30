@@ -45,15 +45,14 @@ jobs:
               text=text.replace('loadStudentProduct();','')
               if 'data-site-modern-refresh' not in text:
                   text=text.replace('</head>','<link rel="stylesheet" href="modern-refresh.css?v='+sha+'" data-site-modern-refresh="1">\n</head>',1)
-              # Load the full student experience everywhere.
               if 'data-student-experience-v3' not in text:
                   text=text.replace('</body>','<script src="student-experience-v3.js?v='+sha+'" defer data-student-experience-v3="1"></script>\n</body>',1)
-              # Learn has the authoritative legacy-compatible loader too.
               if html.name == 'learn.html' and 'data-daily-question' not in text:
                   text=text.replace('</body>','<script src="daily-challenge-real.js?v='+sha+'" defer data-daily-question="1"></script>\n</body>',1)
-              # Home/root gets the actual five-question daily challenge directly.
               if html.name == 'index.html' and 'data-daily-home-challenge' not in text:
                   text=text.replace('</body>','<script src="daily-home-challenge.js?v='+sha+'" defer data-daily-home-challenge="1"></script>\n</body>',1)
+              if html.name in ('index.html','learn.html') and 'data-daily-challenge-v6' not in text:
+                  text=text.replace('</body>','<script src="daily-challenge-v6.js?v='+sha+'" defer data-daily-challenge-v6="1"></script>\n</body>',1)
               html.write_text(text,encoding='utf-8')
           PY
 
@@ -68,6 +67,7 @@ jobs:
           test -s _site/daily-question.js
           test -s _site/daily-challenge-real.js
           test -s _site/daily-home-challenge.js
+          test -s _site/daily-challenge-v6.js
 
           python3 - <<'PY'
           import re, pathlib
@@ -78,7 +78,7 @@ jobs:
               for src in re.findall(r'<script[^>]+src=[\"\']([^\"\']+)[\"\']', text, re.I):
                   src=src.split('?',1)[0].split('#',1)[0]
                   if src.endswith('.js'): scripts.add(src.lstrip('./'))
-          scripts.update({'site-language-v2.js','learn-full-i18n.js','learn-extra-i18n.js','student-experience-v3.js','daily-question.js','daily-challenge-real.js','daily-home-challenge.js'})
+          scripts.update({'site-language-v2.js','learn-full-i18n.js','learn-extra-i18n.js','student-experience-v3.js','daily-question.js','daily-challenge-real.js','daily-home-challenge.js','daily-challenge-v6.js'})
           missing=[src for src in sorted(scripts) if not (root/src).exists()]
           if missing: raise SystemExit('Missing referenced/dynamic scripts: '+', '.join(missing))
           PY
@@ -91,7 +91,7 @@ jobs:
               for src in re.findall(r'<script[^>]+src=[\"\']([^\"\']+)[\"\']', text, re.I):
                   src=src.split('?',1)[0].split('#',1)[0]
                   if src.endswith('.js'): scripts.add(src.lstrip('./'))
-          scripts.update({'site-language-v2.js','learn-full-i18n.js','learn-extra-i18n.js','student-experience-v3.js','daily-question.js','daily-challenge-real.js','daily-home-challenge.js'})
+          scripts.update({'site-language-v2.js','learn-full-i18n.js','learn-extra-i18n.js','student-experience-v3.js','daily-question.js','daily-challenge-real.js','daily-home-challenge.js','daily-challenge-v6.js'})
           for src in sorted(scripts): print(root/src)
           PY
           )
