@@ -36,8 +36,7 @@ jobs:
           git archive HEAD | tar -x -C _site
           touch _site/.nojekyll
 
-          # Every page must use the same current, observer-free localization entry point.
-          # Rewrite the query string so browsers cannot retain an older language runtime.
+          # Keep language runtime cache-busted and load the same visual design on every page.
           python3 - <<'PY'
           import pathlib, re
           root=pathlib.Path('_site')
@@ -45,6 +44,11 @@ jobs:
           for html in root.glob('*.html'):
               text=html.read_text(encoding='utf-8', errors='ignore')
               text=re.sub(r'language-clean\.js(?:\?[^\"\']*)?', 'language-clean.js?v='+sha, text)
+              if 'data-site-modern-refresh' not in text:
+                  marker='</head>'
+                  link='<link rel="stylesheet" href="modern-refresh.css?v='+sha+'" data-site-modern-refresh="1">'
+                  if marker in text:
+                      text=text.replace(marker, link+'\n'+marker, 1)
               html.write_text(text, encoding='utf-8')
           PY
 
@@ -57,6 +61,7 @@ jobs:
           test -s _site/language-clean.js
           test -s _site/i18n-safe.js
           test -s _site/account.js
+          test -s _site/modern-refresh.css
 
           python3 - <<'PY'
           import re, pathlib
