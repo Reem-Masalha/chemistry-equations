@@ -3,6 +3,10 @@
   const API=window.CHEMISTRY_API_WORKER||'https://chemistry-equations-api.reemkhmasalha.workers.dev';
   const KEY='chemistryVisitorId';
   const path=(location.pathname||'/').slice(0,200);
+  // Never count the private admin page or obvious crawlers/previews as site visitors.
+  const ua=(navigator.userAgent||'').toLowerCase();
+  const bot=/bot|crawler|spider|slurp|bingpreview|facebookexternalhit|facebot|headless|lighthouse|pagespeed|prerender|uptimerobot|pingdom|semrush|ahrefs|yandex|baidu|duckduckgo/i.test(ua)||navigator.webdriver===true;
+  if(path.endsWith('/admin.html')||path==='/admin.html'||bot)return;
   function get(k){try{return localStorage.getItem(k)}catch{return null}}
   function set(k,v){try{localStorage.setItem(k,v)}catch{}}
   let visitorId=get(KEY);if(!visitorId){visitorId=(crypto.randomUUID?crypto.randomUUID():(Date.now().toString(36)+'-'+Math.random().toString(36).slice(2)));set(KEY,visitorId)}
