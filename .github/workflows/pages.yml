@@ -36,6 +36,18 @@ jobs:
           git archive HEAD | tar -x -C _site
           touch _site/.nojekyll
 
+          # Every page must use the same current, observer-free localization entry point.
+          # Rewrite the query string so browsers cannot retain an older language runtime.
+          python3 - <<'PY'
+          import pathlib, re
+          root=pathlib.Path('_site')
+          sha='${GITHUB_SHA}'
+          for html in root.glob('*.html'):
+              text=html.read_text(encoding='utf-8', errors='ignore')
+              text=re.sub(r'language-clean\.js(?:\?[^\"\']*)?', 'language-clean.js?v='+sha, text)
+              html.write_text(text, encoding='utf-8')
+          PY
+
           test -s _site/index.html
           test -s _site/learn.html
           test -s _site/personal-quiz.html
@@ -43,11 +55,9 @@ jobs:
           test -s _site/checker.html
           test -s _site/profile.html
           test -s _site/language-clean.js
-          test -s _site/i18n-core.js
+          test -s _site/i18n-safe.js
           test -s _site/account.js
 
-          # Validate JavaScript that is actually referenced by the published pages,
-          # plus the small set of known dynamically loaded localization scripts.
           python3 - <<'PY'
           import re, pathlib
           root=pathlib.Path('_site')
@@ -58,12 +68,7 @@ jobs:
                   src=src.split('?',1)[0].split('#',1)[0]
                   if src.endswith('.js'):
                       scripts.add(src.lstrip('./'))
-          scripts.update({
-              'site-language-v2.js',
-              'i18n-enhancements.js',
-              'learn-full-i18n.js',
-              'learn-extra-i18n.js',
-          })
+          scripts.update({'site-language-v2.js','learn-full-i18n.js','learn-extra-i18n.js'})
           missing=[]
           for src in sorted(scripts):
               p=root/src
@@ -72,6 +77,7 @@ jobs:
           if missing:
               raise SystemExit('Missing referenced/dynamic scripts: '+', '.join(missing))
           PY
+
           while IFS= read -r f; do
             node --check "$f" >/dev/null
           done < <(python3 - <<'PY'
@@ -82,7 +88,7 @@ jobs:
               for src in re.findall(r'<script[^>]+src=[\"\']([^\"\']+)[\"\']', text, re.I):
                   src=src.split('?',1)[0].split('#',1)[0]
                   if src.endswith('.js'): scripts.add(src.lstrip('./'))
-          scripts.update({'site-language-v2.js','i18n-enhancements.js','learn-full-i18n.js','learn-extra-i18n.js'})
+          scripts.update({'site-language-v2.js','learn-full-i18n.js','learn-extra-i18n.js'})
           for src in sorted(scripts): print(root/src)
           PY
           )
