@@ -8,17 +8,22 @@ const T={
 };
 function lang(){const v=localStorage.getItem(LANG_KEY)||'en';return T[v]?v:'en'}
 function keyFor(text){for(const key of Object.keys(T.en)){for(const l of Object.keys(T)){if(T[l][key]===text)return key}}return null}
-function special(text,l){if(l==='ar'){
- let m=text.match(/^Adjust the coefficient\(s\) containing (.+) so the number of (.+) atoms matches on both sides\.$/);if(m)return `عدّل المعاملات التي تحتوي على ${m[1]} حتى يتساوى عدد ذرات ${m[2]} على الجانبين.`;
- m=text.match(/^The temporary ratio contains fractions, so multiply every coefficient by (.+)\. This keeps the atom ratios unchanged and converts them to whole numbers\.$/);if(m)return `تحتوي النسبة المؤقتة على كسور، لذا اضرب كل معامل في ${m[1]} للحفاظ على نسب الذرات وتحويلها إلى أعداد كلية.`;
- m=text.match(/^The coefficients are reduced to the smallest whole-number ratio: (.+)\.$/);if(m)return `تم اختصار المعاملات إلى أصغر نسبة صحيحة بأعداد كلية: ${m[1]}.`;
- if(text==='The equation is already balanced, so no coefficient changes are required.')return 'المعادلة موزونة بالفعل، لذلك لا حاجة إلى تغيير أي معاملات.';
+function special(text,l){
+ if(l==='ar'){
+  let m=text.match(/^Step (\d+): Balance (.+)$/);if(m)return `الخطوة ${m[1]}: وازن ${m[2]}`;
+  m=text.match(/^(\d+) recent equations?$/);if(m)return `${m[1]} ${m[1]==='1'?'معادلة حديثة':'معادلات حديثة'}`;
+  m=text.match(/^Adjust the coefficient\(s\) containing (.+) so the number of (.+) atoms matches on both sides\.$/);if(m)return `عدّل المعاملات التي تحتوي على ${m[1]} حتى يتساوى عدد ذرات ${m[2]} على الجانبين.`;
+  m=text.match(/^The temporary ratio contains fractions, so multiply every coefficient by (.+)\. This keeps the atom ratios unchanged and converts them to whole numbers\.$/);if(m)return `تحتوي النسبة المؤقتة على كسور، لذا اضرب كل معامل في ${m[1]} للحفاظ على نسب الذرات وتحويلها إلى أعداد كلية.`;
+  m=text.match(/^The coefficients are reduced to the smallest whole-number ratio: (.+)\.$/);if(m)return `تم اختصار المعاملات إلى أصغر نسبة صحيحة بأعداد كلية: ${m[1]}.`;
+  if(text==='The equation is already balanced, so no coefficient changes are required.')return 'المعادلة موزونة بالفعل، لذلك لا حاجة إلى تغيير أي معاملات.';
  }
  if(l==='he'){
- let m=text.match(/^Adjust the coefficient\(s\) containing (.+) so the number of (.+) atoms matches on both sides\.$/);if(m)return `התאימו את המקדמים המכילים את ${m[1]} כך שמספר אטומי ${m[2]} יהיה זהה בשני הצדדים.`;
- m=text.match(/^The temporary ratio contains fractions, so multiply every coefficient by (.+)\. This keeps the atom ratios unchanged and converts them to whole numbers\.$/);if(m)return `היחס הזמני מכיל שברים, לכן הכפילו כל מקדם ב-${m[1]} כדי לשמור על יחס האטומים ולהפוך אותם למספרים שלמים.`;
- m=text.match(/^The coefficients are reduced to the smallest whole-number ratio: (.+)\.$/);if(m)return `המקדמים צומצמו ליחס השלם הקטן ביותר: ${m[1]}.`;
- if(text==='The equation is already balanced, so no coefficient changes are required.')return 'המשוואה כבר מאוזנת, לכן אין צורך לשנות מקדמים.';
+  let m=text.match(/^Step (\d+): Balance (.+)$/);if(m)return `שלב ${m[1]:}: אזן ${m[2]}`;
+  m=text.match(/^(\d+) recent equations?$/);if(m)return `${m[1]} ${m[1]==='1'?'משוואה אחרונה':'משוואות אחרונות'}`;
+  m=text.match(/^Adjust the coefficient\(s\) containing (.+) so the number of (.+) atoms matches on both sides\.$/);if(m)return `התאימו את המקדמים המכילים את ${m[1]} כך שמספר אטומי ${m[2]} יהיה זהה בשני הצדדים.`;
+  m=text.match(/^The temporary ratio contains fractions, so multiply every coefficient by (.+)\. This keeps the atom ratios unchanged and converts them to whole numbers\.$/);if(m)return `היחס הזמני מכיל שברים, לכן הכפילו כל מקדם ב-${m[1]} כדי לשמור על יחס האטומים ולהפוך אותם למספרים שלמים.`;
+  m=text.match(/^The coefficients are reduced to the smallest whole-number ratio: (.+)\.$/);if(m)return `המקדמים צומצמו ליחס השלם הקטן ביותר: ${m[1]}.`;
+  if(text==='The equation is already balanced, so no coefficient changes are required.')return 'המשוואה כבר מאוזנת, לכן אין צורך לשנות מקדמים.';
  }
  return text;
 }
