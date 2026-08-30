@@ -40,20 +40,19 @@ jobs:
           test -s _site/admin.html
           test -s _site/visitor-tracker.js
 
-          # Publish one language system only. Remove all legacy translators,
-          # observers, and RTL layout hotfixes before injecting the final layer.
+          # Publish one non-freezing language system only.
           find _site -type f -name '*.html' -print0 | while IFS= read -r -d '' f; do
             sed -i -E 's#<script[^>]*src="[^"]*(language-clean|language-safe|language-final-fix|language-switch-fix|language-v2|language\.js|site-i18n-fix|i18n-site-hotfix|i18n-universal-fix|translation-runtime-fix|language-button|site-language\.js|site-language-v2|site-language-final|site-language-ultimate|learn-content-i18n|learn-mini-course-i18n)\.js[^>]*></script>##g' "$f"
             sed -i -E 's#<script[^>]*src="[^"]*rtl-layout-fix\.js[^>]*></script>##g' "$f"
             sed -i -E 's#<script[^>]*src="[^"]*history-actions-v2\.js[^>]*></script>##g' "$f"
             sed -i -E 's#<script[^>]*src="[^"]*history-equation-(stability|fix-v2|final)\.js[^>]*></script>##g' "$f"
             sed -i -E 's#<link[^>]*href="[^"]*site-language[^>]*>##g' "$f"
-            sed -i 's#</head>#<link rel="stylesheet" href="site-language-final.css?v=20260830-02"></head>#' "$f"
-            sed -i 's#</body>#<script src="site-language-final.js?v=20260830-02" defer></script></body>#' "$f"
+            sed -i 's#</head>#<link rel="stylesheet" href="site-language-final.css?v=20260830-100"></head>#' "$f"
+            sed -i 's#</body>#<script src="site-language-final.js?v=20260830-100" defer></script></body>#' "$f"
           done
 
           # History management belongs only to the Balancer page.
-          sed -i 's#</body>#<script src="history-actions-v2.js?v=20260830-02" defer></script></body>#' _site/index.html
+          sed -i 's#</body>#<script src="history-actions-v2.js?v=20260830-100" defer></script></body>#' _site/index.html
 
           printf '%s\n' "$GITHUB_SHA" > _site/DEPLOYMENT_COMMIT.txt
           printf 'chemistry-equations-pages-%s\n' "$GITHUB_SHA" > _site/SITE_BUILD_VERSION.txt
