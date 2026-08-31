@@ -45,12 +45,12 @@ jobs:
               text=text.replace('loadStudentProduct();','')
 
               if html.name=='learn.html':
-                  # Learn owns the one and only Daily Challenge implementation.
-                  # Remove every older challenge/student-experience script reference,
-                  # load the legacy-card blocker and retired-card CSS first, then load v5.
+                  # Learn has exactly one Daily Challenge implementation.
+                  # Strip every older challenge/student-experience loader so it cannot compete with v7.
                   text=re.sub(r'<script[^>]+src=[\"\'][^\"\']*(?:student-experience|daily-challenge)[^\"\']+\.js(?:\?[^\"\']*)?[\"\'][^>]*></script>\s*','',text,flags=re.I)
-                  text=text.replace('</head>','<link rel="stylesheet" href="legacy-daily-hide.css?v='+sha+'" data-legacy-daily-hide="1">\n<script src="daily-legacy-blocker.js?v='+sha+'" defer data-daily-legacy-blocker="1"></script>\n</head>',1)
-                  text=text.replace('</body>','<script src="daily-challenge-v5.js?v='+sha+'" defer data-daily-challenge-v5="1"></script>\n</body>',1)
+                  text=re.sub(r'<script[^>]+data-daily-(?:v5|v6|v7)-loader[^>]*></script>\s*','',text,flags=re.I)
+                  text=text.replace('</head>','<link rel="stylesheet" href="legacy-daily-hide.css?v='+sha+'" data-legacy-daily-hide="1">\n</head>',1)
+                  text=text.replace('</body>','<script src="daily-challenge-v7.js?v='+sha+'" defer data-daily-challenge-v7="1"></script>\n</body>',1)
 
               if 'data-site-modern-refresh' not in text:
                   text=text.replace('</head>','<link rel="stylesheet" href="modern-refresh.css?v='+sha+'" data-site-modern-refresh="1">\n</head>',1)
@@ -74,8 +74,7 @@ jobs:
           test -s _site/admin.html
           test -s _site/modern-refresh.css
           test -s _site/legacy-daily-hide.css
-          test -s _site/daily-challenge-v5.js
-          test -s _site/daily-legacy-blocker.js
+          test -s _site/daily-challenge-v7.js
           test -s _site/admin-tools.js
 
           python3 - <<'PY'
@@ -87,7 +86,7 @@ jobs:
               for src in re.findall(r'<script[^>]+src=[\"\']([^\"\']+)[\"\']', text, re.I):
                   src=src.split('?',1)[0].split('#',1)[0]
                   if src.endswith('.js'): scripts.add(src.lstrip('./'))
-          scripts.update({'student-experience-v3.js','daily-challenge-v5.js','daily-legacy-blocker.js','admin-tools.js'})
+          scripts.update({'student-experience-v3.js','daily-challenge-v7.js','admin-tools.js'})
           missing=[src for src in sorted(scripts) if not (root/src).exists()]
           if missing: raise SystemExit('Missing referenced/dynamic scripts: '+', '.join(missing))
           PY
@@ -100,10 +99,20 @@ jobs:
               for src in re.findall(r'<script[^>]+src=[\"\']([^\"\']+)[\"\']', text, re.I):
                   src=src.split('?',1)[0].split('#',1)[0]
                   if src.endswith('.js'): scripts.add(src.lstrip('./'))
-          scripts.update({'student-experience-v3.js','daily-challenge-v5.js','daily-legacy-blocker.js','admin-tools.js'})
+          scripts.update({'student-experience-v3.js','daily-challenge-v7.js','admin-tools.js'})
           for src in sorted(scripts): print(root/src)
           PY
           )
+
+          # Build-time guards for the exact regressions reported during development.
+          python3 - <<'PY'
+          import pathlib
+          p=pathlib.Path('_site/learn.html')
+          t=p.read_text(encoding='utf-8',errors='ignore')
+          if 'daily-challenge-v7.js' not in t: raise SystemExit('v7 challenge not injected')
+          if 'daily-challenge-v5.js' in t or 'daily-challenge-v6.js' in t or 'daily-challenge-final.js' in t: raise SystemExit('old challenge loader remains')
+          if 'student-experience-v3.js' in t: raise SystemExit('legacy student experience remains on Learn')
+          PY
 
           printf '%s\n' "$GITHUB_SHA" > _site/DEPLOYMENT_COMMIT.txt
           printf 'chemistry-equations-pages-%s\n' "$GITHUB_SHA" > _site/SITE_BUILD_VERSION.txt
