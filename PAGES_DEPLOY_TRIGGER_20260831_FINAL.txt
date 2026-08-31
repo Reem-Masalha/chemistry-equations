@@ -1,0 +1,1 @@
+Force GitHub Pages deployment from the current main branch so the Daily Challenge cleanup and fixes are published.
