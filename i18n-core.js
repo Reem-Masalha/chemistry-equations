@@ -20,6 +20,8 @@ function loadFinalCss(){
  l.rel='stylesheet';
  l.href='site-language.css?v=20260831-global-1';
  l.dataset.siteLocalizationCss='1';
+ // i18n-enhancements.js checks this marker before loading its own copy.
+ l.dataset.chemistryI18nCss='1';
  document.head.appendChild(l);
 }
 function loadPlus(){
