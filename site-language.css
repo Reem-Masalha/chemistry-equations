@@ -12,6 +12,10 @@ html[dir="rtl"] .main-nav a{direction:rtl;unicode-bidi:isolate;text-align:center
 html[dir="rtl"] #accountTopBtn,html[dir="rtl"] #themeToggle{direction:rtl;unicode-bidi:isolate}
 .main-nav{flex-wrap:wrap}
 
+/* Dark mode controls must keep readable contrast. */
+body.dark #accountTopBtn,body.dark .account-top{background:var(--surface,#171f2d)!important;color:var(--text,#edf2fa)!important;border-color:var(--line,#2a374a)!important;-webkit-text-fill-color:currentColor!important}
+body.dark #themeToggle{color:var(--text,#edf2fa)!important;-webkit-text-fill-color:currentColor!important}
+
 /* Language control is a utility control: keep its geometry stable and compact. */
 .site-language-control{display:inline-flex!important;align-items:center;gap:7px;flex:0 0 auto;margin-inline-start:0!important;white-space:nowrap;direction:ltr!important;z-index:1000}
 .site-language-control select{min-height:38px;padding:7px 10px;border:1px solid var(--line,#dfe5ee);border-radius:9px;background:var(--surface,#fff);color:inherit;font:inherit;cursor:pointer;direction:ltr}
@@ -35,9 +39,7 @@ html[dir="rtl"] input:not([type="radio"]):not([type="checkbox"]),html[dir="rtl"]
 #equationInput,#checkInput,#recognizedEdit,.equation-input,.checker-input{direction:ltr!important;text-align:left!important;unicode-bidi:isolate!important}
 canvas{direction:ltr!important}
 
-/* Lesson formulas belong visually to the explanation directly above them.
-   In RTL, align explanatory equations to the same side instead of throwing
-   the formula to the opposite edge of the card. */
+/* Lesson formulas belong visually to the explanation directly above them. */
 html[dir="rtl"] article.card>.equation,html[dir="rtl"] .lesson>.equation,html[dir="rtl"] .section article>.equation{text-align:right!important;margin-block:10px 12px!important;padding-inline:0!important}
 html[dir="ltr"] article.card>.equation,html[dir="ltr"] .lesson>.equation,html[dir="ltr"] .section article>.equation{text-align:left!important;margin-block:10px 12px!important;padding-inline:0!important}
 article.card>h2+.equation,article.card>h3+.equation,article.card>p+.equation{margin-top:8px!important}
@@ -61,9 +63,12 @@ html[dir="rtl"] .certificate{direction:rtl;text-align:center}
 
 @media(max-width:760px){
  .topbar{flex-wrap:wrap;gap:9px}
- .main-nav{width:100%;justify-content:flex-start;flex-wrap:wrap;overflow-x:auto;padding-bottom:2px}
+ .main-nav{width:100%;justify-content:flex-start;flex-wrap:nowrap!important;overflow-x:auto;overflow-y:hidden;padding-bottom:3px;gap:6px;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+ .main-nav::-webkit-scrollbar{display:none}
+ .main-nav a{flex:0 0 auto;white-space:nowrap}
  html[dir="rtl"] .main-nav{direction:ltr!important;justify-content:flex-start!important}
  .site-language-control{margin-inline-start:0!important}
  .site-language-label{display:none}
+ #themeToggle,#accountTopBtn{white-space:nowrap}
  html[dir="rtl"] .section-head{align-items:flex-start}
 }
