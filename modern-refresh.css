@@ -63,13 +63,27 @@ input:focus,select:focus,textarea:focus{outline:none!important;border-color:var(
 /* Footer. */
 footer{background:rgba(255,255,255,.68)!important;border-top:1px solid #d8e2ee!important}
 /* Dark mode. */
-body.dark{background:radial-gradient(850px 480px at 0 -8%,rgba(108,77,232,.18),transparent 62%),radial-gradient(900px 520px at 100% 0,rgba(49,88,214,.17),transparent 62%),#101622!important}
+body.dark{--modern-ink:#edf2fa;--modern-muted:#a9b7ca;--modern-border:#2b394d;--modern-surface:#171f2d;--modern-bg:#101622;background:radial-gradient(850px 480px at 0 -8%,rgba(108,77,232,.18),transparent 62%),radial-gradient(900px 520px at 100% 0,rgba(49,88,214,.17),transparent 62%),#101622!important;color:var(--modern-ink)!important}
+body.dark h1,body.dark h2,body.dark h3,body.dark h4,body.dark strong,body.dark b{color:var(--modern-ink)}
+body.dark p,body.dark li,body.dark .muted,body.dark small{color:var(--modern-muted)}
 body.dark .topbar{background:rgba(16,22,34,.95)!important;border-bottom-color:#29364a!important}
-body.dark .main-nav a{color:#9aa9bd!important}body.dark .main-nav a.active{background:#1b2637!important;color:#aebcff!important}body.dark .main-nav a:hover{background:#182337!important;color:#c3ccff!important}
-body.dark .page-title .eyebrow{background:#202c52!important;color:#aebcff!important}
-body.dark .card,body.dark .hero-card,body.dark .achievement,body.dark .quiz-q,body.dark .steps article,body.dark .challenge-feature,body.dark .experience-card,body.dark .course-map article,body.dark .mistake,body.dark .course-note{border-color:#2b394d!important;background:rgba(23,31,45,.97)!important;box-shadow:0 12px 34px rgba(0,0,0,.21)!important}
+body.dark .main-nav a{color:#a9b7ca!important}body.dark .main-nav a.active{background:#1b2637!important;color:#c3ccff!important}body.dark .main-nav a:hover{background:#182337!important;color:#d8deff!important}
+body.dark .account-top{background:#171f2d!important;border-color:#344359!important;color:#edf2fa!important;box-shadow:0 5px 16px rgba(0,0,0,.2)!important}
+body.dark .page-title .eyebrow{background:#202c52!important;color:#b9c5ff!important}
+body.dark .hero:before{background:linear-gradient(135deg,rgba(27,37,64,.72),rgba(24,32,49,.62),rgba(16,22,34,.18))!important}
+body.dark .page-title:before{background:linear-gradient(135deg,rgba(49,88,214,.16),rgba(108,77,232,.15),transparent 74%)!important}
+body.dark .card,body.dark .hero-card,body.dark .achievement,body.dark .quiz-q,body.dark .steps article,body.dark .challenge-feature,body.dark .experience-card,body.dark .course-map article,body.dark .mistake,body.dark .course-note{border-color:#2b394d!important;background:rgba(23,31,45,.97)!important;box-shadow:0 12px 34px rgba(0,0,0,.21)!important;color:var(--modern-ink)!important}
 body.dark .hero-card{background:linear-gradient(145deg,#171f2d,#1b2435)!important}body.dark .lesson,body.dark .challenge-feature,body.dark .experience-card,body.dark .quiz-q,body.dark .course-map article,body.dark .mistake{background:linear-gradient(180deg,#171f2d,#141c29)!important}
-body.dark .section.alt{background:linear-gradient(180deg,#0e1521,#101723)!important}body.dark input,body.dark select,body.dark textarea{background:#111927!important;border-color:#344359!important;color:var(--text)!important}body.dark .equation{background:linear-gradient(135deg,#1b2540,#222c49)!important}body.dark footer{background:rgba(16,22,34,.56)!important}
+body.dark .atom{background:linear-gradient(145deg,#dfe6ff,#cdd8ff)!important;color:#3158d6!important}
+body.dark .section.alt{background:linear-gradient(180deg,#0e1521,#101723)!important}
+body.dark input,body.dark select,body.dark textarea{background:#111927!important;border-color:#344359!important;color:#edf2fa!important}
+body.dark .secondary,body.dark .chips button{background:#171f2d!important;border-color:#344359!important;color:#edf2fa!important}
+body.dark .secondary:hover,body.dark .chips button:hover{background:#202b3d!important;border-color:#455773!important;color:#fff!important}
+body.dark .equation{background:linear-gradient(135deg,#1b2540,#222c49)!important;color:#edf2fa!important;border-color:#33425c!important}
+body.dark .progress-grid>div,body.dark .score-animation,body.dark .certificate{background:linear-gradient(180deg,#171f2d,#141c29)!important;color:#edf2fa!important;border-color:#2b394d!important}
+body.dark .sp-card,body.dark .sp-challenge-box,body.dark .sp-alert,body.dark .sp-level{background:#171f2d!important;color:#edf2fa!important;border-color:#2b394d!important}
+body.dark .sp-card p,body.dark .sp-stat span,body.dark .sp-mode small{color:#a9b7ca!important}
+body.dark footer{background:rgba(16,22,34,.56)!important;color:#a9b7ca!important}
 /* Responsive navigation and layout. */
 @media(max-width:1100px){.topbar{gap:12px!important}.main-nav{gap:4px!important}.main-nav a{padding:9px 10px!important;font-size:13px!important}.account-top{padding:9px 10px!important}}
 @media(max-width:760px){
