@@ -60,7 +60,7 @@ function translateTextNode(node,l){const parent=node.parentElement;if(isProtecte
 
 function scan(root=document.body){if(!root)return;const l=currentLang();if(root.nodeType===Node.TEXT_NODE){translateTextNode(root,l);return}const walker=document.createTreeWalker(root,NodeFilter.SHOW_TEXT),nodes=[];while(walker.nextNode())nodes.push(walker.currentNode);for(const n of nodes)translateTextNode(n,l);const scope=root.querySelectorAll?root:document;for(const el of scope.querySelectorAll('input[placeholder],textarea[placeholder],[aria-label],[title]')){if(isProtected(el)||el.closest('.site-language-control'))continue;let src=originalAttr.get(el);if(!src){src={};originalAttr.set(el,src)}for(const a of ['placeholder','aria-label','title']){if(!el.hasAttribute(a))continue;const cur=el.getAttribute(a)||'';if(!src[a])src[a]=sourceKey(cur);const out=translated(src[a],l);if(out!==cur)el.setAttribute(a,out)}}}
 
-function ensureCss(){let link=document.querySelector('link[data-chemistry-i18n-css]');if(!link){link=document.createElement('link');link.rel='stylesheet';link.dataset.chemistryI18nCss='1';document.head.appendChild(link)}link.href='site-language.css?v=20260831-global-3'}
+function ensureCss(){let link=document.querySelector('link[data-chemistry-i18n-css]');if(!link){link=document.createElement('link');link.rel='stylesheet';link.dataset.chemistryI18nCss='1';document.head.appendChild(link)}link.href='site-language.css?v=20260831-global-4'}
 
 function ensureSelector(){const top=document.querySelector('.topbar');if(!top)return;let box=document.getElementById('site-language-control');if(!box){box=document.createElement('label');box.id='site-language-control';box.className='site-language-control';box.innerHTML='<span class="site-language-icon" aria-hidden="true">🌐</span><span class="site-language-label">Language</span><select id="site-language-select" aria-label="Language"><option value="en">English</option><option value="ar">العربية</option><option value="he">עברית</option></select>';top.appendChild(box);box.querySelector('select').addEventListener('change',e=>{const l=LANG[e.target.value]?e.target.value:'en';try{localStorage.setItem(KEY,l)}catch{}applyShell();scan(document.body);window.dispatchEvent(new CustomEvent('chemistryLanguageChanged',{detail:{language:l}}))})}const select=box.querySelector('select');if(select)select.value=currentLang()}
 
@@ -70,7 +70,25 @@ function applyShell(){const l=currentLang(),rtl=l!=='en',dir=rtl?'rtl':'ltr';doc
 function refresh(root=document.body){applyShell();scan(root||document.body)}
 function schedule(root){if(refreshQueued)return;refreshQueued=true;requestAnimationFrame(()=>{refreshQueued=false;refresh(root&&root.isConnected?root:document.body)})}
 
-async function loadBaseDictionary(){try{const r=await fetch('site-language-v2.js?v=20260831-dictionary-1',{cache:'no-store'});if(!r.ok)throw new Error('dictionary '+r.status);const src=await r.text(),start=src.indexOf('const M=');let end=src.indexOf('\nconst original=',start);if(end<0)end=src.indexOf('\r\nconst original=',start);if(start<0||end<0)throw new Error('dictionary markers not found');let expr=src.slice(start+'const M='.length,end).trim();if(expr.endsWith(';'))expr=expr.slice(0,-1);const base=Function('"use strict";return ('+expr+');')();if(base&&typeof base==='object')dict={...base,...EXTRA}}catch(e){console.warn('[i18n] Base dictionary unavailable; using built-in translations.',e)}rebuildReverse();refresh();window.dispatchEvent(new Event('chemistryI18nReady'))}
+async function loadBaseDictionary(){
+ try{
+  const r=await fetch('site-language-v2.js?v=20260831-dictionary-2',{cache:'no-store'});
+  if(!r.ok)throw new Error('dictionary '+r.status);
+  const src=await r.text();
+  const start=src.indexOf('const M=');
+  const end=src.indexOf('const original=',start);
+  if(start<0||end<0)throw new Error('dictionary markers not found');
+  let expr=src.slice(start+'const M='.length,end).trim();
+  while(expr.endsWith(';'))expr=expr.slice(0,-1).trim();
+  const base=Function('"use strict";return ('+expr+');')();
+  if(base&&typeof base==='object')dict={...base,...EXTRA};
+ }catch(e){console.warn('[i18n] Base dictionary unavailable; using built-in translations.',e)}
+ rebuildReverse();
+ // Clear remembered source keys so text first seen before the full dictionary loaded
+ // can be resolved again against the complete dictionary.
+ refresh();
+ window.dispatchEvent(new Event('chemistryI18nReady'));
+}
 
 function apiTranslate(en,ar,he){const l=currentLang();if(l==='en')return en;if(l==='ar'&&ar!=null)return ar;if(l==='he'&&he!=null)return he;return translated(sourceKey(en),l)}
 function expose(){const api={lang:currentLang,t:apiTranslate,refresh:()=>refresh(),apply:()=>refresh(),setLanguage:l=>{if(!LANG[l])return;try{localStorage.setItem(KEY,l)}catch{}refresh();window.dispatchEvent(new CustomEvent('chemistryLanguageChanged',{detail:{language:l}}))}};window.ChemistryI18n=api;window.ChemLang=api}
