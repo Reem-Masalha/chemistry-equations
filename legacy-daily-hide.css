@@ -1,0 +1,7 @@
+/* Learn-only safety guard: hide the retired one-question daily card without affecting the current five-question challenge. */
+#ce3-daily-card,
+.ce3-daily { display: none !important; }
+#daily-clean,
+#daily-v5,
+#daily-final,
+[data-daily-challenge-v5] { display: revert; }
