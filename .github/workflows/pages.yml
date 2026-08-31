@@ -47,13 +47,13 @@ jobs:
                   text=text.replace('</head>','<link rel="stylesheet" href="modern-refresh.css?v='+sha+'" data-site-modern-refresh="1">\n</head>',1)
 
               # Keep the legacy student-experience bundle off Learn. It contains
-              # the old one-question Daily Challenge and must not compete with v3.
+              # the old one-question Daily Challenge and must not compete with v4.
               if html.name != 'learn.html' and 'data-student-experience-v3' not in text:
                   text=text.replace('</body>','<script src="student-experience-v3.js?v='+sha+'" defer data-student-experience-v3="1"></script>\n</body>',1)
 
-              # The only Daily Challenge: five questions, Learn page only.
-              if html.name == 'learn.html' and 'data-daily-challenge-v3' not in text:
-                  text=text.replace('</body>','<script src="daily-challenge-v3.js?v='+sha+'" defer data-daily-challenge-v3="1"></script>\n</body>',1)
+              # Daily Challenge v4 is the only challenge on Learn.
+              if html.name == 'learn.html' and 'data-daily-challenge-v4' not in text:
+                  text=text.replace('</body>','<script src="daily-challenge-v4.js?v='+sha+'" defer data-daily-challenge-v4="1"></script>\n</body>',1)
 
               if html.name == 'admin.html' and 'data-admin-tools' not in text:
                   text=text.replace('</body>','<script src="admin-tools.js?v='+sha+'" defer data-admin-tools="1"></script>\n</body>',1)
@@ -70,7 +70,7 @@ jobs:
           test -s _site/profile.html
           test -s _site/admin.html
           test -s _site/modern-refresh.css
-          test -s _site/daily-challenge-v3.js
+          test -s _site/daily-challenge-v4.js
           test -s _site/admin-tools.js
 
           python3 - <<'PY'
@@ -82,7 +82,7 @@ jobs:
               for src in re.findall(r'<script[^>]+src=[\"\']([^\"\']+)[\"\']', text, re.I):
                   src=src.split('?',1)[0].split('#',1)[0]
                   if src.endswith('.js'): scripts.add(src.lstrip('./'))
-          scripts.update({'student-experience-v3.js','daily-challenge-v3.js','admin-tools.js'})
+          scripts.update({'student-experience-v3.js','daily-challenge-v4.js','admin-tools.js'})
           missing=[src for src in sorted(scripts) if not (root/src).exists()]
           if missing: raise SystemExit('Missing referenced/dynamic scripts: '+', '.join(missing))
           PY
@@ -95,7 +95,7 @@ jobs:
               for src in re.findall(r'<script[^>]+src=[\"\']([^\"\']+)[\"\']', text, re.I):
                   src=src.split('?',1)[0].split('#',1)[0]
                   if src.endswith('.js'): scripts.add(src.lstrip('./'))
-          scripts.update({'student-experience-v3.js','daily-challenge-v3.js','admin-tools.js'})
+          scripts.update({'student-experience-v3.js','daily-challenge-v4.js','admin-tools.js'})
           for src in sorted(scripts): print(root/src)
           PY
           )
