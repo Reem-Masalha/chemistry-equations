@@ -46,7 +46,7 @@ jobs:
               # Learn must have exactly one Daily Challenge implementation: v4.
               if html.name=='learn.html':
                   text=re.sub(r'<script[^>]+src=[\"\'][^\"\']*daily-challenge-[^\"\']+\.js(?:\?[^\"\']*)?[\"\'][^>]*></script>\s*','',text,flags=re.I)
-                  text=text.replace('</body>','<script src="daily-challenge-v4.js?v='+sha+'" defer data-daily-challenge-v4="1"></script>\n</body>',1)
+                  text=text.replace('</body>','<script src="daily-challenge-v4.js?v='+sha+'" defer data-daily-challenge-v4="1"></script>\n<script src="daily-legacy-blocker.js?v='+sha+'" defer data-daily-legacy-blocker="1"></script>\n</body>',1)
               if 'data-site-modern-refresh' not in text:
                   text=text.replace('</head>','<link rel="stylesheet" href="modern-refresh.css?v='+sha+'" data-site-modern-refresh="1">\n</head>',1)
               if html.name!='learn.html' and 'data-student-experience-v3' not in text:
@@ -67,6 +67,7 @@ jobs:
           test -s _site/admin.html
           test -s _site/modern-refresh.css
           test -s _site/daily-challenge-v4.js
+          test -s _site/daily-legacy-blocker.js
           test -s _site/admin-tools.js
 
           python3 - <<'PY'
@@ -78,7 +79,7 @@ jobs:
               for src in re.findall(r'<script[^>]+src=[\"\']([^\"\']+)[\"\']', text, re.I):
                   src=src.split('?',1)[0].split('#',1)[0]
                   if src.endswith('.js'): scripts.add(src.lstrip('./'))
-          scripts.update({'student-experience-v3.js','daily-challenge-v4.js','admin-tools.js'})
+          scripts.update({'student-experience-v3.js','daily-challenge-v4.js','daily-legacy-blocker.js','admin-tools.js'})
           missing=[src for src in sorted(scripts) if not (root/src).exists()]
           if missing: raise SystemExit('Missing referenced/dynamic scripts: '+', '.join(missing))
           PY
@@ -91,7 +92,7 @@ jobs:
               for src in re.findall(r'<script[^>]+src=[\"\']([^\"\']+)[\"\']', text, re.I):
                   src=src.split('?',1)[0].split('#',1)[0]
                   if src.endswith('.js'): scripts.add(src.lstrip('./'))
-          scripts.update({'student-experience-v3.js','daily-challenge-v4.js','admin-tools.js'})
+          scripts.update({'student-experience-v3.js','daily-challenge-v4.js','daily-legacy-blocker.js','admin-tools.js'})
           for src in sorted(scripts): print(root/src)
           PY
           )
