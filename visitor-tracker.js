@@ -16,6 +16,30 @@
     try{sessionStorage.setItem('chemistryAdminReplayRequested','1')}catch{}
     try{history.replaceState({},document.title,location.pathname)}catch{}
   }
+  function cleanBalancerExtras(){
+    const isBalancer=path==='/'||path==='/index.html'||path.endsWith('/index.html');
+    if(!isBalancer)return;
+    const ids=['spEntry','dailyChallengeCard','daily-home-challenge','dhc','dc5','daily-clean','daily-final','ce3-daily-card','real-daily'];
+    ids.forEach(id=>{try{document.getElementById(id)?.remove()}catch{}});
+    try{
+      document.querySelectorAll('section,article,div').forEach(el=>{
+        if(!el||el.closest?.('#balancerMain'))return;
+        const t=(el.textContent||'').trim();
+        if(t&&t.length<1200&&(/Can you balance this\?|Try it in the Balancer|Start easy practice|DAILY CHALLENGE|Daily Challenge|Can you balance these\?/i.test(t))){
+          const keep=el.id&&['app','main','content'].includes(el.id);
+          if(!keep&&el.closest?.('main'))el.remove();
+        }
+      });
+    }catch{}
+  }
+  function startBalancerGuard(){
+    cleanBalancerExtras();
+    const mo=new MutationObserver(()=>cleanBalancerExtras());
+    mo.observe(document.documentElement,{childList:true,subtree:true});
+  }
+  if(path==='/'||path==='/index.html'||path.endsWith('/index.html')){
+    if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',startBalancerGuard,{once:true});else startBalancerGuard();
+  }
   let visitorId=get(KEY);if(!visitorId){visitorId=(crypto.randomUUID?crypto.randomUUID():(Date.now().toString(36)+'-'+Math.random().toString(36).slice(2)));set(KEY,visitorId)}
   const user=(()=>{try{return JSON.parse(get('chemistryCurrentUser')||sessionStorage.getItem('chemistryCurrentUser')||'null')}catch{return null}})();
   const identity=user?.id?'account:'+String(user.id):'anonymous:'+visitorId;
