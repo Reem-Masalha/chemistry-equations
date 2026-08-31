@@ -43,14 +43,22 @@ jobs:
           for html in root.glob('*.html'):
               text=html.read_text(encoding='utf-8', errors='ignore')
               text=text.replace('loadStudentProduct();','')
-              # Learn must have exactly one Daily Challenge implementation: v4.
+
               if html.name=='learn.html':
-                  text=re.sub(r'<script[^>]+src=[\"\'][^\"\']*daily-challenge-[^\"\']+\.js(?:\?[^\"\']*)?[\"\'][^>]*></script>\s*','',text,flags=re.I)
-                  text=text.replace('</body>','<script src="daily-challenge-v4.js?v='+sha+'" defer data-daily-challenge-v4="1"></script>\n<script src="daily-legacy-blocker.js?v='+sha+'" defer data-daily-legacy-blocker="1"></script>\n</body>',1)
+                  # Remove any legacy challenge script references from Learn.
+                  text=re.sub(r'<script[^>]+src=[\"\'][^\"\']*(?:student-experience|daily-challenge)[^\"\']+\.js(?:\?[^\"\']*)?[\"\'][^>]*></script>\s*','',text,flags=re.I)
+                  # Put the legacy guard at the very start of body so it is
+                  # installed before any deferred site scripts can create the old card.
+                  guard='<script src="daily-legacy-blocker.js?v='+sha+'" data-daily-legacy-blocker="1"></script>\n'
+                  text=text.replace('<body>','<body>'+guard,1)
+                  text=text.replace('</body>','<script src="daily-challenge-v4.js?v='+sha+'" defer data-daily-challenge-v4="1"></script>\n</body>',1)
+
               if 'data-site-modern-refresh' not in text:
                   text=text.replace('</head>','<link rel="stylesheet" href="modern-refresh.css?v='+sha+'" data-site-modern-refresh="1">\n</head>',1)
+
               if html.name!='learn.html' and 'data-student-experience-v3' not in text:
                   text=text.replace('</body>','<script src="student-experience-v3.js?v='+sha+'" defer data-student-experience-v3="1"></script>\n</body>',1)
+
               if html.name=='admin.html' and 'data-admin-tools' not in text:
                   text=text.replace('</body>','<script src="admin-tools.js?v='+sha+'" defer data-admin-tools="1"></script>\n</body>',1)
               if html.name=='profile.html' and 'data-admin-tools-profile' not in text:
