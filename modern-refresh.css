@@ -11,6 +11,7 @@
   --modern-shadow-lg:0 22px 55px rgba(25,43,76,.14);
 }
 html{background:var(--modern-bg)!important}
+html.dark{background:#101622!important}
 body{background:radial-gradient(850px 480px at 0 -8%,rgba(108,77,232,.13),transparent 62%),radial-gradient(900px 520px at 100% 0,rgba(49,88,214,.12),transparent 62%),var(--modern-bg)!important;color:var(--modern-ink)}
 /* Navigation: keep the original simple tabs that were better before the redesign. */
 .topbar{background:rgba(255,255,255,.97)!important;border-bottom:1px solid #dce4ef!important;box-shadow:0 3px 18px rgba(25,43,76,.07)!important;backdrop-filter:blur(14px)!important;flex-wrap:nowrap!important}
@@ -83,14 +84,42 @@ body.dark .equation{background:linear-gradient(135deg,#1b2540,#222c49)!important
 body.dark .progress-grid>div,body.dark .score-animation,body.dark .certificate{background:linear-gradient(180deg,#171f2d,#141c29)!important;color:#edf2fa!important;border-color:#2b394d!important}
 body.dark .sp-card,body.dark .sp-challenge-box,body.dark .sp-alert,body.dark .sp-level{background:#171f2d!important;color:#edf2fa!important;border-color:#2b394d!important}
 body.dark .sp-card p,body.dark .sp-stat span,body.dark .sp-mode small{color:#a9b7ca!important}
+body.dark .invite-panel,body.dark .experience-options label,body.dark .type-options label,body.dark .mode-list label,body.dark .lesson-practice-card,body.dark .lesson-practice-option,body.dark .equation-history,body.dark .history-head,body.dark .history-item,body.dark .checker-section,body.dark .checker-equation,body.dark .checker-balance-cta,body.dark .account-dialog,body.dark .recovery-code,body.dark .dc7-pill,body.dark .dc7-rule,body.dark .quiz-timer,body.dark .stage{background:#171f2d!important;color:#edf2fa!important;border-color:#344359!important}
+body.dark .history-item:hover,body.dark .lesson-practice-option:hover{background:#202b3d!important}
+body.dark .history-head b,body.dark .history-equation,body.dark .history-label,body.dark .checker-balance-cta>div:first-child::before,body.dark .checker-balance-cta>div:first-child::after{color:#edf2fa!important}
+body.dark .history-index{background:#202b3d!important;border-color:#455773!important;color:#dbe6f5!important}
+body.dark .stage-list .active-stage{background:#202c52!important;border-color:#7186e8!important;color:#dbe2ff!important}
+body.dark .feedback-correct,body.dark .checker-status-good,body.dark .checker-correct{background:#102a20!important;border-color:#2b694c!important;color:#9de0ba!important}
+body.dark .feedback-wrong,body.dark .checker-status-bad,body.dark .atom-row-bad,body.dark .problem-chips span{background:#321b22!important;border-color:#75404b!important;color:#ffb8c0!important}
+body.dark .checker-status-error{background:#322916!important;border-color:#725d2c!important;color:#f4d78f!important}
+body.dark .certificate .cert-title,body.dark .certificate .cert-subtitle,body.dark .certificate .cert-name{color:#edf2fa!important}
+body.dark .certificate-preview-box{background:#101622!important;color:#edf2fa!important}
+body.dark .certificate-preview-close{background:#202b3d!important;color:#edf2fa!important}
+body.dark .account-link,body.dark .account-switch button,body.dark .password-toggle{color:#aebcff!important}
+body.dark .account-switch{border-top-color:#344359!important}
+body.dark .site-language-control,body.dark .site-language-label,body.dark .site-language-icon{color:#edf2fa!important}
+body.dark .admin-tools-card,body.dark .note,body.dark .pill{background:#171f2d!important;color:#edf2fa!important;border-color:#344359!important}
+body.dark .admin-tools-buttons button{background:#202b3d!important;color:#edf2fa!important;border-color:#455773!important}
+body.dark th,body.dark td,body.dark .chart{border-color:#344359!important}
+body.dark .privacy,body.dark .bar-label,body.dark .bar-value{color:#a9b7ca!important}
 body.dark footer{background:rgba(16,22,34,.56)!important;color:#a9b7ca!important}
 /* Responsive navigation and layout. */
 @media(max-width:1100px){.topbar{gap:12px!important}.main-nav{gap:4px!important}.main-nav a{padding:9px 10px!important;font-size:13px!important}.account-top{padding:9px 10px!important}}
 @media(max-width:760px){
-  .topbar{flex-wrap:wrap!important;overflow:visible!important;padding:8px 12px!important}
-  .brand{font-size:16px!important;gap:6px!important}
-  .account-top{font-size:12px!important;padding:8px 10px!important}
-  .main-nav{order:3!important;width:100%!important;overflow-x:auto!important;gap:4px!important;scrollbar-width:none!important;-webkit-overflow-scrolling:touch!important}
+  body{overflow-x:hidden!important}
+  main{width:100%!important;max-width:100%!important;min-width:0!important}
+  .topbar{display:grid!important;grid-template-columns:minmax(0,1fr) 42px 42px minmax(76px,auto)!important;align-items:center!important;gap:7px!important;overflow:visible!important;padding:8px 12px!important}
+  .topbar:not(:has(.account-top)){grid-template-columns:minmax(0,1fr) 42px minmax(76px,auto)!important}
+  .topbar:not(:has(.account-top)) #themeToggle{grid-column:2!important}
+  .topbar:not(:has(.account-top)) .site-language-control{grid-column:3!important}
+  .brand{grid-column:1!important;font-size:16px!important;gap:6px!important;min-width:0!important;margin:0!important;overflow:hidden!important;text-overflow:ellipsis!important}
+  .account-top{grid-column:2!important;width:42px!important;min-width:42px!important;height:40px!important;padding:0!important;font-size:0!important}
+  .account-top::before{content:'👤';font-size:18px}
+  #themeToggle{grid-column:3!important;width:42px!important;min-width:42px!important;height:40px!important;padding:0!important;font-size:0!important}
+  #themeToggle::before{content:'◐';font-size:20px}
+  .site-language-control{grid-column:4!important;min-width:0!important;margin:0!important}
+  .site-language-control select{width:100%!important;min-width:76px!important;padding:7px 5px!important;font-size:12px!important}
+  .main-nav{grid-column:1/-1!important;grid-row:2!important;order:initial!important;width:100%!important;overflow-x:auto!important;gap:4px!important;scrollbar-width:none!important;-webkit-overflow-scrolling:touch!important}
   .main-nav::-webkit-scrollbar{display:none}
   .main-nav a{font-size:13px!important;padding:9px 11px!important;flex:0 0 auto!important}
   .page-title{padding-top:48px!important;padding-bottom:30px!important}.page-title p{font-size:16px!important}.page-title:before{left:-40px;right:-40px;height:200px}
@@ -99,4 +128,7 @@ body.dark footer{background:rgba(16,22,34,.56)!important;color:#a9b7ca!important
   .card:hover,.hero-card:hover,.achievement:hover,.experience-card:hover,.course-map article:hover,.mistake:hover{transform:none;box-shadow:var(--modern-shadow)!important}
   .lesson{min-height:0!important}
   .course-map{gap:14px!important}.mistakes-grid{gap:14px!important}
+  .experience-options label,.type-options label,.mode-list label{min-width:0!important;overflow-wrap:anywhere!important}
+  .quiz-actions,.history-actions,.result-actions,.finish-actions,.handwriting-actions{max-width:100%!important}
 }
+@media(max-width:390px){.topbar{grid-template-columns:minmax(0,1fr) 40px 40px 72px!important;padding-inline:9px!important;gap:5px!important}.brand{font-size:14px!important}.account-top,#themeToggle{width:40px!important;min-width:40px!important}.main-nav a{font-size:11px!important;padding:8px 9px!important}}

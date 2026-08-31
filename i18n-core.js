@@ -38,10 +38,12 @@ const TITLES={
   'Beginner Chemistry Lessons — Chemistry Equations':['دروس الكيمياء للمبتدئين — معادلات الكيمياء','שיעורי כימיה למתחילים — משוואות כימיות'],
   'Intermediate Chemistry Lessons — Chemistry Equations':['دروس الكيمياء المتوسطة — معادلات الكيمياء','שיעורי כימיה בינוניים — משוואות כימיות'],
   'Advanced Chemistry Lessons — Chemistry Equations':['دروس الكيمياء المتقدمة — معادلات الكيمياء','שיעורי כימיה מתקדמים — משוואות כימיות'],
-  'Set Password — Chemistry Equations':['تعيين كلمة المرور — معادلات الكيمياء','הגדרת סיסמה — משוואות כימיות']
+  'Set Password — Chemistry Equations':['تعيين كلمة المرور — معادلات الكيمياء','הגדרת סיסמה — משוואות כימיות'],
+  'Quiz — Chemistry Equations':['اختبار — معادلات الكيمياء','חידון — משוואות כימיות'],
+  'Chemistry Equations — Admin':['معادلات الكيمياء — الإدارة','משוואות כימיות — ניהול']
 };
 
-let dict={...EXTRA};
+let dict={...(window.ChemistryTranslations||{}),...EXTRA};
 const reverse=new Map();
 const originalText=new WeakMap();
 const originalAttr=new WeakMap();
@@ -66,29 +68,12 @@ function ensureSelector(){const top=document.querySelector('.topbar');if(!top)re
 
 function applyTitle(){const l=currentLang(),now=norm(document.title);let source=now;for(const [en,pair] of Object.entries(TITLES)){if(now===norm(pair[0])||now===norm(pair[1])){source=en;break}}const pair=TITLES[source];if(pair)document.title=l==='en'?source:pair[langIndex(l)]}
 
-function applyShell(){const l=currentLang(),rtl=l!=='en',dir=rtl?'rtl':'ltr';document.documentElement.lang=l;document.documentElement.dir=dir;if(document.body){document.body.dir=dir;document.body.classList.toggle('is-rtl-language',rtl);document.body.classList.toggle('lang-ar',l==='ar');document.body.classList.toggle('lang-he',l==='he')}const top=document.querySelector('.topbar'),nav=document.querySelector('.main-nav');if(top)top.setAttribute('dir','ltr');if(nav){nav.setAttribute('dir','ltr');nav.querySelectorAll('a').forEach(a=>a.setAttribute('dir',rtl?'rtl':'ltr'))}document.querySelectorAll('.equation,.chemical-equation,.formula,.practice-equation,.practice-choice,.history-equation,.history-solution,.checker-equation,.math,[data-equation],[data-chemical],#equationInput,#checkInput,#recognizedEdit').forEach(el=>el.setAttribute('dir','ltr'));ensureSelector();const label=document.querySelector('.site-language-label');if(label)label.textContent=l==='ar'?'اللغة':l==='he'?'שפה':'Language';applyTitle()}
+function applyBrand(l){const label=l==='ar'?'معادلات الكيمياء':l==='he'?'משוואות כימיות':'Chemistry Equations';document.querySelectorAll('.brand').forEach(brand=>{if(brand.dataset.i18nBrand===l&&brand.getAttribute('aria-label')===label)return;brand.innerHTML='<span class="logo" aria-hidden="true">⚗</span><span>'+label+'</span>';brand.setAttribute('aria-label',label);brand.dataset.i18nBrand=l})}
+function applyShell(){const l=currentLang(),rtl=l!=='en',dir=rtl?'rtl':'ltr';document.documentElement.lang=l;document.documentElement.dir=dir;if(document.body){document.body.dir=dir;document.body.classList.toggle('is-rtl-language',rtl);document.body.classList.toggle('lang-ar',l==='ar');document.body.classList.toggle('lang-he',l==='he')}const top=document.querySelector('.topbar'),nav=document.querySelector('.main-nav');if(top)top.setAttribute('dir','ltr');if(nav){nav.setAttribute('dir','ltr');nav.querySelectorAll('a').forEach(a=>a.setAttribute('dir',rtl?'rtl':'ltr'))}applyBrand(l);document.querySelectorAll('.equation,.chemical-equation,.formula,.practice-equation,.practice-choice,.history-equation,.history-solution,.checker-equation,.math,[data-equation],[data-chemical],#equationInput,#checkInput,#recognizedEdit').forEach(el=>el.setAttribute('dir','ltr'));ensureSelector();const label=document.querySelector('.site-language-label'),labelText=l==='ar'?'اللغة':l==='he'?'שפה':'Language';if(label&&label.textContent!==labelText)label.textContent=labelText;applyTitle()}
 function refresh(root=document.body){applyShell();scan(root||document.body)}
 function schedule(root){if(refreshQueued)return;refreshQueued=true;requestAnimationFrame(()=>{refreshQueued=false;refresh(root&&root.isConnected?root:document.body)})}
 
-async function loadBaseDictionary(){
- try{
-  const r=await fetch('site-language-v2.js?v=20260831-dictionary-2',{cache:'no-store'});
-  if(!r.ok)throw new Error('dictionary '+r.status);
-  const src=await r.text();
-  const start=src.indexOf('const M=');
-  const end=src.indexOf('const original=',start);
-  if(start<0||end<0)throw new Error('dictionary markers not found');
-  let expr=src.slice(start+'const M='.length,end).trim();
-  while(expr.endsWith(';'))expr=expr.slice(0,-1).trim();
-  const base=Function('"use strict";return ('+expr+');')();
-  if(base&&typeof base==='object')dict={...base,...EXTRA};
- }catch(e){console.warn('[i18n] Base dictionary unavailable; using built-in translations.',e)}
- rebuildReverse();
- // Clear remembered source keys so text first seen before the full dictionary loaded
- // can be resolved again against the complete dictionary.
- refresh();
- window.dispatchEvent(new Event('chemistryI18nReady'));
-}
+function loadBaseDictionary(){dict={...(window.ChemistryTranslations||{}),...EXTRA};rebuildReverse();refresh();window.dispatchEvent(new Event('chemistryI18nReady'))}
 
 function apiTranslate(en,ar,he){const l=currentLang();if(l==='en')return en;if(l==='ar'&&ar!=null)return ar;if(l==='he'&&he!=null)return he;return translated(sourceKey(en),l)}
 function expose(){const api={lang:currentLang,t:apiTranslate,refresh:()=>refresh(),apply:()=>refresh(),setLanguage:l=>{if(!LANG[l])return;try{localStorage.setItem(KEY,l)}catch{}refresh();window.dispatchEvent(new CustomEvent('chemistryLanguageChanged',{detail:{language:l}}))}};window.ChemistryI18n=api;window.ChemLang=api}

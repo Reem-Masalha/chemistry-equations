@@ -1,5 +1,2 @@
-(()=>{'use strict';
-const run=()=>{if(window.learnFullI18n)window.learnFullI18n();};
-if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',run,{once:true});else run();
-window.addEventListener('chemistryLanguageChanged',run);
-})();
+/* Legacy compatibility file. The unified runtime owns all localization. */
+(()=>{'use strict';const refresh=()=>window.ChemistryI18n?.refresh?.();if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',refresh,{once:true});else refresh();window.addEventListener('chemistryI18nReady',refresh);window.addEventListener('chemistryLanguageChanged',refresh)})();
