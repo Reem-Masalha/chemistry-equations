@@ -47,8 +47,9 @@ jobs:
               if html.name=='learn.html':
                   # Learn owns the one and only Daily Challenge implementation.
                   # Remove every older challenge/student-experience script reference,
-                  # then load the current five-question implementation explicitly.
+                  # load the legacy-card blocker first, then load the current five-question implementation.
                   text=re.sub(r'<script[^>]+src=[\"\'][^\"\']*(?:student-experience|daily-challenge)[^\"\']+\.js(?:\?[^\"\']*)?[\"\'][^>]*></script>\s*','',text,flags=re.I)
+                  text=text.replace('</head>','<script src="daily-legacy-blocker.js?v='+sha+'" defer data-daily-legacy-blocker="1"></script>\n</head>',1)
                   text=text.replace('</body>','<script src="daily-challenge-v5.js?v='+sha+'" defer data-daily-challenge-v5="1"></script>\n</body>',1)
 
               if 'data-site-modern-refresh' not in text:
