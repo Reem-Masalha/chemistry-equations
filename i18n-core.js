@@ -14,7 +14,16 @@ function wrap(){
  };
  return true;
 }
+function loadFinalCss(){
+ if(document.querySelector('link[data-site-localization-css]'))return;
+ const l=document.createElement('link');
+ l.rel='stylesheet';
+ l.href='site-language.css?v=20260831-global-1';
+ l.dataset.siteLocalizationCss='1';
+ document.head.appendChild(l);
+}
 function loadPlus(){
+ loadFinalCss();
  if(document.querySelector('script[data-site-localization-plus]'))return;
  const p=document.createElement('script');
  p.src='site-localization-plus.js?v=20260831-1';
