@@ -1,1 +1,333 @@
-(()=>{'use strict';if(!location.pathname.endsWith('learn.html'))return;const L=()=>localStorage.getItem('chemistryLanguage')||'en',T=(e,a,h)=>L()==='ar'?a:L()==='he'?h:e,D=()=>new Date().toISOString().slice(0,10),N=()=>Math.floor((Date.parse(D()+'T00:00:00')-Date.parse('2020-01-01T00:00:00'))/86400000),B=[['H₂ + O₂ → H₂O','2H₂ + O₂ → 2H₂O','Make product oxygen even with 2H₂O, then match H.'],['Na + Cl₂ → NaCl','2Na + Cl₂ → 2NaCl','Cl₂ has two Cl atoms, so use 2NaCl, then match Na.'],['Mg + O₂ → MgO','2Mg + O₂ → 2MgO','O₂ has two O atoms, so use 2MgO, then match Mg.'],['N₂ + H₂ → NH₃','N₂ + 3H₂ → 2NH₃','Make N equal with 2NH₃, then make H equal with 3H₂.'],['Fe + O₂ → Fe₂O₃','4Fe + 3O₂ → 2Fe₂O₃','Make 6 O with 2Fe₂O₃, then match Fe and O₂.'],['Zn + HCl → ZnCl₂ + H₂','Zn + 2HCl → ZnCl₂ + H₂','Zn is already balanced. ZnCl₂ needs 2 Cl, so use 2HCl.'],['KClO₃ → KCl + O₂','2KClO₃ → 2KCl + 3O₂','Make 6 O with 2KClO₃, then use 3O₂.'],['Na₂O + H₂O → NaOH','Na₂O + H₂O → 2NaOH','Two Na atoms require 2NaOH.'],['C₃H₈ + O₂ → CO₂ + H₂O','C₃H₈ + 5O₂ → 3CO₂ + 4H₂O','For combustion: C first, H second, O last.'],['NH₃ + O₂ → NO + H₂O','4NH₃ + 5O₂ → 4NO + 6H₂O','N is already 1:1. Balance H first: 4NH₃ gives 12 H, so use 6H₂O, then O.'],['FeS₂ + O₂ → Fe₂O₃ + SO₂','4FeS₂ + 11O₂ → 2Fe₂O₃ + 8SO₂','Balance Fe, then S, and O last.'],['Ca(OH)₂ + HCl → CaCl₂ + H₂O','Ca(OH)₂ + 2HCl → CaCl₂ + 2H₂O','Use 2HCl for 2 Cl, then 2H₂O for H and O.'],['Al + O₂ → Al₂O₃','4Al + 3O₂ → 2Al₂O₃','Make 6 O with 2Al₂O₃, then match Al.'],['CO + O₂ → CO₂','2CO + O₂ → 2CO₂','Use 2CO₂, then match O with 2CO + O₂.'],['P + O₂ → P₂O₅','4P + 5O₂ → 2P₂O₅','Use 2P₂O₅ for 4 P; then 10 O needs 5O₂.'],['H₂ + Cl₂ → HCl','H₂ + Cl₂ → 2HCl','H₂ and Cl₂ each have 2 atoms, so use 2HCl.'],['Ag + S → Ag₂S','2Ag + S → Ag₂S','Ag₂S needs 2 Ag, so use 2Ag.'],['CH₄ + O₂ → CO₂ + H₂O','CH₄ + 2O₂ → CO₂ + 2H₂O','Balance C, then H, then O.'],['C₂H₆ + O₂ → CO₂ + H₂O','2C₂H₆ + 7O₂ → 4CO₂ + 6H₂O','Balance C and H first; 14 O requires 7O₂.'],['CaCO₃ → CaO + CO₂','CaCO₃ → CaO + CO₂','Ca, C, and O are already balanced.'],['Cu + O₂ → CuO','2Cu + O₂ → 2CuO','Use 2CuO to match O₂, then 2Cu.'],['Cl₂ + NaBr → NaCl + Br₂','2NaBr + Cl₂ → 2NaCl + Br₂','Keep Br₂ together: use 2NaBr and 2NaCl.'],['H₂O₂ → H₂O + O₂','2H₂O₂ → 2H₂O + O₂','Use 2H₂O₂ so the remaining oxygen forms O₂.'],['SO₂ + O₂ → SO₃','2SO₂ + O₂ → 2SO₃','Use 2SO₃ so each side has 6 O.'],['NO + O₂ → NO₂','2NO + O₂ → 2NO₂','Use 2NO₂ so N is 2:2 and O is 4:4.']],K='chemistryDailyV5:'+D(),Q=()=>{let s=(N()*5)%B.length;return Array.from({length:5},(_,i)=>B[(s+i)%B.length])},R=()=>{try{return JSON.parse(localStorage.getItem(K)||'{}')}catch{return{}}},W=x=>{try{localStorage.setItem(K,JSON.stringify(x))}catch{}},norm=s=>String(s||'').replace(/[₀₁₂₃₄₅₆₇₈₉]/g,c=>'0123456789'['₀₁₂₃₄₅₆₇₈₉'.indexOf(c)]).replace(/\s+/g,'').replace(/→|->|=/g,'>').toUpperCase().replace(/(^|>)1(?=[A-Z(])/g,'$1');function mount(){if(document.getElementById('daily-v5'))return;const m=document.querySelector('main');if(!m)return;let p=new URLSearchParams(location.search),replay=p.has('adminReplay')||p.has('adminFresh');try{replay|=sessionStorage.getItem('chemistryAdminReplayRequested')==='1'}catch{}if(replay){localStorage.removeItem(K);try{sessionStorage.removeItem('chemistryAdminReplayRequested')}catch{}}let q=Q(),s=R(),i=+s.i||0,score=+s.score||0,started=!!s.started,done=!!s.done,end=+s.end||0,state=Array.isArray(s.state)?s.state:[],ans=Array.isArray(s.ans)?s.ans:[],timer;const sec=document.createElement('section');sec.id='daily-v5';sec.className='section';sec.innerHTML='<div class="card"><span class="eyebrow">🧪 '+T('DAILY CHEMISTRY CHALLENGE','التحدي اليومي للكيمياء','אתגר הכימיה היומי')+'</span><h2>'+T('5 questions · 2 minutes','٥ أسئلة · دقيقتان','5 שאלות · 2 דקות')+'</h2><p class="muted">'+T('A different set of five equations every day.','مجموعة مختلفة من خمس معادلات كل يوم.','סט שונה של חמש משוואות בכל יום.')+'</p><div id="v5p"></div><div style="display:flex;justify-content:space-between"><span>⏱ <b id="v5t">2:00</b></span><span>🏆 '+T('Score','النتيجة','ציון')+' <b id="v5s">0</b>/5</span></div><div id="v5q" class="equation"></div><input id="v5i" autocomplete="off" spellcheck="false" placeholder="'+T('Type your balanced equation','اكتب المعادلة الموازنة','הקלידו את המשוואה המאוזנת')+'"><div class="button-row"><button id="v5start" class="primary">'+T('Start challenge','ابدأ التحدي','התחילו אתגר')+'</button><button id="v5check" class="primary">'+T('Check answer','تحقق من الإجابة','בדוק תשובה')+'</button><button id="v5submit" class="secondary">'+T('Submit answer','أرسل الإجابة','שלחו תשובה')+'</button><button id="v5next" class="primary" hidden>'+T('Next question','السؤال التالي','השאלה הבאה')+' →</button><button id="v5hint" class="secondary">💡 '+T('Hint','تلميح','רמז')+'</button></div><div id="v5f" style="min-height:30px;margin-top:12px;font-weight:800"></div><div id="v5n" class="muted"></div><div id="v5h" hidden></div><div id="v5r" hidden></div></div>';const a=m.querySelector('#course-map');a?a.insertAdjacentElement('beforebegin',sec):m.prepend(sec);const $=x=>sec.querySelector('#'+x),inp=$('v5i'),eq=$('v5q'),stb=$('v5start'),cb=$('v5check'),sb=$('v5submit'),nb=$('v5next'),hb=$('v5hint'),fb=$('v5f'),note=$('v5n'),hint=$('v5h'),res=$('v5r'),tm=$('v5t'),sc=$('v5s'),prog=$('v5p');function persist(){W({i,score,started,done,end,state,ans})}function draw(){if(i>=5)return finish();const z=state[i]||0;eq.textContent=q[i][0];sc.textContent=score;prog.textContent=T('Question '+(i+1)+' of 5','السؤال '+(i+1)+' من 5','שאלה '+(i+1)+' מתוך 5');inp.value=ans[i]||'';inp.disabled=!started||done||z>0;cb.disabled=!started||done||z>0;sb.disabled=!started||done||z>0;hb.disabled=!started||done;nb.hidden=z<1;stb.hidden=started;fb.textContent='';hint.hidden=true;note.textContent=z?T('Answer recorded. Use Next question when ready.','تم تسجيل الإجابة. اضغط السؤال التالي عندما تكون مستعدًا.','התשובה נרשמה. עברו לשאלה הבאה כשתהיו מוכנים.'):T('Check your answer, or submit it when you are ready.','تحقق من إجابتك، أو أرسلها عندما تكون مستعدًا.','בדקו את התשובה, או שלחו אותה כשאתם מוכנים.')}function start(){if(started||done)return;started=true;end=Date.now()+120000;persist();draw();timer=setInterval(tick,500);tick();inp.focus()}function tick(){if(!started||done)return;const r=Math.max(0,end-Date.now());tm.textContent=Math.floor(r/60000)+':'+String(Math.floor(r%60000/1000)).padStart(2,'0');if(!r)finish()}function act(finalize){if(!started||done||state[i]>0)return;const v=inp.value.trim();if(!v){fb.textContent='⚠️ '+T('Enter an answer first.','اكتب إجابة أولًا.','הקלידו תשובה קודם.');return}ans[i]=v;const ok=norm(v)===norm(q[i][1]);if(ok){state[i]=1;score++;fb.textContent='✓ '+T('Correct! Great job.','صحيح! أحسنت.','נכון! עבודה מצוינת.');note.textContent=T('Correct. Feedback stays visible until you choose Next question.','إجابة صحيحة. ستبقى الملاحظة ظاهرة حتى تختار السؤال التالي.','נכון. המשוב יישאר עד שתבחרו שאלה הבאה.')}else if(finalize){state[i]=2;fb.textContent='✕ '+T('Answer submitted. No point added.','تم إرسال الإجابة. لم تُضف نقطة.','התשובה נשלחה. לא נוספה נקודה.');note.textContent=T('Final answer recorded.','تم تسجيل الإجابة النهائية.','התשובה הסופית נרשמה.')}else{fb.textContent='❌ '+T('Not quite. Edit and check again, or submit without checking.','ليس تمامًا. عدّل الإجابة وتحقق مرة أخرى، أو أرسلها دون التحقق.','לא בדיוק. ערכו ובדקו שוב, או שלחו בלי לבדוק.')}persist();cb.disabled=state[i]>0;sb.disabled=state[i]>0;nb.hidden=state[i]<1}function next(){if(state[i]<1||done)return;if(i<4){i++;draw();inp.focus();persist()}else finish()}function finish(){if(done)return;clearInterval(timer);timer=null;done=true;started=false;persist();inp.disabled=true;cb.disabled=true;sb.disabled=true;hb.disabled=true;nb.hidden=true;stb.hidden=true;eq.textContent=T('Challenge complete!','اكتمل التحدي!','האתגר הושלם!');sc.textContent=score;const m=score===5?T('Perfect score! 5/5 correct.','نتيجة كاملة! 5/5 صحيحة.','תוצאה מושלמת! 5/5 נכונות.'):score>=4?T('Great work! '+score+'/5 correct.','عمل رائع! '+score+'/5 صحيحة.','עבודה נהדרת! '+score+'/5 נכונות.'):score>=3?T('Good effort! '+score+'/5 correct.','محاولة جيدة! '+score+'/5 صحيحة.','מאמץ טוב! '+score+'/5 נכונות.'):T('Keep practising! '+score+'/5 correct.','واصل التدريب! '+score+'/5 صحيحة.','המשיכו לתרגל! '+score+'/5 נכונות.');res.hidden=false;res.innerHTML='<b style="font-size:34px">'+score+'/5</b><p>'+m+'</p>}stb.onclick=start;cb.onclick=()=>act(false);sb.onclick=()=>act(true);nb.onclick=next;hb.onclick=()=>{if(started&&!done){hint.hidden=false;hint.textContent='💡 '+q[i][2]}};inp.onkeydown=e=>{if(e.key==='Enter')cb.click()};if(replay){started=true;end=Date.now()+120000;persist();draw();timer=setInterval(tick,500);tick();inp.focus()}else if(done)finish();else{draw();if(started&&end>Date.now()){timer=setInterval(tick,500);tick()}}}if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',mount,{once:true});else mount();})();
+(() => {
+  'use strict';
+
+  if (!location.pathname.endsWith('learn.html')) return;
+
+  const language = () => localStorage.getItem('chemistryLanguage') || 'en';
+  const tr = (en, ar, he) => language() === 'ar' ? ar : language() === 'he' ? he : en;
+  const today = () => new Date().toISOString().slice(0, 10);
+  const dayNumber = () => Math.floor((Date.parse(today() + 'T00:00:00Z') - Date.parse('2020-01-01T00:00:00Z')) / 86400000);
+
+  const BANK = [
+    ['H₂ + O₂ → H₂O', '2H₂ + O₂ → 2H₂O', 'Make the product oxygen count even: use 2H₂O. Then match H.'],
+    ['Na + Cl₂ → NaCl', '2Na + Cl₂ → 2NaCl', 'Cl₂ has two chlorine atoms, so use 2NaCl. Then match Na.'],
+    ['Mg + O₂ → MgO', '2Mg + O₂ → 2MgO', 'O₂ has two oxygen atoms, so use 2MgO. Then match Mg.'],
+    ['N₂ + H₂ → NH₃', 'N₂ + 3H₂ → 2NH₃', 'Use 2NH₃ to match N₂. Then use 3H₂ for the six H atoms.'],
+    ['Fe + O₂ → Fe₂O₃', '4Fe + 3O₂ → 2Fe₂O₃', 'Make six O atoms with 2Fe₂O₃. Then match Fe and O₂.'],
+    ['Zn + HCl → ZnCl₂ + H₂', 'Zn + 2HCl → ZnCl₂ + H₂', 'Zn is already balanced. ZnCl₂ needs two Cl, so use 2HCl.'],
+    ['KClO₃ → KCl + O₂', '2KClO₃ → 2KCl + 3O₂', 'Make six O atoms with 2KClO₃, then use 3O₂.'],
+    ['Na₂O + H₂O → NaOH', 'Na₂O + H₂O → 2NaOH', 'There are two Na atoms, so use 2NaOH.'],
+    ['C₃H₈ + O₂ → CO₂ + H₂O', 'C₃H₈ + 5O₂ → 3CO₂ + 4H₂O', 'For combustion: balance C first, H second, and O last.'],
+    ['NH₃ + O₂ → NO + H₂O', '4NH₃ + 5O₂ → 4NO + 6H₂O', 'N is already 1:1. Start with H: 4NH₃ gives 12 H, so use 6H₂O. Then finish O.'],
+    ['FeS₂ + O₂ → Fe₂O₃ + SO₂', '4FeS₂ + 11O₂ → 2Fe₂O₃ + 8SO₂', 'Balance Fe first, then S. Leave O until the end.'],
+    ['Ca(OH)₂ + HCl → CaCl₂ + H₂O', 'Ca(OH)₂ + 2HCl → CaCl₂ + 2H₂O', 'Use 2HCl for two Cl atoms, then 2H₂O balances H and O.'],
+    ['Al + O₂ → Al₂O₃', '4Al + 3O₂ → 2Al₂O₃', 'Make six O atoms with 2Al₂O₃, then match Al.'],
+    ['CO + O₂ → CO₂', '2CO + O₂ → 2CO₂', 'Use 2CO₂ so the product side has four O atoms.'],
+    ['P + O₂ → P₂O₅', '4P + 5O₂ → 2P₂O₅', 'Use 2P₂O₅ for four P atoms; then 10 O atoms need 5O₂.'],
+    ['H₂ + Cl₂ → HCl', 'H₂ + Cl₂ → 2HCl', 'H₂ and Cl₂ each have two atoms, so use 2HCl.'],
+    ['Ag + S → Ag₂S', '2Ag + S → Ag₂S', 'Ag₂S contains two Ag atoms, so use 2Ag.'],
+    ['CH₄ + O₂ → CO₂ + H₂O', 'CH₄ + 2O₂ → CO₂ + 2H₂O', 'Balance C first, H second, and O last.'],
+    ['C₂H₆ + O₂ → CO₂ + H₂O', '2C₂H₆ + 7O₂ → 4CO₂ + 6H₂O', 'Balance C and H first. Fourteen O atoms require 7O₂.'],
+    ['CaCO₃ → CaO + CO₂', 'CaCO₃ → CaO + CO₂', 'Count Ca, C, and O: they are already balanced.'],
+    ['Cu + O₂ → CuO', '2Cu + O₂ → 2CuO', 'O₂ needs two O atoms, so use 2CuO, then match Cu.'],
+    ['Cl₂ + NaBr → NaCl + Br₂', '2NaBr + Cl₂ → 2NaCl + Br₂', 'Keep Br₂ together. Use 2NaBr and 2NaCl.'],
+    ['H₂O₂ → H₂O + O₂', '2H₂O₂ → 2H₂O + O₂', 'Use 2H₂O₂ so the remaining oxygen forms one O₂ molecule.'],
+    ['SO₂ + O₂ → SO₃', '2SO₂ + O₂ → 2SO₃', 'Use 2SO₃ so each side has six O atoms.'],
+    ['NO + O₂ → NO₂', '2NO + O₂ → 2NO₂', 'Use 2NO₂ so N is 2:2 and O is 4:4.']
+  ];
+
+  const startIndex = () => ((dayNumber() * 5) % BANK.length + BANK.length) % BANK.length;
+  const questions = () => Array.from({ length: 5 }, (_, i) => BANK[(startIndex() + i) % BANK.length]);
+  const storageKey = () => 'chemistryDailyV5:' + today();
+
+  const readState = () => {
+    try { return JSON.parse(localStorage.getItem(storageKey()) || '{}'); }
+    catch (_) { return {}; }
+  };
+  const writeState = (state) => {
+    try { localStorage.setItem(storageKey(), JSON.stringify(state)); }
+    catch (_) {}
+  };
+
+  const normalize = (value) => String(value || '')
+    .replace(/[₀₁₂₃₄₅₆₇₈₉]/g, c => '0123456789'['₀₁₂₃₄₅₆₇₈₉'.indexOf(c)])
+    .replace(/\s+/g, '')
+    .replace(/→|->|=/g, '>')
+    .toUpperCase()
+    .replace(/(^|>)1(?=[A-Z(])/g, '$1');
+
+  function addStyles() {
+    if (document.getElementById('daily-v5-style')) return;
+    const style = document.createElement('style');
+    style.id = 'daily-v5-style';
+    style.textContent = `
+      #daily-v5 { margin: 24px 0; }
+      #daily-v5 .daily-card { padding: 24px; border: 1px solid var(--line,#dce3ee); border-radius: 20px; background: var(--surface,#fff); box-shadow: 0 10px 28px rgba(25,43,76,.07); }
+      #daily-v5 .daily-head { display:flex; justify-content:space-between; gap:16px; align-items:flex-start; }
+      #daily-v5 .daily-kicker { font-size:11px; letter-spacing:.12em; font-weight:800; color:var(--accent); }
+      #daily-v5 .daily-title { margin:6px 0; }
+      #daily-v5 .daily-sub { margin:0; color:var(--muted); }
+      #daily-v5 .daily-badge { padding:7px 10px; border-radius:999px; background:#edf1ff; font-size:12px; font-weight:800; white-space:nowrap; }
+      #daily-v5 .daily-progress { display:flex; gap:6px; margin:16px 0; }
+      #daily-v5 .daily-dot { height:8px; flex:1; border-radius:99px; background:#e4e9f1; }
+      #daily-v5 .daily-dot.done { background:var(--accent); }
+      #daily-v5 .daily-dot.current { box-shadow:0 0 0 2px rgba(49,88,214,.2); }
+      #daily-v5 .daily-meta { display:flex; justify-content:space-between; gap:12px; color:var(--muted); font-size:13px; }
+      #daily-v5 .daily-equation { direction:ltr; text-align:center; font-size:clamp(25px,4vw,40px); font-weight:900; padding:20px 10px; margin:18px 0; border:1px solid var(--line); border-radius:15px; }
+      #daily-v5 .daily-input { width:100%; box-sizing:border-box; padding:14px; border:1px solid var(--line); border-radius:11px; font-size:18px; text-align:center; direction:ltr; background:transparent; color:inherit; }
+      #daily-v5 .daily-actions { display:flex; flex-wrap:wrap; gap:9px; margin-top:10px; }
+      #daily-v5 .daily-actions > * { min-height:44px; }
+      #daily-v5 .daily-feedback { min-height:32px; margin-top:12px; font-weight:800; }
+      #daily-v5 .daily-note { margin-top:9px; padding:12px 14px; border:1px solid var(--line); border-radius:12px; background:var(--surface-2,#f7f9fc); color:var(--muted); }
+      #daily-v5 .daily-hint { margin-top:9px; padding:12px 14px; border:1px solid var(--line); border-radius:12px; background:var(--surface-2,#f7f9fc); color:var(--muted); }
+      #daily-v5 .daily-result { margin-top:16px; padding:18px; border:1px solid var(--line); border-radius:15px; }
+      #daily-v5 .daily-score { font-size:38px; font-weight:900; }
+      @media(max-width:760px){ #daily-v5 .daily-card{padding:17px;} #daily-v5 .daily-head,#daily-v5 .daily-meta{flex-direction:column;} #daily-v5 .daily-badge{align-self:flex-start;} #daily-v5 .daily-actions > *{flex:1 1 145px;} }
+      body.dark #daily-v5 .daily-note, body.dark #daily-v5 .daily-hint { background:#1b2330; }
+    `;
+    document.head.appendChild(style);
+  }
+
+  function mount() {
+    if (document.getElementById('daily-v5')) return;
+    const main = document.querySelector('main');
+    if (!main) return;
+
+    addStyles();
+    ['daily-final', 'dc-final', 'dc4', 'dc3', 'dc2', 'dc6', 'real-daily', 'ce3-daily-card', 'daily-question-card', 'daily-home-challenge'].forEach(id => document.getElementById(id)?.remove());
+
+    const params = new URLSearchParams(location.search);
+    let replay = params.has('adminReplay') || params.has('adminFresh');
+    try { replay = replay || sessionStorage.getItem('chemistryAdminReplayRequested') === '1'; } catch (_) {}
+    if (replay) {
+      try { localStorage.removeItem(storageKey()); } catch (_) {}
+      try { sessionStorage.removeItem('chemistryAdminReplayRequested'); } catch (_) {}
+    }
+
+    const qs = questions();
+    const saved = readState();
+    let index = Math.max(0, Math.min(5, Number(saved.index) || 0));
+    let score = Math.max(0, Math.min(5, Number(saved.score) || 0));
+    let started = !!saved.started;
+    let complete = !!saved.complete;
+    let endAt = Number(saved.endAt) || 0;
+    const status = Array.isArray(saved.status) ? saved.status : [];
+    const answers = Array.isArray(saved.answers) ? saved.answers : [];
+    let timer = null;
+
+    const section = document.createElement('section');
+    section.id = 'daily-v5';
+    section.className = 'section';
+    section.innerHTML = `
+      <div class="daily-card">
+        <div class="daily-head">
+          <div>
+            <div class="daily-kicker">🧪 ${tr('DAILY CHEMISTRY CHALLENGE','التحدي اليومي للكيمياء','אתגר הכימיה היומי')}</div>
+            <h2 class="daily-title">${tr('5 questions · 2 minutes','٥ أسئلة · دقيقتان','5 שאלות · 2 דקות')}</h2>
+            <p class="daily-sub">${tr('A different set of five equations every day.','مجموعة مختلفة من خمس معادلات كل يوم.','סט שונה של חמש משוואות בכל יום.')}</p>
+          </div>
+          <span id="dailyBadge" class="daily-badge"></span>
+        </div>
+        <div id="dailyProgress" class="daily-progress"></div>
+        <div class="daily-meta">
+          <span>⏱ <b id="dailyTimer">2:00</b></span>
+          <span>🏆 ${tr('Score','النتيجة','ציון')} <b id="dailyScore">0</b>/5</span>
+        </div>
+        <div id="dailyEquation" class="daily-equation"></div>
+        <input id="dailyInput" class="daily-input" autocomplete="off" spellcheck="false" placeholder="${tr('Type your balanced equation','اكتب المعادلة الموازنة','הקלידו את המשוואה המאוזנת')}">
+        <div class="daily-actions">
+          <button id="dailyStart" class="primary" type="button">▶ ${tr('Start challenge','ابدأ التحدي','התחילו אתגר')}</button>
+          <button id="dailyCheck" class="primary" type="button">${tr('Check answer','تحقق من الإجابة','בדוק תשובה')}</button>
+          <button id="dailySubmit" class="secondary" type="button">${tr('Submit answer','أرسل الإجابة','שלחו תשובה')}</button>
+          <button id="dailyNext" class="primary" type="button" hidden>${tr('Next question','السؤال التالي','השאלה הבאה')} →</button>
+          <button id="dailyHintBtn" class="secondary" type="button">💡 ${tr('Hint','تلميح','רמז')}</button>
+        </div>
+        <div id="dailyFeedback" class="daily-feedback"></div>
+        <div id="dailyNote" class="daily-note"></div>
+        <div id="dailyHint" class="daily-hint" hidden></div>
+        <div id="dailyResult" class="daily-result" hidden></div>
+      </div>`;
+
+    const anchor = main.querySelector('#course-map');
+    if (anchor) anchor.insertAdjacentElement('beforebegin', section);
+    else main.prepend(section);
+
+    const $ = id => section.querySelector('#' + id);
+    const equation = $('dailyEquation');
+    const input = $('dailyInput');
+    const startButton = $('dailyStart');
+    const checkButton = $('dailyCheck');
+    const submitButton = $('dailySubmit');
+    const nextButton = $('dailyNext');
+    const hintButton = $('dailyHintBtn');
+    const feedback = $('dailyFeedback');
+    const note = $('dailyNote');
+    const hintBox = $('dailyHint');
+    const result = $('dailyResult');
+    const badge = $('dailyBadge');
+    const progress = $('dailyProgress');
+    const timerLabel = $('dailyTimer');
+    const scoreLabel = $('dailyScore');
+
+    function save() {
+      writeState({ index, score, started, complete, endAt, status, answers });
+    }
+
+    function render() {
+      if (index >= 5) { finish(); return; }
+      const q = qs[index];
+      equation.textContent = q[0];
+      badge.textContent = `🔥 ${tr('Question ' + (index + 1) + ' of 5', 'السؤال ' + (index + 1) + ' من 5', 'שאלה ' + (index + 1) + ' מתוך 5')}`;
+      scoreLabel.textContent = String(score);
+      progress.replaceChildren(...Array.from({ length: 5 }, (_, n) => {
+        const dot = document.createElement('span');
+        dot.className = 'daily-dot' + (n < index ? ' done' : '') + (n === index ? ' current' : '');
+        return dot;
+      }));
+      input.value = answers[index] || '';
+      const recorded = status[index] > 0;
+      input.disabled = !started || complete || recorded;
+      checkButton.disabled = !started || complete || recorded;
+      submitButton.disabled = !started || complete || recorded;
+      hintButton.disabled = !started || complete;
+      nextButton.hidden = !recorded || complete;
+      startButton.hidden = started || complete;
+      feedback.textContent = '';
+      hintBox.hidden = true;
+      note.textContent = recorded
+        ? tr('Answer recorded. Use Next question when ready.','تم تسجيل الإجابة. اضغط السؤال التالي عندما تكون مستعدًا.','התשובה נרשמה. עברו לשאלה הבאה כשתהיו מוכנים.')
+        : tr('Check your answer, or submit it when you are ready.','تحقق من إجابتك، أو أرسلها عندما تكون مستعدًا.','בדקו את התשובה, או שלחו אותה כשאתם מוכנים.');
+      result.hidden = true;
+    }
+
+    function startChallenge() {
+      if (started || complete) return;
+      started = true;
+      endAt = Date.now() + 120000;
+      save();
+      render();
+      clearInterval(timer);
+      timer = setInterval(tick, 500);
+      tick();
+      input.focus();
+    }
+
+    function tick() {
+      if (!started || complete) return;
+      const remaining = Math.max(0, endAt - Date.now());
+      timerLabel.textContent = Math.floor(remaining / 60000) + ':' + String(Math.floor((remaining % 60000) / 1000)).padStart(2, '0');
+      if (remaining <= 0) finish();
+    }
+
+    function evaluate(finalSubmission) {
+      if (!started || complete || status[index] > 0) return;
+      const value = input.value.trim();
+      if (!value) {
+        feedback.textContent = '⚠️ ' + tr('Enter an answer first.','اكتب إجابة أولًا.','הקלידו תשובה קודם.');
+        return;
+      }
+      answers[index] = value;
+      const correct = normalize(value) === normalize(qs[index][1]);
+      if (correct) {
+        status[index] = 1;
+        score += 1;
+        feedback.textContent = '✓ ' + tr('Correct! Great job.','صحيح! أحسنت.','נכון! עבודה מצוינת.');
+        note.textContent = tr('Correct. This feedback stays visible until you choose Next question.','إجابة صحيحة. ستبقى هذه الملاحظة ظاهرة حتى تختار السؤال التالي.','נכון. המשוב יישאר עד שתבחרו שאלה הבאה.');
+      } else if (finalSubmission) {
+        status[index] = 2;
+        feedback.textContent = '✕ ' + tr('Answer submitted. No point added.','تم إرسال الإجابة. لم تُضف نقطة.','התשובה נשלחה. לא נוספה נקודה.');
+        note.textContent = tr('Final answer recorded.','تم تسجيل الإجابة النهائية.','התשובה הסופית נרשמה.');
+      } else {
+        feedback.textContent = '❌ ' + tr('Not quite. Edit your answer and check again, or submit it without another check.','ليس تمامًا. عدّل إجابتك وتحقق مرة أخرى، أو أرسلها دون فحص آخر.','לא בדיוק. ערכו את התשובה ובדקו שוב, או שלחו אותה בלי בדיקה נוספת.');
+        save();
+        return;
+      }
+      save();
+      checkButton.disabled = true;
+      submitButton.disabled = true;
+      input.disabled = true;
+      nextButton.hidden = false;
+    }
+
+    function nextQuestion() {
+      if (complete || status[index] === 0) return;
+      if (index < 4) {
+        index += 1;
+        save();
+        render();
+        input.disabled = false;
+        input.focus();
+      } else {
+        finish();
+      }
+    }
+
+    function finish() {
+      if (complete) return;
+      clearInterval(timer);
+      timer = null;
+      complete = true;
+      started = false;
+      save();
+      input.disabled = true;
+      checkButton.disabled = true;
+      submitButton.disabled = true;
+      hintButton.disabled = true;
+      nextButton.hidden = true;
+      startButton.hidden = true;
+      badge.textContent = '✓ ' + tr('Completed today','أكملت تحدي اليوم','הושלם היום');
+      progress.replaceChildren(...Array.from({ length: 5 }, () => {
+        const dot = document.createElement('span');
+        dot.className = 'daily-dot done';
+        return dot;
+      }));
+      equation.textContent = tr('Challenge complete!','اكتمل التحدي!','האתגר הושלם!');
+      scoreLabel.textContent = String(score);
+      result.hidden = false;
+      let message;
+      if (score === 5) message = tr('Perfect score! 5/5 correct.','نتيجة كاملة! 5/5 صحيحة.','תוצאה מושלמת! 5/5 נכונות.');
+      else if (score >= 4) message = tr('Great work! ' + score + '/5 correct.','عمل رائع! ' + score + '/5 صحيحة.','עבודה נהדרת! ' + score + '/5 נכונות.');
+      else if (score >= 3) message = tr('Good effort! ' + score + '/5 correct. Review the ones you missed.','محاولة جيدة! ' + score + '/5 صحيحة. راجع المعادلات التي أخطأت فيها.','מאמץ טוב! ' + score + '/5 נכונות. עברו על מה שפספסתם.');
+      else message = tr('Keep practising! ' + score + '/5 correct. Come back tomorrow and try a new set.','واصل التدريب! ' + score + '/5 صحيحة. عد غدًا لمجموعة جديدة.','המשיכו לתרגל! ' + score + '/5 נכונות. חזרו מחר לסט חדש.');
+      result.innerHTML = '<div class="daily-score">' + score + '/5</div><p><b>' + message + '</b></p>';
+    }
+
+    startButton.addEventListener('click', startChallenge);
+    checkButton.addEventListener('click', () => evaluate(false));
+    submitButton.addEventListener('click', () => evaluate(true));
+    nextButton.addEventListener('click', nextQuestion);
+    hintButton.addEventListener('click', () => {
+      if (!started || complete) return;
+      hintBox.hidden = false;
+      hintBox.textContent = '💡 ' + qs[index][2];
+    });
+    input.addEventListener('keydown', event => {
+      if (event.key === 'Enter') evaluate(false);
+    });
+
+    if (replay) {
+      started = true;
+      endAt = Date.now() + 120000;
+      save();
+      render();
+      input.disabled = false;
+      checkButton.disabled = false;
+      submitButton.disabled = false;
+      hintButton.disabled = false;
+      timer = setInterval(tick, 500);
+      tick();
+      input.focus();
+    } else if (complete) {
+      finish();
+    } else {
+      render();
+      if (started && endAt > Date.now()) {
+        timer = setInterval(tick, 500);
+        tick();
+      }
+    }
+  }
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', mount, { once: true });
+  else mount();
+})();
