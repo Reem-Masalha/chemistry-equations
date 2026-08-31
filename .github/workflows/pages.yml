@@ -45,13 +45,11 @@ jobs:
               text=text.replace('loadStudentProduct();','')
 
               if html.name=='learn.html':
-                  # Remove any legacy challenge script references from Learn.
+                  # Learn owns the one and only Daily Challenge implementation.
+                  # Remove every older challenge/student-experience script reference,
+                  # then load the current five-question implementation explicitly.
                   text=re.sub(r'<script[^>]+src=[\"\'][^\"\']*(?:student-experience|daily-challenge)[^\"\']+\.js(?:\?[^\"\']*)?[\"\'][^>]*></script>\s*','',text,flags=re.I)
-                  # Put the legacy guard at the very start of body so it is
-                  # installed before any deferred site scripts can create the old card.
-                  guard='<script src="daily-legacy-blocker.js?v='+sha+'" data-daily-legacy-blocker="1"></script>\n'
-                  text=text.replace('<body>','<body>'+guard,1)
-                  text=text.replace('</body>','<script src="daily-challenge-v4.js?v='+sha+'" defer data-daily-challenge-v4="1"></script>\n</body>',1)
+                  text=text.replace('</body>','<script src="daily-challenge-v5.js?v='+sha+'" defer data-daily-challenge-v5="1"></script>\n</body>',1)
 
               if 'data-site-modern-refresh' not in text:
                   text=text.replace('</head>','<link rel="stylesheet" href="modern-refresh.css?v='+sha+'" data-site-modern-refresh="1">\n</head>',1)
@@ -74,7 +72,7 @@ jobs:
           test -s _site/profile.html
           test -s _site/admin.html
           test -s _site/modern-refresh.css
-          test -s _site/daily-challenge-v4.js
+          test -s _site/daily-challenge-v5.js
           test -s _site/daily-legacy-blocker.js
           test -s _site/admin-tools.js
 
@@ -87,7 +85,7 @@ jobs:
               for src in re.findall(r'<script[^>]+src=[\"\']([^\"\']+)[\"\']', text, re.I):
                   src=src.split('?',1)[0].split('#',1)[0]
                   if src.endswith('.js'): scripts.add(src.lstrip('./'))
-          scripts.update({'student-experience-v3.js','daily-challenge-v4.js','daily-legacy-blocker.js','admin-tools.js'})
+          scripts.update({'student-experience-v3.js','daily-challenge-v5.js','daily-legacy-blocker.js','admin-tools.js'})
           missing=[src for src in sorted(scripts) if not (root/src).exists()]
           if missing: raise SystemExit('Missing referenced/dynamic scripts: '+', '.join(missing))
           PY
@@ -100,7 +98,7 @@ jobs:
               for src in re.findall(r'<script[^>]+src=[\"\']([^\"\']+)[\"\']', text, re.I):
                   src=src.split('?',1)[0].split('#',1)[0]
                   if src.endswith('.js'): scripts.add(src.lstrip('./'))
-          scripts.update({'student-experience-v3.js','daily-challenge-v4.js','daily-legacy-blocker.js','admin-tools.js'})
+          scripts.update({'student-experience-v3.js','daily-challenge-v5.js','daily-legacy-blocker.js','admin-tools.js'})
           for src in sorted(scripts): print(root/src)
           PY
           )
