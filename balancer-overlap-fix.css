@@ -1,22 +1,53 @@
-/* Keep the Balancer result below the equation input row. */
-#balanceResult{
-  display:block;
-  position:relative;
-  clear:both;
-  width:100%;
-  box-sizing:border-box;
-  margin-top:18px;
-  z-index:1;
-}
-#balanceResult.hidden{display:none}
-#balanceResult>.balance-status:first-child{
-  display:flex;
-  margin-top:0;
-}
+/* Source-level Balancer layout fix: keep input controls and result status in separate flow boxes. */
 .balancer .input-row{
-  position:relative;
-  z-index:2;
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr) auto!important;
+  align-items:stretch!important;
+  gap:10px!important;
+  width:100%!important;
+  position:static!important;
+  clear:both!important;
+}
+.balancer .input-row input,
+.balancer .input-row button{
+  position:static!important;
+  float:none!important;
+  width:100%!important;
+  min-width:0!important;
+}
+#balanceResult{
+  display:block!important;
+  position:static!important;
+  float:none!important;
+  clear:both!important;
+  width:100%!important;
+  max-width:100%!important;
+  box-sizing:border-box!important;
+  margin:18px 0 0!important;
+  padding:0!important;
+  z-index:auto!important;
+}
+#balanceResult.hidden{display:none!important}
+#balanceResult>.balance-status:first-child{
+  position:static!important;
+  float:none!important;
+  display:flex!important;
+  width:fit-content!important;
+  max-width:100%!important;
+  box-sizing:border-box!important;
+  margin:0 0 12px!important;
+}
+#balanceResult .balance-correction{
+  position:static!important;
+  width:100%!important;
+  max-width:100%!important;
+  box-sizing:border-box!important;
 }
 @media(max-width:760px){
-  #balanceResult{margin-top:16px}
+  .balancer .input-row{
+    grid-template-columns:1fr!important;
+    gap:10px!important;
+  }
+  #balanceResult{margin-top:18px!important}
+  #balanceResult>.balance-status:first-child{margin-bottom:12px!important}
 }
