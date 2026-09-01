@@ -50,7 +50,7 @@ jobs:
                   text=re.sub(r'<script[^>]+src=[\"\'][^\"\']*(?:student-experience|daily-challenge)[^\"\']+\.js(?:\?[^\"\']*)?[\"\'][^>]*></script>\s*','',text,flags=re.I)
                   text=re.sub(r'<script[^>]+data-daily-(?:v5|v6|v7|v8)-loader[^>]*></script>\s*','',text,flags=re.I)
                   text=text.replace('</head>','<link rel="stylesheet" href="legacy-daily-hide.css?v='+sha+'" data-legacy-daily-hide="1">\n</head>',1)
-                  text=text.replace('</body>','<script src="daily-challenge-stable.js?v='+sha+'" defer data-daily-challenge-stable="1"></script>\n</body>',1)
+                  text=text.replace('</body>','<script src="daily-challenge-stable.js?v='+sha+'" defer data-daily-challenge-stable="1"></script>\n<script src="daily-entry-fix.js?v='+sha+'" defer data-daily-entry-fix="1"></script>\n</body>',1)
 
               if 'data-site-modern-refresh' not in text:
                   text=text.replace('</head>','<link rel="stylesheet" href="modern-refresh.css?v='+sha+'" data-site-modern-refresh="1">\n</head>',1)
@@ -80,6 +80,7 @@ jobs:
           test -s _site/modern-refresh.css
           test -s _site/legacy-daily-hide.css
           test -s _site/daily-challenge-stable.js
+          test -s _site/daily-entry-fix.js
           test -s _site/admin-tools.js
 
           python3 - <<'PY'
@@ -91,7 +92,7 @@ jobs:
               for src in re.findall(r'<script[^>]+src=[\"\']([^\"\']+)[\"\']', text, re.I):
                   src=src.split('?',1)[0].split('#',1)[0]
                   if src.endswith('.js'): scripts.add(src.lstrip('./'))
-          scripts.update({'i18n-dictionary.js','i18n-core.js','i18n-enhancements.js','student-product.js','student-experience-v3.js','daily-challenge-stable.js','admin-tools.js'})
+          scripts.update({'i18n-dictionary.js','i18n-core.js','i18n-enhancements.js','student-product.js','student-experience-v3.js','daily-challenge-stable.js','daily-entry-fix.js','admin-tools.js'})
           missing=[src for src in sorted(scripts) if not (root/src).exists()]
           if missing: raise SystemExit('Missing referenced/dynamic scripts: '+', '.join(missing))
           PY
@@ -104,7 +105,7 @@ jobs:
               for src in re.findall(r'<script[^>]+src=[\"\']([^\"\']+)[\"\']', text, re.I):
                   src=src.split('?',1)[0].split('#',1)[0]
                   if src.endswith('.js'): scripts.add(src.lstrip('./'))
-          scripts.update({'i18n-dictionary.js','i18n-core.js','i18n-enhancements.js','student-product.js','student-experience-v3.js','daily-challenge-stable.js','admin-tools.js'})
+          scripts.update({'i18n-dictionary.js','i18n-core.js','i18n-enhancements.js','student-product.js','student-experience-v3.js','daily-challenge-stable.js','daily-entry-fix.js','admin-tools.js'})
           for src in sorted(scripts): print(root/src)
           PY
           )
@@ -115,6 +116,7 @@ jobs:
           p=pathlib.Path('_site/learn.html')
           t=p.read_text(encoding='utf-8',errors='ignore')
           if 'daily-challenge-stable.js' not in t: raise SystemExit('stable Daily Challenge not injected')
+          if 'daily-entry-fix.js' not in t: raise SystemExit('Daily Challenge entry fix not injected')
           if 'daily-challenge-v5.js' in t or 'daily-challenge-v6.js' in t or 'daily-challenge-v7.js' in t or 'daily-challenge-v8.js' in t or 'daily-challenge-final.js' in t: raise SystemExit('legacy challenge loader remains')
           if 'student-experience-v3.js' in t: raise SystemExit('legacy student experience remains on Learn')
 
