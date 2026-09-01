@@ -122,7 +122,7 @@ jobs:
 
           for page in pathlib.Path('_site').glob('*.html'):
               html=page.read_text(encoding='utf-8',errors='ignore')
-              if 'theme.js?v=20260901-sitewide-7' not in html:
+              if 'theme.js?v=20260901-sitewide-8' not in html:
                   raise SystemExit(f'unified theme/localization loader missing from {page.name}')
 
           language_css=pathlib.Path('_site/site-language.css').read_text(encoding='utf-8')
@@ -130,6 +130,12 @@ jobs:
               raise SystemExit('content-aware LTR fallback is missing')
           if 'article.card>.equation{text-align:right' in language_css:
               raise SystemExit('RTL language mode still right-aligns LTR equations')
+
+          mobile_css=pathlib.Path('_site/modern-refresh.css').read_text(encoding='utf-8')
+          if 'overflow-x:clip!important' not in mobile_css:
+              raise SystemExit('site-wide mobile overflow containment is missing')
+          if '.challenge-answer{display:grid!important' not in mobile_css:
+              raise SystemExit('challenge form mobile containment is missing')
           PY
 
           printf '%s\n' "$GITHUB_SHA" > _site/DEPLOYMENT_COMMIT.txt

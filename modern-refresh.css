@@ -106,8 +106,10 @@ body.dark footer{background:rgba(16,22,34,.56)!important;color:#a9b7ca!important
 /* Responsive navigation and layout. */
 @media(max-width:1100px){.topbar{gap:12px!important}.main-nav{gap:4px!important}.main-nav a{padding:9px 10px!important;font-size:13px!important}.account-top{padding:9px 10px!important}}
 @media(max-width:760px){
-  body{overflow-x:hidden!important}
+  html,body{width:100%!important;max-width:100%!important;overflow-x:clip!important}
+  body>*{max-width:100%!important}
   main{width:100%!important;max-width:100%!important;min-width:0!important}
+  main>*,.page-title,.section,.card,.hero-card,.challenge-hero,.challenge-area,.leaderboard-card,.experience-switch,.experience-card,.challenge-features,.challenge-feature,.invite-panel{min-width:0!important;max-width:100%!important}
   .topbar{display:grid!important;grid-template-columns:minmax(0,1fr) 42px 42px minmax(76px,auto)!important;align-items:center!important;gap:7px!important;overflow:visible!important;padding:8px 12px!important}
   .topbar:not(:has(.account-top)){grid-template-columns:minmax(0,1fr) 42px minmax(76px,auto)!important}
   .topbar:not(:has(.account-top)) #themeToggle{grid-column:2!important}
@@ -130,5 +132,15 @@ body.dark footer{background:rgba(16,22,34,.56)!important;color:#a9b7ca!important
   .course-map{gap:14px!important}.mistakes-grid{gap:14px!important}
   .experience-options label,.type-options label,.mode-list label{min-width:0!important;overflow-wrap:anywhere!important}
   .quiz-actions,.history-actions,.result-actions,.finish-actions,.handwriting-actions{max-width:100%!important}
+  .experience-switch,.challenge-features,.grid-2{width:100%!important;grid-template-columns:minmax(0,1fr)!important}
+  .experience-switch>*,.challenge-features>*,.grid-2>*{min-width:0!important;max-width:100%!important}
+  .challenge-actions,.room-share,.challenge-answer,.quiz-settings{min-width:0!important;max-width:100%!important}
+  .challenge-actions,.room-share{display:flex!important;flex-wrap:wrap!important}
+  .challenge-actions>*,.room-share>*,.challenge-answer>*,.quiz-settings>*{min-width:0!important;max-width:100%!important;white-space:normal!important;overflow-wrap:anywhere!important}
+  .challenge-answer{display:grid!important;grid-template-columns:minmax(0,1fr)!important;gap:10px!important}
+  .challenge-answer input,.challenge-answer button,.custom-row input,.quiz-settings select{width:100%!important;min-width:0!important}
+  .custom-row{grid-template-columns:minmax(0,1fr)!important}
+  .room-code,.challenge-question,.challenge-timer,.leader-row{min-width:0!important;max-width:100%!important;overflow-wrap:anywhere!important}
+  .challenge-question,.room-code{overflow-x:auto!important;-webkit-overflow-scrolling:touch!important}
 }
 @media(max-width:390px){.topbar{grid-template-columns:minmax(0,1fr) 40px 40px 72px!important;padding-inline:9px!important;gap:5px!important}.brand{font-size:14px!important}.account-top,#themeToggle{width:40px!important;min-width:40px!important}.main-nav a{font-size:11px!important;padding:8px 9px!important}}
