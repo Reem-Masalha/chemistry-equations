@@ -1,10 +1,76 @@
-/* Stable multilingual layout */
-html[dir="rtl"] body{direction:rtl;text-align:right}
+/* Final multilingual layout layer: page content follows the selected language,
+   while navigation order and chemical notation remain stable. */
 html[dir="ltr"] body{direction:ltr;text-align:left}
-html[dir="rtl"] .topbar,html[dir="rtl"] .section-head,html[dir="rtl"] .hero,html[dir="rtl"] .hero-card,html[dir="rtl"] .card,html[dir="rtl"] .lesson,html[dir="rtl"] .quiz-q,html[dir="rtl"] .challenge-feature,html[dir="rtl"] .experience-card,html[dir="rtl"] .invite-panel,html[dir="rtl"] .profile-page,html[dir="rtl"] .dashboard-card,html[dir="rtl"] .stats-card{direction:rtl;text-align:right}
-html[dir="rtl"] .main-nav,html[dir="rtl"] .brand,html[dir="rtl"] .site-language-control,html[dir="rtl"] .quiz-actions,html[dir="rtl"] .history-actions,html[dir="rtl"] .result-actions,html[dir="rtl"] .hand-actions,html[dir="rtl"] .certificate-actions{direction:ltr}
-.topbar{gap:12px}.main-nav{flex-wrap:wrap}.site-language-control{display:inline-flex;align-items:center;gap:7px;margin-inline-start:auto;flex:0 0 auto}.site-language-control select{min-height:38px;padding:7px 10px;border:1px solid var(--line,#dfe5ee);border-radius:9px;background:var(--surface,#fff);color:inherit;font:inherit}.site-language-icon{font-size:17px;line-height:1}.site-language-label{font-size:12px;font-weight:800}
+html[dir="rtl"] body{direction:rtl;text-align:right}
+
+/* Keep the global toolbar in one predictable order on every language. */
+.topbar{gap:10px}
+html[dir="rtl"] .topbar{direction:ltr!important;text-align:left!important}
+html[dir="rtl"] .brand{direction:ltr!important;text-align:left!important;unicode-bidi:isolate}
+html[dir="rtl"] .main-nav{direction:ltr!important;flex-direction:row!important}
+html[dir="rtl"] .main-nav a{direction:rtl;unicode-bidi:isolate;text-align:center}
+html[dir="rtl"] #accountTopBtn,html[dir="rtl"] #themeToggle{direction:rtl;unicode-bidi:isolate}
+.main-nav{flex-wrap:wrap}
+
+/* Dark mode controls must keep readable contrast. */
+body.dark #accountTopBtn,body.dark .account-top{background:var(--surface,#171f2d)!important;color:var(--text,#edf2fa)!important;border-color:var(--line,#2a374a)!important;-webkit-text-fill-color:currentColor!important}
+body.dark #themeToggle{color:var(--text,#edf2fa)!important;-webkit-text-fill-color:currentColor!important}
+
+/* Language control is a utility control: keep its geometry stable and compact. */
+.site-language-control{display:inline-flex!important;align-items:center;gap:7px;flex:0 0 auto;margin-inline-start:0!important;white-space:nowrap;direction:ltr!important;z-index:1000}
+.site-language-control select{min-height:38px;padding:7px 10px;border:1px solid var(--line,#dfe5ee);border-radius:9px;background:var(--surface,#fff);color:inherit;font:inherit;cursor:pointer;direction:ltr}
+.site-language-icon{font-size:17px;line-height:1}
+.site-language-label{font-size:12px;font-weight:800;direction:rtl;unicode-bidi:isolate}
+
+/* Natural RTL reading order for content and cards. */
+html[dir="rtl"] main,html[dir="rtl"] section,html[dir="rtl"] article,html[dir="rtl"] .card,html[dir="rtl"] .page-title,html[dir="rtl"] .hero-card,html[dir="rtl"] .lesson,html[dir="rtl"] .quiz-q,html[dir="rtl"] .challenge-feature,html[dir="rtl"] .experience-card,html[dir="rtl"] .invite-panel,html[dir="rtl"] .profile-page,html[dir="rtl"] .dashboard-card,html[dir="rtl"] .stats-card{direction:rtl;text-align:right}
+html[dir="rtl"] .hero,html[dir="rtl"] .grid-2,html[dir="rtl"] .grid,html[dir="rtl"] .lesson-grid,html[dir="rtl"] .course-map,html[dir="rtl"] .mistakes-grid,html[dir="rtl"] .dashboard-grid{direction:rtl}
+html[dir="rtl"] .section-head{direction:rtl;text-align:right}
+html[dir="rtl"] .section-head>div{text-align:right}
+html[dir="rtl"] footer{direction:rtl;text-align:right}
+
+/* Controls should read naturally in RTL, without reversing the site's nav. */
+html[dir="rtl"] button,html[dir="rtl"] label,html[dir="rtl"] .stage,html[dir="rtl"] .experience-options,html[dir="rtl"] .type-options{direction:rtl;text-align:right}
+html[dir="rtl"] .quiz-actions,html[dir="rtl"] .history-actions,html[dir="rtl"] .result-actions,html[dir="rtl"] .finish-actions,html[dir="rtl"] .hand-actions,html[dir="rtl"] .handwriting-actions,html[dir="rtl"] .challenge-actions,html[dir="rtl"] .help-actions{direction:rtl;justify-content:flex-start}
 html[dir="rtl"] input:not([type="radio"]):not([type="checkbox"]),html[dir="rtl"] textarea{direction:rtl;text-align:right}
-.equation,.chemical-equation,.formula,.practice-equation,.practice-choice,.history-equation,.history-solution,.checker-equation,.math,[data-equation],[data-chemical]{direction:ltr!important;unicode-bidi:isolate;text-align:center}
-html[dir="rtl"] .grid-2,html[dir="rtl"] .grid,html[dir="rtl"] .lesson-grid,html[dir="rtl"] .course-map,html[dir="rtl"] .mistakes-grid,html[dir="rtl"] .dashboard-grid{direction:rtl}html[dir="rtl"] .progress-grid>div{text-align:center}html[dir="rtl"] footer{direction:rtl;text-align:center}html[dir="rtl"] .certificate{direction:ltr;text-align:center}html[dir="rtl"] canvas{direction:ltr}
-@media(max-width:760px){.topbar{flex-wrap:wrap}.site-language-control{margin-inline-start:0}.site-language-label{display:none}html[dir="rtl"] .main-nav{width:100%;justify-content:flex-start}}
+
+/* Chemical notation is always LTR, regardless of surrounding language. */
+.equation,.chemical-equation,.formula,.practice-equation,.practice-choice,.history-equation,.history-solution,.checker-equation,.math,[data-equation],[data-chemical],.equation-display,.coefficient-entry{direction:ltr!important;unicode-bidi:isolate!important;word-break:normal}
+#equationInput,#checkInput,#recognizedEdit,.equation-input,.checker-input{direction:ltr!important;text-align:left!important;unicode-bidi:isolate!important}
+canvas{direction:ltr!important}
+
+/* Lesson formulas belong visually to the explanation directly above them. */
+html[dir="rtl"] article.card>.equation,html[dir="rtl"] .lesson>.equation,html[dir="rtl"] .section article>.equation{text-align:left!important;margin-block:10px 12px!important;padding-inline:0!important}
+html[dir="ltr"] article.card>.equation,html[dir="ltr"] .lesson>.equation,html[dir="ltr"] .section article>.equation{text-align:left!important;margin-block:10px 12px!important;padding-inline:0!important}
+article.card>h2+.equation,article.card>h3+.equation,article.card>p+.equation{margin-top:8px!important}
+article.card>.equation+p{margin-top:8px!important}
+
+/* Results and interactive chemistry displays are easier to scan centered. */
+#balanceResult .equation,#recognitionResult .equation,#checkResult .equation,.practice-equation,.practice-choice,.checker-equation,.equation-display{text-align:center!important}
+.equation-history .history-equation,.equation-history .history-solution{text-align:start!important}
+html[dir="rtl"] [data-i18n-auto-dir="ltr"],html[dir="rtl"] div[data-i18n-auto-dir="ltr"],html[dir="rtl"] button[data-i18n-auto-dir="ltr"],html[dir="rtl"] label[data-i18n-auto-dir="ltr"],html[dir="rtl"] a[data-i18n-auto-dir="ltr"]{direction:ltr!important;text-align:left!important;unicode-bidi:isolate!important}
+html[dir="rtl"] .chips button,html[dir="rtl"] [data-equation],html[dir="rtl"] [data-chemical]{direction:ltr!important;text-align:left!important;unicode-bidi:isolate!important}
+
+/* Mixed RTL prose containing Latin chemistry stays readable. */
+html[dir="rtl"] p,html[dir="rtl"] li,html[dir="rtl"] .muted,html[dir="rtl"] small{unicode-bidi:plaintext}
+html[dir="rtl"] .eyebrow{direction:rtl;unicode-bidi:isolate;text-align:right}
+html[dir="rtl"] .path-button{direction:rtl!important}
+html[dir="rtl"] .path-button>[aria-hidden="true"]{transform:scaleX(-1)}
+
+/* Tables retain RTL reading order while numbers/formulas can isolate themselves. */
+html[dir="rtl"] table{direction:rtl}
+html[dir="rtl"] th,html[dir="rtl"] td{text-align:right}
+html[dir="rtl"] .progress-grid>div{text-align:center}
+html[dir="rtl"] .certificate{direction:rtl;text-align:center}
+
+@media(max-width:760px){
+ .topbar{flex-wrap:wrap;gap:9px}
+ .main-nav{width:100%;justify-content:flex-start;flex-wrap:nowrap!important;overflow-x:auto;overflow-y:hidden;padding-bottom:3px;gap:6px;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+ .main-nav::-webkit-scrollbar{display:none}
+ .main-nav a{flex:0 0 auto;white-space:nowrap}
+ html[dir="rtl"] .main-nav{direction:ltr!important;justify-content:flex-start!important}
+ .site-language-control{margin-inline-start:0!important}
+ .site-language-label{display:none}
+ #themeToggle,#accountTopBtn{white-space:nowrap}
+ html[dir="rtl"] .section-head{align-items:flex-start}
+}

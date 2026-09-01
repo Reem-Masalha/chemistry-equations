@@ -72,6 +72,11 @@ jobs:
           test -s _site/checker.html
           test -s _site/profile.html
           test -s _site/admin.html
+          test -s _site/i18n-dictionary.js
+          test -s _site/i18n-core.js
+          test -s _site/i18n-enhancements.js
+          test -s _site/student-product.js
+          test -s _site/student-product.css
           test -s _site/modern-refresh.css
           test -s _site/legacy-daily-hide.css
           test -s _site/daily-challenge-v7.js
@@ -87,7 +92,7 @@ jobs:
               for src in re.findall(r'<script[^>]+src=[\"\']([^\"\']+)[\"\']', text, re.I):
                   src=src.split('?',1)[0].split('#',1)[0]
                   if src.endswith('.js'): scripts.add(src.lstrip('./'))
-          scripts.update({'student-experience-v3.js','daily-challenge-v7.js','daily-challenge-v8.js','admin-tools.js'})
+          scripts.update({'i18n-dictionary.js','i18n-core.js','i18n-enhancements.js','student-product.js','student-experience-v3.js','daily-challenge-v7.js','daily-challenge-v8.js','admin-tools.js'})
           missing=[src for src in sorted(scripts) if not (root/src).exists()]
           if missing: raise SystemExit('Missing referenced/dynamic scripts: '+', '.join(missing))
           PY
@@ -100,7 +105,7 @@ jobs:
               for src in re.findall(r'<script[^>]+src=[\"\']([^\"\']+)[\"\']', text, re.I):
                   src=src.split('?',1)[0].split('#',1)[0]
                   if src.endswith('.js'): scripts.add(src.lstrip('./'))
-          scripts.update({'student-experience-v3.js','daily-challenge-v7.js','daily-challenge-v8.js','admin-tools.js'})
+          scripts.update({'i18n-dictionary.js','i18n-core.js','i18n-enhancements.js','student-product.js','student-experience-v3.js','daily-challenge-v7.js','daily-challenge-v8.js','admin-tools.js'})
           for src in sorted(scripts): print(root/src)
           PY
           )
@@ -114,6 +119,23 @@ jobs:
           if 'daily-challenge-v8.js' not in t: raise SystemExit('v8 completion layer not injected')
           if 'daily-challenge-v5.js' in t or 'daily-challenge-v6.js' in t or 'daily-challenge-final.js' in t: raise SystemExit('old challenge loader remains')
           if 'student-experience-v3.js' in t: raise SystemExit('legacy student experience remains on Learn')
+
+          for page in pathlib.Path('_site').glob('*.html'):
+              html=page.read_text(encoding='utf-8',errors='ignore')
+              if 'theme.js?v=20260901-sitewide-9' not in html:
+                  raise SystemExit(f'unified theme/localization loader missing from {page.name}')
+
+          language_css=pathlib.Path('_site/site-language.css').read_text(encoding='utf-8')
+          if 'data-i18n-auto-dir="ltr"' not in language_css:
+              raise SystemExit('content-aware LTR fallback is missing')
+          if 'article.card>.equation{text-align:right' in language_css:
+              raise SystemExit('RTL language mode still right-aligns LTR equations')
+
+          mobile_css=pathlib.Path('_site/modern-refresh.css').read_text(encoding='utf-8')
+          if 'overflow-x:clip!important' not in mobile_css:
+              raise SystemExit('site-wide mobile overflow containment is missing')
+          if '.challenge-answer{display:grid!important' not in mobile_css:
+              raise SystemExit('challenge form mobile containment is missing')
           PY
 
           printf '%s\n' "$GITHUB_SHA" > _site/DEPLOYMENT_COMMIT.txt

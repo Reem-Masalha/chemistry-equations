@@ -10,7 +10,9 @@
   --modern-shadow:0 12px 32px rgba(25,43,76,.09);
   --modern-shadow-lg:0 22px 55px rgba(25,43,76,.14);
 }
+html,body{max-width:100%;overflow-x:clip}
 html{background:var(--modern-bg)!important}
+html.dark{background:#101622!important}
 body{background:radial-gradient(850px 480px at 0 -8%,rgba(108,77,232,.13),transparent 62%),radial-gradient(900px 520px at 100% 0,rgba(49,88,214,.12),transparent 62%),var(--modern-bg)!important;color:var(--modern-ink)}
 /* Navigation: keep the original simple tabs that were better before the redesign. */
 .topbar{background:rgba(255,255,255,.97)!important;border-bottom:1px solid #dce4ef!important;box-shadow:0 3px 18px rgba(25,43,76,.07)!important;backdrop-filter:blur(14px)!important;flex-wrap:nowrap!important}
@@ -63,20 +65,64 @@ input:focus,select:focus,textarea:focus{outline:none!important;border-color:var(
 /* Footer. */
 footer{background:rgba(255,255,255,.68)!important;border-top:1px solid #d8e2ee!important}
 /* Dark mode. */
-body.dark{background:radial-gradient(850px 480px at 0 -8%,rgba(108,77,232,.18),transparent 62%),radial-gradient(900px 520px at 100% 0,rgba(49,88,214,.17),transparent 62%),#101622!important}
+body.dark{--modern-ink:#edf2fa;--modern-muted:#a9b7ca;--modern-border:#2b394d;--modern-surface:#171f2d;--modern-bg:#101622;background:radial-gradient(850px 480px at 0 -8%,rgba(108,77,232,.18),transparent 62%),radial-gradient(900px 520px at 100% 0,rgba(49,88,214,.17),transparent 62%),#101622!important;color:var(--modern-ink)!important}
+body.dark h1,body.dark h2,body.dark h3,body.dark h4,body.dark strong,body.dark b{color:var(--modern-ink)}
+body.dark p,body.dark li,body.dark .muted,body.dark small{color:var(--modern-muted)}
 body.dark .topbar{background:rgba(16,22,34,.95)!important;border-bottom-color:#29364a!important}
-body.dark .main-nav a{color:#9aa9bd!important}body.dark .main-nav a.active{background:#1b2637!important;color:#aebcff!important}body.dark .main-nav a:hover{background:#182337!important;color:#c3ccff!important}
-body.dark .page-title .eyebrow{background:#202c52!important;color:#aebcff!important}
-body.dark .card,body.dark .hero-card,body.dark .achievement,body.dark .quiz-q,body.dark .steps article,body.dark .challenge-feature,body.dark .experience-card,body.dark .course-map article,body.dark .mistake,body.dark .course-note{border-color:#2b394d!important;background:rgba(23,31,45,.97)!important;box-shadow:0 12px 34px rgba(0,0,0,.21)!important}
+body.dark .main-nav a{color:#a9b7ca!important}body.dark .main-nav a.active{background:#1b2637!important;color:#c3ccff!important}body.dark .main-nav a:hover{background:#182337!important;color:#d8deff!important}
+body.dark .account-top{background:#171f2d!important;border-color:#344359!important;color:#edf2fa!important;box-shadow:0 5px 16px rgba(0,0,0,.2)!important}
+body.dark .page-title .eyebrow{background:#202c52!important;color:#b9c5ff!important}
+body.dark .hero:before{background:linear-gradient(135deg,rgba(27,37,64,.72),rgba(24,32,49,.62),rgba(16,22,34,.18))!important}
+body.dark .page-title:before{background:linear-gradient(135deg,rgba(49,88,214,.16),rgba(108,77,232,.15),transparent 74%)!important}
+body.dark .card,body.dark .hero-card,body.dark .achievement,body.dark .quiz-q,body.dark .steps article,body.dark .challenge-feature,body.dark .experience-card,body.dark .course-map article,body.dark .mistake,body.dark .course-note{border-color:#2b394d!important;background:rgba(23,31,45,.97)!important;box-shadow:0 12px 34px rgba(0,0,0,.21)!important;color:var(--modern-ink)!important}
 body.dark .hero-card{background:linear-gradient(145deg,#171f2d,#1b2435)!important}body.dark .lesson,body.dark .challenge-feature,body.dark .experience-card,body.dark .quiz-q,body.dark .course-map article,body.dark .mistake{background:linear-gradient(180deg,#171f2d,#141c29)!important}
-body.dark .section.alt{background:linear-gradient(180deg,#0e1521,#101723)!important}body.dark input,body.dark select,body.dark textarea{background:#111927!important;border-color:#344359!important;color:var(--text)!important}body.dark .equation{background:linear-gradient(135deg,#1b2540,#222c49)!important}body.dark footer{background:rgba(16,22,34,.56)!important}
+body.dark .atom{background:linear-gradient(145deg,#dfe6ff,#cdd8ff)!important;color:#3158d6!important}
+body.dark .section.alt{background:linear-gradient(180deg,#0e1521,#101723)!important}
+body.dark input,body.dark select,body.dark textarea{background:#111927!important;border-color:#344359!important;color:#edf2fa!important}
+body.dark .secondary,body.dark .chips button{background:#171f2d!important;border-color:#344359!important;color:#edf2fa!important}
+body.dark .secondary:hover,body.dark .chips button:hover{background:#202b3d!important;border-color:#455773!important;color:#fff!important}
+body.dark .equation{background:linear-gradient(135deg,#1b2540,#222c49)!important;color:#edf2fa!important;border-color:#33425c!important}
+body.dark .progress-grid>div,body.dark .score-animation,body.dark .certificate{background:linear-gradient(180deg,#171f2d,#141c29)!important;color:#edf2fa!important;border-color:#2b394d!important}
+body.dark .sp-card,body.dark .sp-challenge-box,body.dark .sp-alert,body.dark .sp-level{background:#171f2d!important;color:#edf2fa!important;border-color:#2b394d!important}
+body.dark .sp-card p,body.dark .sp-stat span,body.dark .sp-mode small{color:#a9b7ca!important}
+body.dark .invite-panel,body.dark .experience-options label,body.dark .type-options label,body.dark .mode-list label,body.dark .lesson-practice-card,body.dark .lesson-practice-option,body.dark .equation-history,body.dark .history-head,body.dark .history-item,body.dark .checker-section,body.dark .checker-equation,body.dark .checker-balance-cta,body.dark .account-dialog,body.dark .recovery-code,body.dark .dc7-pill,body.dark .dc7-rule,body.dark .quiz-timer,body.dark .stage{background:#171f2d!important;color:#edf2fa!important;border-color:#344359!important}
+body.dark .history-item:hover,body.dark .lesson-practice-option:hover{background:#202b3d!important}
+body.dark .history-head b,body.dark .history-equation,body.dark .history-label,body.dark .checker-balance-cta>div:first-child::before,body.dark .checker-balance-cta>div:first-child::after{color:#edf2fa!important}
+body.dark .history-index{background:#202b3d!important;border-color:#455773!important;color:#dbe6f5!important}
+body.dark .stage-list .active-stage{background:#202c52!important;border-color:#7186e8!important;color:#dbe2ff!important}
+body.dark .feedback-correct,body.dark .checker-status-good,body.dark .checker-correct{background:#102a20!important;border-color:#2b694c!important;color:#9de0ba!important}
+body.dark .feedback-wrong,body.dark .checker-status-bad,body.dark .atom-row-bad,body.dark .problem-chips span{background:#321b22!important;border-color:#75404b!important;color:#ffb8c0!important}
+body.dark .checker-status-error{background:#322916!important;border-color:#725d2c!important;color:#f4d78f!important}
+body.dark .certificate .cert-title,body.dark .certificate .cert-subtitle,body.dark .certificate .cert-name{color:#edf2fa!important}
+body.dark .certificate-preview-box{background:#101622!important;color:#edf2fa!important}
+body.dark .certificate-preview-close{background:#202b3d!important;color:#edf2fa!important}
+body.dark .account-link,body.dark .account-switch button,body.dark .password-toggle{color:#aebcff!important}
+body.dark .account-switch{border-top-color:#344359!important}
+body.dark .site-language-control,body.dark .site-language-label,body.dark .site-language-icon{color:#edf2fa!important}
+body.dark .admin-tools-card,body.dark .note,body.dark .pill{background:#171f2d!important;color:#edf2fa!important;border-color:#344359!important}
+body.dark .admin-tools-buttons button{background:#202b3d!important;color:#edf2fa!important;border-color:#455773!important}
+body.dark th,body.dark td,body.dark .chart{border-color:#344359!important}
+body.dark .privacy,body.dark .bar-label,body.dark .bar-value{color:#a9b7ca!important}
+body.dark footer{background:rgba(16,22,34,.56)!important;color:#a9b7ca!important}
 /* Responsive navigation and layout. */
 @media(max-width:1100px){.topbar{gap:12px!important}.main-nav{gap:4px!important}.main-nav a{padding:9px 10px!important;font-size:13px!important}.account-top{padding:9px 10px!important}}
 @media(max-width:760px){
-  .topbar{flex-wrap:wrap!important;overflow:visible!important;padding:8px 12px!important}
-  .brand{font-size:16px!important;gap:6px!important}
-  .account-top{font-size:12px!important;padding:8px 10px!important}
-  .main-nav{order:3!important;width:100%!important;overflow-x:auto!important;gap:4px!important;scrollbar-width:none!important;-webkit-overflow-scrolling:touch!important}
+  html,body{width:100%!important;max-width:100%!important;overflow-x:clip!important}
+  body>*{max-width:100%!important}
+  main{width:100%!important;max-width:100%!important;min-width:0!important}
+  main>*,.page-title,.section,.card,.hero-card,.challenge-hero,.challenge-area,.leaderboard-card,.experience-switch,.experience-card,.challenge-features,.challenge-feature,.invite-panel{min-width:0!important;max-width:100%!important}
+  .topbar{display:grid!important;grid-template-columns:minmax(0,1fr) 42px 42px minmax(76px,auto)!important;align-items:center!important;gap:7px!important;overflow:visible!important;padding:8px 12px!important}
+  .topbar:not(:has(.account-top)){grid-template-columns:minmax(0,1fr) 42px minmax(76px,auto)!important}
+  .topbar:not(:has(.account-top)) #themeToggle{grid-column:2!important}
+  .topbar:not(:has(.account-top)) .site-language-control{grid-column:3!important}
+  .brand{grid-column:1!important;font-size:16px!important;gap:6px!important;min-width:0!important;margin:0!important;overflow:hidden!important;text-overflow:ellipsis!important}
+  .account-top{grid-column:2!important;width:42px!important;min-width:42px!important;height:40px!important;padding:0!important;font-size:0!important}
+  .account-top::before{content:'👤';font-size:18px}
+  #themeToggle{grid-column:3!important;width:42px!important;min-width:42px!important;height:40px!important;padding:0!important;font-size:0!important}
+  #themeToggle::before{content:'◐';font-size:20px}
+  .site-language-control{grid-column:4!important;min-width:0!important;margin:0!important}
+  .site-language-control select{width:100%!important;min-width:76px!important;padding:7px 5px!important;font-size:12px!important}
+  .main-nav{grid-column:1/-1!important;grid-row:2!important;order:initial!important;width:100%!important;overflow-x:auto!important;gap:4px!important;scrollbar-width:none!important;-webkit-overflow-scrolling:touch!important}
   .main-nav::-webkit-scrollbar{display:none}
   .main-nav a{font-size:13px!important;padding:9px 11px!important;flex:0 0 auto!important}
   .page-title{padding-top:48px!important;padding-bottom:30px!important}.page-title p{font-size:16px!important}.page-title:before{left:-40px;right:-40px;height:200px}
@@ -85,4 +131,17 @@ body.dark .section.alt{background:linear-gradient(180deg,#0e1521,#101723)!import
   .card:hover,.hero-card:hover,.achievement:hover,.experience-card:hover,.course-map article:hover,.mistake:hover{transform:none;box-shadow:var(--modern-shadow)!important}
   .lesson{min-height:0!important}
   .course-map{gap:14px!important}.mistakes-grid{gap:14px!important}
+  .experience-options label,.type-options label,.mode-list label{min-width:0!important;overflow-wrap:anywhere!important}
+  .quiz-actions,.history-actions,.result-actions,.finish-actions,.handwriting-actions{max-width:100%!important}
+  .experience-switch,.challenge-features,.grid-2{width:100%!important;grid-template-columns:minmax(0,1fr)!important}
+  .experience-switch>*,.challenge-features>*,.grid-2>*{min-width:0!important;max-width:100%!important}
+  .challenge-actions,.room-share,.challenge-answer,.quiz-settings{min-width:0!important;max-width:100%!important}
+  .challenge-actions,.room-share{display:flex!important;flex-wrap:wrap!important}
+  .challenge-actions>*,.room-share>*,.challenge-answer>*,.quiz-settings>*{min-width:0!important;max-width:100%!important;white-space:normal!important;overflow-wrap:anywhere!important}
+  .challenge-answer{display:grid!important;grid-template-columns:minmax(0,1fr)!important;gap:10px!important}
+  .challenge-answer input,.challenge-answer button,.custom-row input,.quiz-settings select{width:100%!important;min-width:0!important}
+  .custom-row{grid-template-columns:minmax(0,1fr)!important}
+  .room-code,.challenge-question,.challenge-timer,.leader-row{min-width:0!important;max-width:100%!important;overflow-wrap:anywhere!important}
+  .challenge-question,.room-code{overflow-x:auto!important;-webkit-overflow-scrolling:touch!important}
 }
+@media(max-width:390px){.topbar{grid-template-columns:minmax(0,1fr) 40px 40px 72px!important;padding-inline:9px!important;gap:5px!important}.brand{font-size:14px!important}.account-top,#themeToggle{width:40px!important;min-width:40px!important}.main-nav a{font-size:11px!important;padding:8px 9px!important}}
