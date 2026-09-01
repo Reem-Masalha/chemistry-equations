@@ -1,6 +1,6 @@
 /* Shared narrow-screen layout fixes */
-/* Admin testing controls use the same blue primary treatment as the rest of the site. */
-#adminTesting .admin-tools-buttons button{background:var(--accent,#3158d6)!important;color:#fff!important;border-color:var(--accent,#3158d6)!important}
+/* Admin testing controls use the same blue primary treatment as the rest of the site and retain the original readable button size. */
+#adminTesting .admin-tools-buttons button{background:var(--accent,#3158d6)!important;color:#fff!important;border-color:var(--accent,#3158d6)!important;font-size:16px!important;font-weight:600!important;line-height:1.2!important}
 #adminTesting .admin-tools-buttons button:hover{filter:brightness(.96)}
 @media (max-width: 760px) {
   html, body { max-width: 100%; overflow-x: hidden; }
