@@ -12,8 +12,19 @@ window.setInterval=function(fn,ms,...args){
  const timer=document.getElementById('timer');
  if(ms===1000&&timer&&quizSelected){
   const {minutes,enabled}=getSettings();
-  if(enabled)ms=1000*minutes/5;
-  else return originalSetInterval(()=>{},86400000);
+  if(!enabled){timer.classList.add('hidden');return originalSetInterval(()=>{},86400000)}
+  const started=Date.now(),duration=minutes*60000;
+  return originalSetInterval(()=>{
+   const elapsed=Date.now()-started;
+   if(elapsed<duration){
+    fn();
+    const left=Math.max(0,duration-(Date.now()-started)),sec=Math.ceil(left/1000),m=Math.floor(sec/60),s=String(sec%60).padStart(2,'0');
+    const t=$('timer');if(t)t.textContent=`⏱ ${m}:${s}`;
+   }else{
+    const leftTicks=Math.max(1,300-Math.floor(elapsed/1000));
+    for(let i=0;i<leftTicks;i++)fn();
+   }
+  },1000);
  }
  return originalSetInterval(fn,ms,...args);
 };
