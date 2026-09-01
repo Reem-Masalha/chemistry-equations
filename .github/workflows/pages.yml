@@ -50,7 +50,7 @@ jobs:
                   text=re.sub(r'<script[^>]+src=[\"\'][^\"\']*(?:student-experience|daily-challenge)[^\"\']+\.js(?:\?[^\"\']*)?[\"\'][^>]*></script>\s*','',text,flags=re.I)
                   text=re.sub(r'<script[^>]+data-daily-(?:v5|v6|v7|v8)-loader[^>]*></script>\s*','',text,flags=re.I)
                   text=re.sub(r'<script[^>]+src=[\"\']daily-challenge-final\.js(?:\?[^\"\']*)?[\"\'][^>]*></script>\s*','',text,flags=re.I)
-                  text=text.replace('</head>','<link rel="stylesheet" href="legacy-daily-hide.css?v='+sha+'" data-legacy-daily-hide="1">\n</head>',1)
+                  text=text.replace('</head>','<link rel="stylesheet" href="legacy-daily-hide.css?v='+sha+'" data-legacy-daily-hide="1">\n<link rel="stylesheet" href="daily-challenge-spacing.css?v='+sha+'" data-daily-challenge-spacing="1">\n</head>',1)
                   text=text.replace('</body>','<script src="daily-challenge-stable.js?v='+sha+'" defer data-daily-challenge-stable="1"></script>\n<script src="daily-position-fix.js?v='+sha+'" defer data-daily-position-fix="1"></script>\n</body>',1)
 
               if 'data-site-modern-refresh' not in text:
@@ -80,6 +80,7 @@ jobs:
           test -s _site/student-product.css
           test -s _site/modern-refresh.css
           test -s _site/legacy-daily-hide.css
+          test -s _site/daily-challenge-spacing.css
           test -s _site/daily-challenge-stable.js
           test -s _site/daily-position-fix.js
           test -s _site/admin-tools.js
@@ -117,6 +118,7 @@ jobs:
           t=p.read_text(encoding='utf-8',errors='ignore')
           if t.count('daily-challenge-stable.js') != 1: raise SystemExit('Learn must contain exactly one stable Daily Challenge loader')
           if t.count('daily-position-fix.js') != 1: raise SystemExit('Daily Challenge position fix missing or duplicated')
+          if t.count('daily-challenge-spacing.css') != 1: raise SystemExit('Daily Challenge spacing stylesheet missing or duplicated')
           if 'daily-challenge-final.js' in t: raise SystemExit('legacy daily final loader remains')
           if 'student-experience-v3.js' in t: raise SystemExit('legacy student experience remains on Learn')
           for page in pathlib.Path('_site').glob('*.html'):
