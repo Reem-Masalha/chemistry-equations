@@ -8,7 +8,7 @@ if(!input||!oldBtn||!out)return;
 const btn=oldBtn.cloneNode(true);
 oldBtn.replaceWith(btn);
 
-const symbols=new Set('H He Li Be B C N O F Ne Na Mg Al Si P S Cl Ar K Ca Sc Ti V Cr Mn Fe Co Ni Cu Zn Ga Ge As Se Br Kr Rb Sr Y Zr Nb Mo Tc Ru Rh Pd Ag Cd In Sn Sb Te I Xe Cs Ba La Ce Pr Nd Pm Sm Eu Gd Tb Dy Ho Hf Ta W Re Os Ir Pt Au Hg Tl Pb Bi Po At Rn Fr Ra Ac Th Pa U Np Pu Am Cm Bk Cf Es Fm Md No Lr'.split(' '));
+const symbols=window.CHEMISTRY_ELEMENT_SYMBOLS;if(!symbols)return;
 const sub='₀₁₂₃₄₅₆₇₈₉';
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const norm=s=>String(s??'').replace(/[₀₁₂₃₄₅₆₇₈₉]/g,c=>String(sub.indexOf(c))).replace(/⟶|⇒|➜|⟹|⟾|=>|=/g,'→').replace(/\s+/g,' ').trim();
