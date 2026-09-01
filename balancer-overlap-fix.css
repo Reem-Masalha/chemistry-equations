@@ -1,0 +1,22 @@
+/* Keep the Balancer result below the equation input row. */
+#balanceResult{
+  display:block;
+  position:relative;
+  clear:both;
+  width:100%;
+  box-sizing:border-box;
+  margin-top:18px;
+  z-index:1;
+}
+#balanceResult.hidden{display:none}
+#balanceResult>.balance-status:first-child{
+  display:flex;
+  margin-top:0;
+}
+.balancer .input-row{
+  position:relative;
+  z-index:2;
+}
+@media(max-width:760px){
+  #balanceResult{margin-top:16px}
+}
