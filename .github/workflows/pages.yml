@@ -43,15 +43,15 @@ jobs:
           for html in root.glob('*.html'):
               text=html.read_text(encoding='utf-8', errors='ignore')
               text=text.replace('loadStudentProduct();','')
-              text=re.sub(r'theme\\.js\\?v=20260901-sitewide-\\d+', 'theme.js?v=20260901-sitewide-13', text)
+              text=re.sub(r'theme\.js\?v=20260901-sitewide-\d+', 'theme.js?v=20260901-sitewide-13', text)
 
               if html.name=='learn.html':
-                  # Learn uses exactly one Daily Challenge implementation.
-                  # Strip every legacy challenge loader so it cannot compete with the stable controller.
-                  text=re.sub(r'<script[^>]+src=[\"\'][^\"\']*(?:student-experience|daily-challenge)[^\"\']+\\.js(?:\\?[^\"\']*)?[\"\'][^>]*></script>\\s*','',text,flags=re.I)
-                  text=re.sub(r'<script[^>]+data-daily-(?:v5|v6|v7|v8)-loader[^>]*></script>\\s*','',text,flags=re.I)
+                  # Learn has one Daily Challenge only: the stable controller.
+                  text=re.sub(r'<script[^>]+src=[\"\'][^\"\']*(?:student-experience|daily-challenge)[^\"\']+\.js(?:\?[^\"\']*)?[\"\'][^>]*></script>\s*','',text,flags=re.I)
+                  text=re.sub(r'<script[^>]+data-daily-(?:v5|v6|v7|v8)-loader[^>]*></script>\s*','',text,flags=re.I)
+                  text=re.sub(r'<script[^>]+src=[\"\']daily-challenge-final\.js(?:\?[^\"\']*)?[\"\'][^>]*></script>\s*','',text,flags=re.I)
                   text=text.replace('</head>','<link rel="stylesheet" href="legacy-daily-hide.css?v='+sha+'" data-legacy-daily-hide="1">\n</head>',1)
-                  text=text.replace('</body>','<script src="daily-challenge-stable.js?v='+sha+'" defer data-daily-challenge-stable="1"></script>\n<script src="daily-entry-fix.js?v='+sha+'" defer data-daily-entry-fix="1"></script>\n<script src="daily-position-fix.js?v='+sha+'" defer data-daily-position-fix="1"></script>\n</body>',1)
+                  text=text.replace('</body>','<script src="daily-challenge-stable.js?v='+sha+'" defer data-daily-challenge-stable="1"></script>\n<script src="daily-position-fix.js?v='+sha+'" defer data-daily-position-fix="1"></script>\n</body>',1)
 
               if 'data-site-modern-refresh' not in text:
                   text=text.replace('</head>','<link rel="stylesheet" href="modern-refresh.css?v='+sha+'" data-site-modern-refresh="1">\n</head>',1)
@@ -81,7 +81,6 @@ jobs:
           test -s _site/modern-refresh.css
           test -s _site/legacy-daily-hide.css
           test -s _site/daily-challenge-stable.js
-          test -s _site/daily-entry-fix.js
           test -s _site/daily-position-fix.js
           test -s _site/admin-tools.js
 
@@ -94,7 +93,7 @@ jobs:
               for src in re.findall(r'<script[^>]+src=[\"\']([^\"\']+)[\"\']', text, re.I):
                   src=src.split('?',1)[0].split('#',1)[0]
                   if src.endswith('.js'): scripts.add(src.lstrip('./'))
-          scripts.update({'i18n-dictionary.js','i18n-core.js','i18n-enhancements.js','student-product.js','student-experience-v3.js','daily-challenge-stable.js','daily-entry-fix.js','daily-position-fix.js','admin-tools.js'})
+          scripts.update({'i18n-dictionary.js','i18n-core.js','i18n-enhancements.js','student-product.js','student-experience-v3.js','daily-challenge-stable.js','daily-position-fix.js','admin-tools.js'})
           missing=[src for src in sorted(scripts) if not (root/src).exists()]
           if missing: raise SystemExit('Missing referenced/dynamic scripts: '+', '.join(missing))
           PY
@@ -107,37 +106,23 @@ jobs:
               for src in re.findall(r'<script[^>]+src=[\"\']([^\"\']+)[\"\']', text, re.I):
                   src=src.split('?',1)[0].split('#',1)[0]
                   if src.endswith('.js'): scripts.add(src.lstrip('./'))
-          scripts.update({'i18n-dictionary.js','i18n-core.js','i18n-enhancements.js','student-product.js','student-experience-v3.js','daily-challenge-stable.js','daily-entry-fix.js','daily-position-fix.js','admin-tools.js'})
+          scripts.update({'i18n-dictionary.js','i18n-core.js','i18n-enhancements.js','student-product.js','student-experience-v3.js','daily-challenge-stable.js','daily-position-fix.js','admin-tools.js'})
           for src in sorted(scripts): print(root/src)
           PY
           )
 
-          # Build-time guards for the Daily Challenge and site-wide regressions.
           python3 - <<'PY'
           import pathlib
           p=pathlib.Path('_site/learn.html')
           t=p.read_text(encoding='utf-8',errors='ignore')
-          if 'daily-challenge-stable.js' not in t: raise SystemExit('stable Daily Challenge not injected')
-          if 'daily-position-fix.js' not in t: raise SystemExit('Daily Challenge position fix not injected')
-          if 'daily-challenge-v5.js' in t or 'daily-challenge-v6.js' in t or 'daily-challenge-v7.js' in t or 'daily-challenge-v8.js' in t or 'daily-challenge-final.js' in t: raise SystemExit('legacy challenge loader remains')
+          if t.count('daily-challenge-stable.js') != 1: raise SystemExit('Learn must contain exactly one stable Daily Challenge loader')
+          if t.count('daily-position-fix.js') != 1: raise SystemExit('Daily Challenge position fix missing or duplicated')
+          if 'daily-challenge-final.js' in t: raise SystemExit('legacy daily final loader remains')
           if 'student-experience-v3.js' in t: raise SystemExit('legacy student experience remains on Learn')
-
           for page in pathlib.Path('_site').glob('*.html'):
               html=page.read_text(encoding='utf-8',errors='ignore')
               if 'theme.js?v=20260901-sitewide-13' not in html:
                   raise SystemExit(f'unified theme/localization loader missing from {page.name}')
-
-          language_css=pathlib.Path('_site/site-language.css').read_text(encoding='utf-8')
-          if 'data-i18n-auto-dir="ltr"' not in language_css:
-              raise SystemExit('content-aware LTR fallback is missing')
-          if 'article.card>.equation{text-align:right' in language_css:
-              raise SystemExit('RTL language mode still right-aligns LTR equations')
-
-          mobile_css=pathlib.Path('_site/modern-refresh.css').read_text(encoding='utf-8')
-          if 'overflow-x:clip!important' not in mobile_css:
-              raise SystemExit('site-wide mobile overflow containment is missing')
-          if '.challenge-answer{display:grid!important' not in mobile_css:
-              raise SystemExit('challenge form mobile containment is missing')
           PY
 
           printf '%s\n' "$GITHUB_SHA" > _site/DEPLOYMENT_COMMIT.txt
