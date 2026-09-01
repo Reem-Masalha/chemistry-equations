@@ -1,0 +1,77 @@
+name: Centralize chemistry element symbols
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  migrate:
+    if: ${{ !startsWith(github.event.head_commit.message, 'Centralize chemistry element symbols') }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Replace duplicated element lists with shared source
+        shell: python
+        run: |
+          from pathlib import Path
+          import re
+
+          files = [
+              Path('balancer-live.js'),
+              Path('checker-fast.js'),
+              Path('balancer-enhancements.js'),
+              Path('checker-enhanced.js'),
+          ]
+
+          for path in files:
+              text = path.read_text(encoding='utf-8')
+              text = re.sub(
+                  r"const symbols\s*=\s*new Set\('[^']+'\.split\(' '\)\);",
+                  "const symbols=window.CHEMISTRY_ELEMENT_SYMBOLS;if(!symbols)return;",
+                  text,
+                  count=1,
+              )
+              text = re.sub(
+                  r"const ELEMENTS\s*=\s*new Set\('[^']+'\.split\(' '\)\);",
+                  "const ELEMENTS=window.CHEMISTRY_ELEMENT_SYMBOLS;if(!ELEMENTS)return;",
+                  text,
+                  count=1,
+              )
+              path.write_text(text, encoding='utf-8')
+
+          index = Path('index.html')
+          text = index.read_text(encoding='utf-8')
+          if 'element-symbols.js?' not in text:
+              text = text.replace(
+                  '<script src="balancer-live.js?',
+                  '<script src="element-symbols.js?v=20260901-elements-1" defer></script><script src="balancer-live.js?'
+              )
+          index.write_text(text, encoding='utf-8')
+
+          checker = Path('checker.html')
+          text = checker.read_text(encoding='utf-8')
+          if 'element-symbols.js?' not in text:
+              text = text.replace(
+                  '<script src="checker-fast.js?',
+                  '<script src="element-symbols.js?v=20260901-elements-1" defer></script><script src="checker-fast.js?'
+              )
+          checker.write_text(text, encoding='utf-8')
+
+      - name: Commit centralized parser changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add balancer-live.js checker-fast.js balancer-enhancements.js checker-enhanced.js index.html checker.html
+          git diff --cached --quiet && exit 0
+          git commit -m "Centralize chemistry element symbols"
+          git push
+
+      - name: Remove one-time migration workflow
+        if: success()
+        run: |
+          git rm .github/workflows/centralize-element-symbols.yml
+          git commit -m "Remove one-time element-symbol migration workflow"
+          git push
