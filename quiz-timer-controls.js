@@ -32,9 +32,25 @@ function renderTimerChoice(){
  select?.addEventListener('change',sync);
  sync();
 }
+function normalizeQuizFeedback(){
+ const quiz=document.querySelector('input[name="experience"][value="quiz"]:checked');
+ if(!quiz)return;
+ const f=$('answerFeedback');
+ if(!f)return;
+ f.querySelectorAll(':scope > *:not(.next-question)').forEach(el=>el.remove());
+ document.querySelectorAll('.practice-choice.answer-correct,.practice-choice.answer-wrong,.coefficient-entry.answer-correct,.coefficient-entry.answer-wrong,[data-coef].answer-correct,[data-coef].answer-wrong').forEach(el=>el.classList.remove('answer-correct','answer-wrong'));
+}
 function watchExperience(){
  document.querySelectorAll('input[name="experience"]').forEach(r=>r.addEventListener('change',()=>setTimeout(renderTimerChoice,0)));
 }
-function install(){renderTimerChoice();watchExperience();}
+function install(){
+ renderTimerChoice();
+ watchExperience();
+ document.addEventListener('click',e=>{
+  const target=e.target.closest?.('.practice-choice,.practice-submit');
+  if(!target)return;
+  setTimeout(normalizeQuizFeedback,0);
+ });
+}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install,{once:true});else install();
 })();
