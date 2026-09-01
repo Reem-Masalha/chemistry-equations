@@ -40,7 +40,7 @@ html[dir="rtl"] input:not([type="radio"]):not([type="checkbox"]),html[dir="rtl"]
 canvas{direction:ltr!important}
 
 /* Lesson formulas belong visually to the explanation directly above them. */
-html[dir="rtl"] article.card>.equation,html[dir="rtl"] .lesson>.equation,html[dir="rtl"] .section article>.equation{text-align:right!important;margin-block:10px 12px!important;padding-inline:0!important}
+html[dir="rtl"] article.card>.equation,html[dir="rtl"] .lesson>.equation,html[dir="rtl"] .section article>.equation{text-align:left!important;margin-block:10px 12px!important;padding-inline:0!important}
 html[dir="ltr"] article.card>.equation,html[dir="ltr"] .lesson>.equation,html[dir="ltr"] .section article>.equation{text-align:left!important;margin-block:10px 12px!important;padding-inline:0!important}
 article.card>h2+.equation,article.card>h3+.equation,article.card>p+.equation{margin-top:8px!important}
 article.card>.equation+p{margin-top:8px!important}
@@ -48,6 +48,8 @@ article.card>.equation+p{margin-top:8px!important}
 /* Results and interactive chemistry displays are easier to scan centered. */
 #balanceResult .equation,#recognitionResult .equation,#checkResult .equation,.practice-equation,.practice-choice,.checker-equation,.equation-display{text-align:center!important}
 .equation-history .history-equation,.equation-history .history-solution{text-align:start!important}
+html[dir="rtl"] [data-i18n-auto-dir="ltr"],html[dir="rtl"] div[data-i18n-auto-dir="ltr"],html[dir="rtl"] button[data-i18n-auto-dir="ltr"],html[dir="rtl"] label[data-i18n-auto-dir="ltr"],html[dir="rtl"] a[data-i18n-auto-dir="ltr"]{direction:ltr!important;text-align:left!important;unicode-bidi:isolate!important}
+html[dir="rtl"] .chips button,html[dir="rtl"] [data-equation],html[dir="rtl"] [data-chemical]{direction:ltr!important;text-align:left!important;unicode-bidi:isolate!important}
 
 /* Mixed RTL prose containing Latin chemistry stays readable. */
 html[dir="rtl"] p,html[dir="rtl"] li,html[dir="rtl"] .muted,html[dir="rtl"] small{unicode-bidi:plaintext}

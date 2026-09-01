@@ -75,6 +75,8 @@ jobs:
           test -s _site/i18n-dictionary.js
           test -s _site/i18n-core.js
           test -s _site/i18n-enhancements.js
+          test -s _site/student-product.js
+          test -s _site/student-product.css
           test -s _site/modern-refresh.css
           test -s _site/legacy-daily-hide.css
           test -s _site/daily-challenge-v7.js
@@ -90,7 +92,7 @@ jobs:
               for src in re.findall(r'<script[^>]+src=[\"\']([^\"\']+)[\"\']', text, re.I):
                   src=src.split('?',1)[0].split('#',1)[0]
                   if src.endswith('.js'): scripts.add(src.lstrip('./'))
-          scripts.update({'i18n-dictionary.js','i18n-core.js','i18n-enhancements.js','student-experience-v3.js','daily-challenge-v7.js','daily-challenge-v8.js','admin-tools.js'})
+          scripts.update({'i18n-dictionary.js','i18n-core.js','i18n-enhancements.js','student-product.js','student-experience-v3.js','daily-challenge-v7.js','daily-challenge-v8.js','admin-tools.js'})
           missing=[src for src in sorted(scripts) if not (root/src).exists()]
           if missing: raise SystemExit('Missing referenced/dynamic scripts: '+', '.join(missing))
           PY
@@ -103,7 +105,7 @@ jobs:
               for src in re.findall(r'<script[^>]+src=[\"\']([^\"\']+)[\"\']', text, re.I):
                   src=src.split('?',1)[0].split('#',1)[0]
                   if src.endswith('.js'): scripts.add(src.lstrip('./'))
-          scripts.update({'i18n-dictionary.js','i18n-core.js','i18n-enhancements.js','student-experience-v3.js','daily-challenge-v7.js','daily-challenge-v8.js','admin-tools.js'})
+          scripts.update({'i18n-dictionary.js','i18n-core.js','i18n-enhancements.js','student-product.js','student-experience-v3.js','daily-challenge-v7.js','daily-challenge-v8.js','admin-tools.js'})
           for src in sorted(scripts): print(root/src)
           PY
           )
@@ -120,8 +122,14 @@ jobs:
 
           for page in pathlib.Path('_site').glob('*.html'):
               html=page.read_text(encoding='utf-8',errors='ignore')
-              if 'theme.js?v=20260831-sitewide-5' not in html:
+              if 'theme.js?v=20260901-sitewide-6' not in html:
                   raise SystemExit(f'unified theme/localization loader missing from {page.name}')
+
+          language_css=pathlib.Path('_site/site-language.css').read_text(encoding='utf-8')
+          if 'data-i18n-auto-dir="ltr"' not in language_css:
+              raise SystemExit('content-aware LTR fallback is missing')
+          if 'article.card>.equation{text-align:right' in language_css:
+              raise SystemExit('RTL language mode still right-aligns LTR equations')
           PY
 
           printf '%s\n' "$GITHUB_SHA" > _site/DEPLOYMENT_COMMIT.txt
