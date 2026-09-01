@@ -122,7 +122,7 @@ jobs:
 
           for page in pathlib.Path('_site').glob('*.html'):
               html=page.read_text(encoding='utf-8',errors='ignore')
-              if 'theme.js?v=20260901-sitewide-8' not in html:
+              if 'theme.js?v=20260901-sitewide-9' not in html:
                   raise SystemExit(f'unified theme/localization loader missing from {page.name}')
 
           language_css=pathlib.Path('_site/site-language.css').read_text(encoding='utf-8')
