@@ -1,0 +1,5 @@
+/* Compact Daily Challenge spacing on the Learn page. */
+#daily-stable{margin:10px 0!important}
+#daily-stable.daily-stable-section{margin:10px 0!important}
+#daily-stable+.section{margin-top:18px!important}
+#daily-stable .daily-stable-card{margin:0!important}
