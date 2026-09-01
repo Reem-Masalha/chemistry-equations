@@ -1,6 +1,7 @@
-/* Compact Daily Challenge spacing on the Learn page. */
+/* Compact Daily Challenge spacing and consistent action-button colors on the Learn page. */
 #daily-stable{margin:10px 0!important}
 #daily-stable.daily-stable-section{margin:10px 0!important}
 #daily-stable+.section{margin-top:18px!important}
 #daily-stable .daily-stable-card{margin:0!important}
-#daily-stable .daily-stable-completion-links .secondary{background:linear-gradient(135deg,var(--accent),var(--accent2))!important;color:#fff!important;border:0!important;box-shadow:0 7px 18px rgba(49,88,214,.2)!important}
+#daily-stable .daily-stable-actions button:not(#dsvHintBtn){background:linear-gradient(135deg,var(--accent),var(--accent2))!important;color:#fff!important;border:0!important;box-shadow:0 7px 18px rgba(49,88,214,.2)!important}
+#daily-stable .daily-stable-completion-links a{background:linear-gradient(135deg,var(--accent),var(--accent2))!important;color:#fff!important;border:0!important;box-shadow:0 7px 18px rgba(49,88,214,.2)!important}
