@@ -1,4 +1,7 @@
 /* Shared narrow-screen layout fixes */
+/* Admin testing controls use the same blue primary treatment as the rest of the site. */
+#adminTesting .admin-tools-buttons button{background:var(--accent,#3158d6)!important;color:#fff!important;border-color:var(--accent,#3158d6)!important}
+#adminTesting .admin-tools-buttons button:hover{filter:brightness(.96)}
 @media (max-width: 760px) {
   html, body { max-width: 100%; overflow-x: hidden; }
   body { padding-bottom: 64px; }
