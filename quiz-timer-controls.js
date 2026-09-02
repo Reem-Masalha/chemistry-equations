@@ -7,6 +7,10 @@ function getSettings(){
  try{minutes=Math.max(1,Math.min(5,Number(localStorage.getItem('chemistryTimerMinutes')||5)));enabled=localStorage.getItem('chemistryTimerEnabled')!=='0'}catch{}
  return{minutes,enabled};
 }
+function setQuizVisualMode(){
+ const quiz=!!document.querySelector('input[name="experience"][value="quiz"]:checked');
+ document.body.classList.toggle('quiz-mode',quiz);
+}
 window.setInterval=function(fn,ms,...args){
  const quizSelected=document.querySelector('input[name="experience"][value="quiz"]:checked');
  const timer=document.getElementById('timer');
@@ -32,6 +36,7 @@ function renderTimerChoice(){
  const wrap=document.querySelector('.mode-list');
  if(!wrap)return;
  const quiz=document.querySelector('input[name="experience"][value="quiz"]:checked');
+ document.body.classList.toggle('quiz-mode',!!quiz);
  if(!quiz){wrap.innerHTML='';return;}
  let saved=5,enabled=true;
  try{saved=Math.max(1,Math.min(5,Number(localStorage.getItem('chemistryTimerMinutes')||5)));enabled=localStorage.getItem('chemistryTimerEnabled')!=='0'}catch{}
@@ -47,12 +52,21 @@ function normalizeQuizFeedback(){
  const quiz=document.querySelector('input[name="experience"][value="quiz"]:checked');
  if(!quiz)return;
  const f=$('answerFeedback');
- if(!f)return;
- f.querySelectorAll(':scope > *:not(.next-question)').forEach(el=>el.remove());
+ if(f)f.querySelectorAll(':scope > *:not(.next-question)').forEach(el=>el.remove());
  document.querySelectorAll('.practice-choice.answer-correct,.practice-choice.answer-wrong,.coefficient-entry.answer-correct,.coefficient-entry.answer-wrong,[data-coef].answer-correct,[data-coef].answer-wrong').forEach(el=>el.classList.remove('answer-correct','answer-wrong'));
 }
+function markQuizStartTime(){
+ const quiz=document.querySelector('input[name="experience"][value="quiz"]:checked');
+ if(!quiz)return;
+ const {minutes,enabled}=getSettings();
+ if(!enabled)return;
+ setTimeout(()=>{
+  const t=$('timer');
+  if(t)t.textContent=`⏱ ${minutes}:00`;
+ },0);
+}
 function watchExperience(){
- document.querySelectorAll('input[name="experience"]').forEach(r=>r.addEventListener('change',()=>setTimeout(renderTimerChoice,0)));
+ document.querySelectorAll('input[name="experience"]').forEach(r=>r.addEventListener('change',()=>{setTimeout(()=>{setQuizVisualMode();renderTimerChoice()},0)}));
 }
 function install(){
  renderTimerChoice();
@@ -61,7 +75,10 @@ function install(){
   const target=e.target.closest?.('.practice-choice,.practice-submit');
   if(!target)return;
   setTimeout(normalizeQuizFeedback,0);
+  const quiz=document.querySelector('input[name="experience"][value="quiz"]:checked');
+  if(quiz)setTimeout(()=>normalizeQuizFeedback(),0);
  });
+ document.addEventListener('click',e=>{if(e.target.closest?.('#newQuiz'))markQuizStartTime()},true);
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install,{once:true});else install();
 })();
