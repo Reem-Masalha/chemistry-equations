@@ -1,16 +1,21 @@
 (()=>{
 'use strict';
-// Compatibility loader for older cached Learn pages.
-// Do not add a second quiz controller; the stable controller owns all Daily Challenge behavior.
-if(!location.pathname.endsWith('learn.html'))return;
-if(window.__dailyStableLoader)return;
-window.__dailyStableLoader=true;
-const load=()=>{
-  if(window.__dailyStableLoaded)return;
-  const s=document.createElement('script');
-  s.src='daily-challenge-stable.js?v=compat-20260902';
-  s.defer=true;
-  document.head.appendChild(s);
-};
-if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',load,{once:true});else load();
+if(!location.pathname.endsWith('learn.html')||window.__dailyQuizBehaviorFix)return;
+window.__dailyQuizBehaviorFix=true;
+const today=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
+const KEY=()=>`chemistryDailyStable:${today()}`;
+const read=()=>{try{return JSON.parse(localStorage.getItem(KEY())||'{}')}catch{return{}}};
+const write=s=>{try{localStorage.setItem(KEY(),JSON.stringify(s))}catch{}};
+const norm=s=>String(s||'').replace(/[₀₁₂₃₄₅₆₇₈₉]/g,c=>'0123456789'['₀₁₂₃₄₅₆₇₈₉'.indexOf(c)]).replace(/\s+/g,'').replace(/→|->|=/g,'>').toUpperCase().replace(/(^|>)1(?=[A-Z(])/g,'$1');
+const answers={'H₂ + O₂ → H₂O':'2H₂ + O₂ → 2H₂O','Na + Cl₂ → NaCl':'2Na + Cl₂ → 2NaCl','Mg + O₂ → MgO':'2Mg + O₂ → 2MgO','N₂ + H₂ → NH₃':'N₂ + 3H₂ → 2NH₃','Fe + O₂ → Fe₂O₃':'4Fe + 3O₂ → 2Fe₂O₃','Zn + HCl → ZnCl₂ + H₂':'Zn + 2HCl → ZnCl₂ + H₂','KClO₃ → KCl + O₂':'2KClO₃ → 2KCl + 3O₂','Na₂O + H₂O → NaOH':'Na₂O + H₂O → 2NaOH','C₃H₈ + O₂ → CO₂ + H₂O':'C₃H₈ + 5O₂ → 3CO₂ + 4H₂O','NH₃ + O₂ → NO + H₂O':'4NH₃ + 5O₂ → 4NO + 6H₂O','FeS₂ + O₂ → Fe₂O₃ + SO₂':'4FeS₂ + 11O₂ → 2Fe₂O₃ + 8SO₂','Ca(OH)₂ + HCl → CaCl₂ + H₂O':'Ca(OH)₂ + 2HCl → CaCl₂ + 2H₂O','Al + O₂ → Al₂O₃':'4Al + 3O₂ → 2Al₂O₃','CO + O₂ → CO₂':'2CO + O₂ → 2CO₂','P + O₂ → P₂O₅':'4P + 5O₂ → 2P₂O₅','H₂ + Cl₂ → HCl':'H₂ + Cl₂ → 2HCl','Ag + S → Ag₂S':'2Ag + S → Ag₂S','CH₄ + O₂ → CO₂ + H₂O':'CH₄ + 2O₂ → CO₂ + 2H₂O','C₂H₆ + O₂ → CO₂ + H₂O':'2C₂H₆ + 7O₂ → 4CO₂ + 6H₂O','CaCO₃ → CaO + CO₂':'CaCO₃ → CaO + CO₂','Cu + O₂ → CuO':'2Cu + O₂ → 2CuO','Cl₂ + NaBr → NaCl + Br₂':'2NaBr + Cl₂ → 2NaCl + Br₂','H₂O₂ → H₂O + O₂':'2H₂O₂ → 2H₂O + O₂','SO₂ + O₂ → SO₃':'2SO₂ + O₂ → 2SO₃','NO + O₂ → NO₂':'2NO + O₂ → 2NO₂'};
+const tr=(en,ar,he)=>{const l=localStorage.getItem('chemistryLanguage')||'en';return l==='ar'?ar:l==='he'?he:en};
+function get(){const r=document.getElementById('daily-stable');if(!r)return null;const s=read();const i=Math.max(0,Math.min(4,Number(s.index)||0));return{r,s,i,start:r.querySelector('#dsvStart'),input:r.querySelector('#dsvInput'),feedback:r.querySelector('#dsvFeedback'),note:r.querySelector('#dsvNote'),check:r.querySelector('#dsvCheck'),submit:r.querySelector('#dsvSubmit'),next:r.querySelector('#dsvNext')}}
+function correctFor(r){const q=norm(r.querySelector('#dsvEquation')?.textContent||'');for(const k in answers)if(norm(k)===q)return answers[k];return ''}
+function start(e){e.preventDefault();e.stopImmediatePropagation();const c=get();if(!c)return;const s=c.s;if(s.complete){c.feedback.textContent='⚠️ '+tr('Today’s challenge is already complete.','اكتمل تحدي اليوم بالفعل.','האתגר של היום כבר הושלם.');return}s.started=true;s.complete=false;s.index=Math.max(0,Math.min(4,Number(s.index)||0));s.score=Math.max(0,Math.min(5,Number(s.score)||0));s.endAt=Date.now()+120000;s.status=Array.isArray(s.status)?s.status.slice(0,5):[];s.answers=Array.isArray(s.answers)?s.answers.slice(0,5):[];write(s);location.reload()}
+function check(e){e.preventDefault();e.stopImmediatePropagation();const c=get();if(!c)return;if(!c.s.started){c.feedback.textContent='⚠️ '+tr('Start the challenge first.','⚠️ ابدأ التحدي أولًا.','⚠️ התחילו אתגר קודם.');return}const v=c.input.value.trim();if(!v){c.feedback.textContent='⚠️ '+tr('Enter an answer first.','⚠️ اكتب إجابة أولًا.','⚠️ הקלידו תשובה קודם.');return}const ok=norm(v)===norm(correctFor(c.r));const s=read();s.answers=Array.isArray(s.answers)?s.answers.slice(0,5):[];s.answers[c.i]=v;write(s);c.feedback.textContent=ok?'✓ '+tr('Correct! You can still edit it, or submit it.','✓ صحيح! يمكنك تعديلها أو إرسالها.','✓ נכון! עדיין אפשר לערוך או לשלוח.'):'❌ '+tr('Not quite. Edit your answer and check again.','❌ ليس تمامًا. عدّل إجابتك وتحقق مرة أخرى.','❌ לא בדיוק. ערכו ובדקו שוב.');c.note.textContent=tr('Check answer only gives feedback. It does not submit or score the question.','التحقق من الإجابة يعطي ملاحظات فقط. لا يرسل السؤال ولا يحتسب النقاط.','בדיקת תשובה נותנת משוב בלבד. היא לא שולחת ולא מנקדת את השאלה.');if(c.next)c.next.hidden=false}
+function finalize(e){e.preventDefault();e.stopImmediatePropagation();const c=get();if(!c)return;if(!c.s.started){c.feedback.textContent='⚠️ '+tr('Start the challenge first.','⚠️ ابدأ التحدي أولًا.','⚠️ התחילו אתגר קודם.');return}const v=c.input.value.trim();if(!v){c.feedback.textContent='⚠️ '+tr('Enter an answer first.','⚠️ اكتب إجابة أولًا.','⚠️ הקלידו תשובה קודם.');return}const s=read();if(Array.isArray(s.status)&&s.status[c.i]>0){if(c.i<4){s.index=c.i+1;write(s);location.reload()}return}const ok=norm(v)===norm(correctFor(c.r));s.answers=Array.isArray(s.answers)?s.answers.slice(0,5):[];s.status=Array.isArray(s.status)?s.status.slice(0,5):[];s.answers[c.i]=v;s.status[c.i]=ok?1:2;s.score=Math.min(5,(Number(s.score)||0)+(ok?1:0));if(c.i<4){s.index=c.i+1;s.started=true;s.complete=false;write(s);location.reload()}else{s.index=5;s.started=false;s.complete=true;write(s);location.reload()}}
+function labels(){const r=document.getElementById('daily-stable');if(!r)return;[...r.querySelectorAll('button,a')].forEach(b=>{const x=(b.textContent||'').trim();if(/replay quiz|reply quiz|replay|retake|retry/i.test(x))b.textContent='↻ '+tr('Review daily quiz answers','مراجعة إجابات الاختبار اليومي','סקירת תשובות החידון היומי')})}
+function bind(){labels();const c=get();if(!c)return;if(c.start&&!c.start.dataset.quizFinal){c.start.dataset.quizFinal='1';c.start.addEventListener('click',start,true)}if(c.check&&!c.check.dataset.quizFinal){c.check.dataset.quizFinal='1';c.check.addEventListener('click',check,true)}if(c.submit&&!c.submit.dataset.quizFinal){c.submit.dataset.quizFinal='1';c.submit.addEventListener('click',finalize,true)}if(c.next&&!c.next.dataset.quizFinal){c.next.dataset.quizFinal='1';c.next.addEventListener('click',finalize,true)}}
+new MutationObserver(bind).observe(document.documentElement,{subtree:true,childList:true,attributes:true,attributeFilter:['hidden','disabled']});
+bind();
 })();

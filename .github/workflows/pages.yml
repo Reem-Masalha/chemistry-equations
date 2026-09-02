@@ -46,15 +46,14 @@ jobs:
               text=re.sub(r'theme\.js\?v=20260901-sitewide-\d+', 'theme.js?v=20260901-sitewide-13', text)
 
               if html.name=='learn.html':
-                  # Learn must contain exactly one Daily Challenge controller and one copy of its CSS.
-                  text=re.sub(r'<script[^>]+src=[\"\'][^\"\']*(?:student-experience|daily-challenge-v4|daily-challenge-behavior-fix|daily-challenge-final)\.js(?:\?[^\"\']*)?[\"\'][^>]*></script>\s*','',text,flags=re.I)
+                  # Restore the original Daily Quiz design: daily-challenge-v4 + its behavior helper.
+                  # Remove only any newer stable/fallback Daily Challenge loaders.
+                  text=re.sub(r'<script[^>]+src=[\"\'][^\"\']*(?:daily-challenge-stable|daily-position-fix|daily-challenge-final)\.js(?:\?[^\"\']*)?[\"\'][^>]*></script>\s*','',text,flags=re.I)
                   text=re.sub(r'<script[^>]+data-daily-(?:v5|v6|v7|v8)-loader[^>]*></script>\s*','',text,flags=re.I)
-                  text=re.sub(r'<link[^>]+href=[\"\'][^\"\']*legacy-daily-hide\.css(?:\?[^\"\']*)?[\"\'][^>]*>\s*','',text,flags=re.I)
-                  text=re.sub(r'<link[^>]+href=[\"\'][^\"\']*daily-challenge-spacing\.css(?:\?[^\"\']*)?[\"\'][^>]*>\s*','',text,flags=re.I)
-                  text=re.sub(r'<script[^>]+src=[\"\']daily-challenge-stable\.js(?:\?[^\"\']*)?[\"\'][^>]*></script>\s*','',text,flags=re.I)
-                  text=re.sub(r'<script[^>]+src=[\"\']daily-position-fix\.js(?:\?[^\"\']*)?[\"\'][^>]*></script>\s*','',text,flags=re.I)
-                  text=text.replace('</head>','<link rel="stylesheet" href="legacy-daily-hide.css?v='+sha+'" data-legacy-daily-hide="1">\n<link rel="stylesheet" href="daily-challenge-spacing.css?v='+sha+'" data-daily-challenge-spacing="1">\n</head>',1)
-                  text=text.replace('</body>','<script src="daily-challenge-stable.js?v='+sha+'" defer data-daily-challenge-stable="1"></script>\n<script src="daily-position-fix.js?v='+sha+'" defer data-daily-position-fix="1"></script>\n</body>',1)
+                  # Ensure the original v4 controllers are present exactly once.
+                  text=re.sub(r'<script[^>]+src=[\"\']daily-challenge-v4\.js(?:\?[^\"\']*)?[\"\'][^>]*></script>\s*','',text,flags=re.I)
+                  text=re.sub(r'<script[^>]+src=[\"\']daily-challenge-behavior-fix\.js(?:\?[^\"\']*)?[\"\'][^>]*></script>\s*','',text,flags=re.I)
+                  text=text.replace('</body>','<script src="daily-challenge-v4.js?v='+sha+'" defer></script>\n<script src="daily-challenge-behavior-fix.js?v='+sha+'" defer></script>\n</body>',1)
 
               if 'data-site-modern-refresh' not in text:
                   text=text.replace('</head>','<link rel="stylesheet" href="modern-refresh.css?v='+sha+'" data-site-modern-refresh="1">\n</head>',1)
@@ -82,10 +81,8 @@ jobs:
           test -s _site/student-product.js
           test -s _site/student-product.css
           test -s _site/modern-refresh.css
-          test -s _site/legacy-daily-hide.css
-          test -s _site/daily-challenge-spacing.css
-          test -s _site/daily-challenge-stable.js
-          test -s _site/daily-position-fix.js
+          test -s _site/daily-challenge-v4.js
+          test -s _site/daily-challenge-behavior-fix.js
           test -s _site/admin-tools.js
 
           python3 - <<'PY'
@@ -97,7 +94,7 @@ jobs:
               for src in re.findall(r'<script[^>]+src=[\"\']([^\"\']+)[\"\']', text, re.I):
                   src=src.split('?',1)[0].split('#',1)[0]
                   if src.endswith('.js'): scripts.add(src.lstrip('./'))
-          scripts.update({'i18n-dictionary.js','i18n-core.js','i18n-enhancements.js','student-product.js','student-experience-v3.js','daily-challenge-stable.js','daily-position-fix.js','admin-tools.js'})
+          scripts.update({'i18n-dictionary.js','i18n-core.js','i18n-enhancements.js','student-product.js','student-experience-v3.js','daily-challenge-v4.js','daily-challenge-behavior-fix.js','admin-tools.js'})
           missing=[src for src in sorted(scripts) if not (root/src).exists()]
           if missing: raise SystemExit('Missing referenced/dynamic scripts: '+', '.join(missing))
           PY
@@ -110,7 +107,7 @@ jobs:
               for src in re.findall(r'<script[^>]+src=[\"\']([^\"\']+)[\"\']', text, re.I):
                   src=src.split('?',1)[0].split('#',1)[0]
                   if src.endswith('.js'): scripts.add(src.lstrip('./'))
-          scripts.update({'i18n-dictionary.js','i18n-core.js','i18n-enhancements.js','student-product.js','student-experience-v3.js','daily-challenge-stable.js','daily-position-fix.js','admin-tools.js'})
+          scripts.update({'i18n-dictionary.js','i18n-core.js','i18n-enhancements.js','student-product.js','student-experience-v3.js','daily-challenge-v4.js','daily-challenge-behavior-fix.js','admin-tools.js'})
           for src in sorted(scripts): print(root/src)
           PY
           )
@@ -119,12 +116,11 @@ jobs:
           import pathlib
           p=pathlib.Path('_site/learn.html')
           t=p.read_text(encoding='utf-8',errors='ignore')
-          if t.count('daily-challenge-stable.js') != 1: raise SystemExit('Learn must contain exactly one stable Daily Challenge loader')
-          if t.count('daily-position-fix.js') != 1: raise SystemExit('Daily Challenge position fix missing or duplicated')
-          if t.count('daily-challenge-spacing.css') != 1: raise SystemExit('Daily Challenge spacing stylesheet missing or duplicated')
-          if 'daily-challenge-behavior-fix.js' in t: raise SystemExit('obsolete Daily Challenge behavior fix remains')
-          if 'daily-challenge-final.js' in t: raise SystemExit('legacy daily final loader remains')
-          if 'daily-challenge-v4.js' in t: raise SystemExit('legacy daily v4 loader remains')
+          if t.count('daily-challenge-v4.js') != 1: raise SystemExit('Learn must contain exactly one original Daily Quiz loader')
+          if t.count('daily-challenge-behavior-fix.js') != 1: raise SystemExit('Daily Quiz behavior helper missing or duplicated')
+          if 'daily-challenge-stable.js' in t: raise SystemExit('new stable Daily Challenge loader remains')
+          if 'daily-position-fix.js' in t: raise SystemExit('new Daily Challenge fallback loader remains')
+          if 'daily-challenge-final.js' in t: raise SystemExit('new/legacy final Daily Challenge loader remains')
           if 'student-experience-v3.js' in t: raise SystemExit('legacy student experience remains on Learn')
           for page in pathlib.Path('_site').glob('*.html'):
               html=page.read_text(encoding='utf-8',errors='ignore')
