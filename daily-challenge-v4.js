@@ -77,8 +77,8 @@
       #daily-v5 .daily-input { width:100%; box-sizing:border-box; padding:14px; border:1px solid var(--line); border-radius:11px; font-size:18px; text-align:center; direction:ltr; background:transparent; color:inherit; }
       #daily-v5 .daily-actions { display:flex; flex-wrap:wrap; gap:9px; margin-top:10px; }
       #daily-v5 .daily-actions > * { min-height:44px; }
-      #daily-v5 #dailySubmit { background:#fff; color:#1f2937; border:1px solid var(--line,#dce3ee); }
-      #daily-v5 #dailySubmit:hover:not(:disabled) { background:#f7f9fc; }
+      #daily-v5 #dailySubmit { background:var(--accent); color:#fff; border:1px solid var(--accent); }
+      #daily-v5 #dailySubmit:hover:not(:disabled) { filter:brightness(.95); }
       #daily-v5 .daily-feedback { min-height:32px; margin-top:12px; font-weight:800; }
       #daily-v5 .daily-note { margin-top:9px; padding:12px 14px; border:1px solid var(--line); border-radius:12px; background:var(--surface-2,#f7f9fc); color:var(--muted); }
       #daily-v5 .daily-hint { margin-top:9px; padding:12px 14px; border:1px solid var(--line); border-radius:12px; background:var(--surface-2,#f7f9fc); color:var(--muted); }
