@@ -41,7 +41,7 @@
   const storageKey = () => 'chemistryDailyV5:' + today();
 
   const readState = () => {
-    try { return JSON.parse(localStorage.getItem(storageKey() || '{}')); }
+    try { return JSON.parse(localStorage.getItem(storageKey()) || '{}'); }
     catch (_) { return {}; }
   };
   const writeState = (state) => {
@@ -238,7 +238,7 @@
         feedback.textContent = '✕ ' + tr('Answer submitted. No point added.','تم إرسال الإجابة. لم تُضف نقطة.','התשובה נשלחה. לא נוספה נקודה.');
         note.textContent = tr('Final answer recorded.','تم تسجيل الإجابة النهائية.','התשובה הסופית נרשמה.');
       } else {
-        feedback.textContent = '❌ ' + tr('Not quite. Edit your answer and check again, or submit it without another check.','ليس تمامًا. عدّل إجابتك وتحقق مرة أخرى، أو أرسلها دون فحص آخر.','לא בדיוק. ערכו את התשובה ובדקו שוב, או שלחו אותה בלי בדיקה נוספת.');
+        feedback.textContent = '❌ ' + tr('Not quite. Edit your answer and check again, or submit it without another check.','ليس تمامًا. عدّل إجابتك وتحقق مرة أخرى، أو أرسلها دون فحص آخر.','לא בדיוק. ערכו את התשובה ובדקו שוב، או שלחו אותה בלי בדיקה נוספת.');
         save();
         return;
       }
