@@ -32,6 +32,8 @@ const BANK=[
 ['NO + O₂ → NO₂','2NO + O₂ → 2NO₂','Use 2NO₂ so nitrogen is 2:2 and oxygen is 4:4.']
 ];
 const normalize=s=>String(s||'').replace(/[₀₁₂₃₄₅₆₇₈₉]/g,c=>'0123456789'['₀₁₂₃₄₅₆₇₈₉'.indexOf(c)]).replace(/\s+/g,'').replace(/→|->|=/g,'>').toUpperCase().replace(/(^|>)1(?=[A-Z(])/g,'$1');
+const dayNumber=()=>Math.floor((Date.parse(today()+'T00:00:00')-Date.parse('2020-01-01T00:00:00'))/86400000);
+const QUESTIONS=()=>Array.from({length:5},(_,i)=>BANK[(dayNumber()*5+i)%BANK.length]);
 const key=()=>`chemistryDailyStable:${today()}`;
 const read=()=>{try{return JSON.parse(localStorage.getItem(key())||'{}')}catch{return{}}};
 const write=s=>{try{localStorage.setItem(key(),JSON.stringify(s))}catch{}};
@@ -41,13 +43,13 @@ function attach(){
  const root=document.getElementById('daily-stable');if(!root||root.dataset.behaviorFixed)return;
  root.dataset.behaviorFixed='1';
  const input=root.querySelector('#dsvInput'),feedback=root.querySelector('#dsvFeedback'),note=root.querySelector('#dsvNote');
- const check=replaceButton('dsvCheck'),submit=replaceButton('dsvSubmit'),next=replaceButton('dsvNext');
- if(!input||!feedback||!note||!check||!submit||!next)return;
+ const check=replaceButton('dsvCheck'),next=replaceButton('dsvNext');
+ if(!input||!feedback||!note||!check||!next)return;
  check.addEventListener('click',e=>{
    e.preventDefault();e.stopImmediatePropagation();
-   const i=questionIndex(),value=input.value.trim();
+   const i=questionIndex(),q=QUESTIONS()[i],value=input.value.trim();
    if(!value){feedback.textContent='⚠️ '+T('Enter an answer first.','اكتب إجابة أولًا.','הקלידו תשובה קודם.');return}
-   const correct=normalize(value)===normalize(BANK[i][1]);
+   const correct=normalize(value)===normalize(q[1]);
    const s=read();s.answers=Array.isArray(s.answers)?s.answers.slice(0,5):[];s.answers[i]=value;write(s);
    feedback.textContent=correct?'✓ '+T('Correct! Great job.','صحيح! أحسنت.','נכון! עבודה מצוינת.'):'❌ '+T('Not quite. You can edit your answer and check again.','ليس تمامًا. يمكنك تعديل إجابتك والتحقق مرة أخرى.','לא בדיוק. אפשר לערוך את התשובה ולבדוק שוב.');
    note.textContent=correct?T('Your answer is correct. Submit it to record the point and continue automatically.','إجابتك صحيحة. أرسلها لتسجيل النقطة والمتابعة تلقائيًا.','התשובה נכונה. שלחו אותה כדי לרשום את הנקודה ולהמשיך אוטומטית.'):T('This is only a check. Your answer is still editable.','هذا تحقق فقط. ما زال بإمكانك تعديل إجابتك.','זו רק בדיקה. עדיין אפשר לערוך את התשובה.');
@@ -58,10 +60,9 @@ function attach(){
    e.preventDefault();e.stopImmediatePropagation();
    const value=input.value.trim();
    if(!value){feedback.textContent='⚠️ '+T('Enter an answer first.','اكتب إجابة أولًا.','הקלידו תשובה קודם.');return}
-   const correct=normalize(value)===normalize(BANK[i][1]);
+   const q=QUESTIONS()[i],correct=normalize(value)===normalize(q[1]);
    s.answers=Array.isArray(s.answers)?s.answers.slice(0,5):[];s.status=Array.isArray(s.status)?s.status.slice(0,5):[];s.answers[i]=value;s.status[i]=correct?1:2;
    if(correct)s.score=Math.min(5,(Number(s.score)||0)+1);
-   write(s);
    if(i<4){s.index=i+1;s.complete=false;s.started=true;write(s);location.reload()}else{s.index=5;s.complete=true;s.started=false;write(s);location.reload()}
  },true);
 }
@@ -75,7 +76,7 @@ function addReview(){
    result.querySelector('.daily-stable-review')?.remove();
    const review=document.createElement('div');review.className='daily-stable-review';review.style.cssText='display:grid;gap:12px;margin-top:16px;text-align:start';
    const saved=read();const answers=Array.isArray(saved.answers)?saved.answers:[];const status=Array.isArray(saved.status)?saved.status:[];
-   BANK.slice(0,5).forEach((q,n)=>{
+   QUESTIONS().forEach((q,n)=>{
      const item=document.createElement('div');item.style.cssText='padding:14px;border:1px solid var(--line);border-radius:13px;background:var(--surface-2,#f7f9fc)';
      const ok=status[n]===1;
      const title=document.createElement('div');title.textContent=(ok?'✓ ':'✕ ')+T('Question '+(n+1),'السؤال '+(n+1),'שאלה '+(n+1));title.style.fontWeight='900';
