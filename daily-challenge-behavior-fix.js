@@ -52,19 +52,17 @@ function attach(){
    feedback.textContent=correct?'✓ '+T('Correct! Great job.','صحيح! أحسنت.','נכון! עבודה מצוינת.'):'❌ '+T('Not quite. You can edit your answer and check again.','ليس تمامًا. يمكنك تعديل إجابتك والتحقق مرة أخرى.','לא בדיוק. אפשר לערוך את התשובה ולבדוק שוב.');
    note.textContent=correct?T('Your answer is correct. Submit it to record the point and continue automatically.','إجابتك صحيحة. أرسلها لتسجيل النقطة والمتابعة تلقائيًا.','התשובה נכונה. שלחו אותה כדי לרשום את הנקודה ולהמשיך אוטומטית.'):T('This is only a check. Your answer is still editable.','هذا تحقق فقط. ما زال بإمكانك تعديل إجابتك.','זו רק בדיקה. עדיין אפשר לערוך את התשובה.');
  },true);
- submit.addEventListener('click',()=>{
-   window.setTimeout(()=>{if(!root.isConnected)return;const n=root.querySelector('#dsvNext');if(n&&!n.hidden&&!n.disabled)n.click()},300);
- });
  next.addEventListener('click',e=>{
    const s=read(),i=questionIndex();
    if(s.status&&s.status[i]>0)return;
    e.preventDefault();e.stopImmediatePropagation();
-   if(!input.value.trim()){feedback.textContent='⚠️ '+T('Enter an answer first.','اكتب إجابة أولًا.','הקלידו תשובה קודם.');return}
-   const value=input.value.trim(),correct=normalize(value)===normalize(BANK[i][1]);
+   const value=input.value.trim();
+   if(!value){feedback.textContent='⚠️ '+T('Enter an answer first.','اكتب إجابة أولًا.','הקלידו תשובה קודם.');return}
+   const correct=normalize(value)===normalize(BANK[i][1]);
    s.answers=Array.isArray(s.answers)?s.answers.slice(0,5):[];s.status=Array.isArray(s.status)?s.status.slice(0,5):[];s.answers[i]=value;s.status[i]=correct?1:2;
    if(correct)s.score=Math.min(5,(Number(s.score)||0)+1);
    write(s);
-   window.setTimeout(()=>{const n=root.querySelector('#dsvNext');if(n&&!n.hidden&&!n.disabled)n.click()},0);
+   if(i<4){s.index=i+1;s.complete=false;s.started=true;write(s);location.reload()}else{s.index=5;s.complete=true;s.started=false;write(s);location.reload()}
  },true);
 }
 function addReview(){
@@ -74,8 +72,8 @@ function addReview(){
  const btn=document.createElement('button');btn.id='dsvReviewBtn';btn.className='primary';btn.type='button';btn.textContent='📋 '+T('Review daily quiz answers','مراجعة إجابات الاختبار اليومي','סקירת תשובות החידון היומי');
  result.appendChild(btn);
  btn.addEventListener('click',()=>{
-   const review=document.createElement('div');review.className='daily-stable-review';
-   review.style.cssText='display:grid;gap:12px;margin-top:16px;text-align:start';
+   result.querySelector('.daily-stable-review')?.remove();
+   const review=document.createElement('div');review.className='daily-stable-review';review.style.cssText='display:grid;gap:12px;margin-top:16px;text-align:start';
    const saved=read();const answers=Array.isArray(saved.answers)?saved.answers:[];const status=Array.isArray(saved.status)?saved.status:[];
    BANK.slice(0,5).forEach((q,n)=>{
      const item=document.createElement('div');item.style.cssText='padding:14px;border:1px solid var(--line);border-radius:13px;background:var(--surface-2,#f7f9fc)';
@@ -87,7 +85,7 @@ function addReview(){
      const ex=document.createElement('div');ex.textContent=T('Explanation: ','الشرح: ','הסבר: ')+q[2];ex.style.cssText='margin-top:8px;color:var(--muted)';
      item.append(title,eq,ua,ca,ex);review.appendChild(item);
    });
-   result.querySelector('.daily-stable-review')?.remove();result.appendChild(review);review.scrollIntoView({behavior:'smooth',block:'nearest'});
+   result.appendChild(review);review.scrollIntoView({behavior:'smooth',block:'nearest'});
  });
 }
 const run=()=>{attach();addReview()};
