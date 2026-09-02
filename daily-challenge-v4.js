@@ -41,7 +41,7 @@
   const storageKey = () => 'chemistryDailyV5:' + today();
 
   const readState = () => {
-    try { return JSON.parse(localStorage.getItem(storageKey()) || '{}'); }
+    try { return JSON.parse(localStorage.getItem(storageKey() || '{}')); }
     catch (_) { return {}; }
   };
   const writeState = (state) => {
@@ -133,7 +133,7 @@
           <span>⏱ <b id="dailyTimer">2:00</b></span>
           <span>🏆 ${tr('Score','النتيجة','ציון')} <b id="dailyScore">0</b>/5</span>
         </div>
-        <div id="dailyEquation" class="daily-equation"></div>
+        <div id="dailyEquation" class="daily-equation">${questions()[Math.max(0, Math.min(4, Number(saved.index) || 0))][0]}</div>
         <input id="dailyInput" class="daily-input" autocomplete="off" spellcheck="false" placeholder="${tr('Type your balanced equation','اكتب المعادلة الموازنة','הקלידו את המשוואה המאוזנת')}">
         <div class="daily-actions">
           <button id="dailyStart" class="primary" type="button">▶ ${tr('Start challenge','ابدأ التحدي','התחילו אתגר')}</button>
