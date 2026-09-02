@@ -18,6 +18,11 @@
     if (!input || !submit || !check || !next || !result) return;
     root.dataset.submitFix = '9';
 
+    // Keep Submit blue even after the core quiz disables it after submission.
+    const style = document.createElement('style');
+    style.textContent = '#daily-v5 #dailySubmit:disabled{background:var(--accent)!important;color:#fff!important;border-color:var(--accent)!important;opacity:1!important;}';
+    root.appendChild(style);
+
     // Keep the original Daily Quiz handlers. Submit records the answer first,
     // then advances; Next records an unsubmitted typed answer before advancing.
     submit.addEventListener('click', event => {
