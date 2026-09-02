@@ -28,26 +28,37 @@
     const root = document.getElementById('daily-v5');
     if (!root || root.dataset.submitFix === '1') return;
     root.dataset.submitFix = '1';
-    const input = root.querySelector('#dailyInput'), submit = root.querySelector('#dailySubmit'), next = root.querySelector('#dailyNext');
-    if (!input || !submit || !next) return;
+    const input = root.querySelector('#dailyInput'), submit = root.querySelector('#dailySubmit'), check = root.querySelector('#dailyCheck'), next = root.querySelector('#dailyNext');
+    if (!input || !submit || !check || !next) return;
     let internalNext = false;
+    let internalEvaluation = false;
 
     const read = () => { try { return JSON.parse(localStorage.getItem(key()) || '{}'); } catch (_) { return {}; } };
     const save = s => { try { localStorage.setItem(key(), JSON.stringify(s)); } catch (_) {} };
-    const gradeCurrent = (final) => {
+    const gradeCurrent = () => {
       const s = read();
       const i = Math.max(0, Math.min(4, Number(s.index) || 0));
       const value = input.value.trim();
-      if (!value) return false;
+      if (!value) return null;
       if (!Array.isArray(s.answers)) s.answers = [];
       if (!Array.isArray(s.status)) s.status = [];
       s.answers[i] = value;
-      if (s.status[i] > 0) return true;
       const correct = normalize(value) === normalize(qs()[i][1]);
-      s.status[i] = correct ? 1 : 2;
-      s.score = Math.max(0, Math.min(5, Number(s.score) || 0)) + (correct ? 1 : 0);
+      if (s.status[i] === undefined || Number(s.status[i]) === 0) {
+        s.status[i] = correct ? 1 : 2;
+        s.score = Math.max(0, Math.min(5, Number(s.score) || 0)) + (correct ? 1 : 0);
+      }
       save(s);
-      return true;
+      return correct;
+    };
+
+    const syncOriginalController = (correct) => {
+      internalEvaluation = true;
+      try {
+        (correct ? check : submit).click();
+      } finally {
+        internalEvaluation = false;
+      }
     };
 
     const advance = () => {
@@ -57,27 +68,30 @@
     };
 
     root.addEventListener('click', e => {
+      if (internalEvaluation) return;
+
       if (e.target.closest('#dailySubmit')) {
         e.preventDefault(); e.stopPropagation(); e.stopImmediatePropagation();
-        if (!gradeCurrent(true)) {
+        const correct = gradeCurrent();
+        if (correct === null) {
           root.querySelector('#dailyFeedback').textContent = '⚠️ ' + tr('Enter an answer first.','اكتب إجابة أولًا.','הקלידו תשובה קודם.');
           return;
         }
+        syncOriginalController(correct);
         root.querySelector('#dailyFeedback').textContent = '✓ ' + tr('Answer submitted. Moving to the next question…','تم إرسال الإجابة. الانتقال إلى السؤال التالي…','התשובה נשלחה. עוברים לשאלה הבאה…');
         advance();
       }
+
       if (e.target.closest('#dailyNext') && !internalNext) {
-        const s = read();
-        const i = Math.max(0, Math.min(4, Number(s.index) || 0));
-        if (!s.status || Number(s.status[i]) === 0) {
-          e.preventDefault(); e.stopPropagation(); e.stopImmediatePropagation();
-          if (!gradeCurrent(true)) {
-            root.querySelector('#dailyFeedback').textContent = '⚠️ ' + tr('Enter an answer first.','اكتب إجابة أولًا.','הקלידו תשובה קודם.');
-            return;
-          }
-          root.querySelector('#dailyFeedback').textContent = '✓ ' + tr('Answer recorded. Moving to the next question…','تم تسجيل الإجابة. الانتقال إلى السؤال التالي…','התשובה נרשמה. עוברים לשאלה הבאה…');
-          advance();
+        e.preventDefault(); e.stopPropagation(); e.stopImmediatePropagation();
+        const correct = gradeCurrent();
+        if (correct === null) {
+          root.querySelector('#dailyFeedback').textContent = '⚠️ ' + tr('Enter an answer first.','اكتب إجابة أولًا.','הקלידו תשובה קודם.');
+          return;
         }
+        syncOriginalController(correct);
+        root.querySelector('#dailyFeedback').textContent = '✓ ' + tr('Answer recorded. Moving to the next question…','تم تسجيل الإجابة. الانتقال إلى السؤال التالي…','התשובה נרשמה. עוברים לשאלה הבאה…');
+        advance();
       }
     }, true);
 
