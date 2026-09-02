@@ -43,26 +43,26 @@ jobs:
           for html in root.glob('*.html'):
               text=html.read_text(encoding='utf-8', errors='ignore')
               text=text.replace('loadStudentProduct();','')
-              text=re.sub(r'theme\\.js\\?v=20260901-sitewide-\\d+', 'theme.js?v=20260901-sitewide-13', text)
+              text=re.sub(r'theme\.js\?v=20260901-sitewide-\d+', 'theme.js?v=20260901-sitewide-13', text)
 
               if html.name=='learn.html':
                   # Learn has one Daily Challenge only: the stable controller.
-                  text=re.sub(r'<script[^>]+src=[\\"\\'][^\\"\\']*(?:student-experience|daily-challenge)[^\\"\\']+\\.js(?:\\?[^\\"\\']*)?[\\"\\'][^>]*></script>\\s*','',text,flags=re.I)
-                  text=re.sub(r'<script[^>]+data-daily-(?:v5|v6|v7|v8)-loader[^>]*></script>\\s*','',text,flags=re.I)
-                  text=re.sub(r'<script[^>]+src=[\\"\\']daily-challenge-final\\.js(?:\\?[^\\"\\']*)?[\\"\\'][^>]*></script>\\s*','',text,flags=re.I)
-                  text=text.replace('</head>','<link rel="stylesheet" href="legacy-daily-hide.css?v='+sha+'" data-legacy-daily-hide="1">\\n<link rel="stylesheet" href="daily-challenge-spacing.css?v='+sha+'" data-daily-challenge-spacing="1">\\n</head>',1)
-                  text=text.replace('</body>','<script src="daily-challenge-stable.js?v='+sha+'" defer data-daily-challenge-stable="1"></script>\\n<script src="daily-challenge-behavior-fix.js?v='+sha+'" defer data-daily-behavior-fix="1"></script>\\n<script src="daily-position-fix.js?v='+sha+'" defer data-daily-position-fix="1"></script>\\n</body>',1)
+                  text=re.sub(r'<script[^>]+src=[\"\'][^\"\']*(?:student-experience|daily-challenge)[^\"\']+\.js(?:\?[^\"\']*)?[\"\'][^>]*></script>\s*','',text,flags=re.I)
+                  text=re.sub(r'<script[^>]+data-daily-(?:v5|v6|v7|v8)-loader[^>]*></script>\s*','',text,flags=re.I)
+                  text=re.sub(r'<script[^>]+src=[\"\']daily-challenge-final\.js(?:\?[^\"\']*)?[\"\'][^>]*></script>\s*','',text,flags=re.I)
+                  text=text.replace('</head>','<link rel="stylesheet" href="legacy-daily-hide.css?v='+sha+'" data-legacy-daily-hide="1">\n<link rel="stylesheet" href="daily-challenge-spacing.css?v='+sha+'" data-daily-challenge-spacing="1">\n</head>',1)
+                  text=text.replace('</body>','<script src="daily-challenge-stable.js?v='+sha+'" defer data-daily-challenge-stable="1"></script>\n<script src="daily-challenge-behavior-fix.js?v='+sha+'" defer data-daily-behavior-fix="1"></script>\n<script src="daily-position-fix.js?v='+sha+'" defer data-daily-position-fix="1"></script>\n</body>',1)
 
               if 'data-site-modern-refresh' not in text:
-                  text=text.replace('</head>','<link rel="stylesheet" href="modern-refresh.css?v='+sha+'" data-site-modern-refresh="1">\\n</head>',1)
+                  text=text.replace('</head>','<link rel="stylesheet" href="modern-refresh.css?v='+sha+'" data-site-modern-refresh="1">\n</head>',1)
 
               if html.name!='learn.html' and 'data-student-experience-v3' not in text:
-                  text=text.replace('</body>','<script src="student-experience-v3.js?v='+sha+'" defer data-student-experience-v3="1"></script>\\n</body>',1)
+                  text=text.replace('</body>','<script src="student-experience-v3.js?v='+sha+'" defer data-student-experience-v3="1"></script>\n</body>',1)
 
               if html.name=='admin.html' and 'data-admin-tools' not in text:
-                  text=text.replace('</body>','<script src="admin-tools.js?v='+sha+'" defer data-admin-tools="1"></script>\\n</body>',1)
+                  text=text.replace('</body>','<script src="admin-tools.js?v='+sha+'" defer data-admin-tools="1"></script>\n</body>',1)
               if html.name=='profile.html' and 'data-admin-tools-profile' not in text:
-                  text=text.replace('</body>','<script src="admin-tools.js?v='+sha+'" defer data-admin-tools-profile="1"></script>\\n</body>',1)
+                  text=text.replace('</body>','<script src="admin-tools.js?v='+sha+'" defer data-admin-tools-profile="1"></script>\n</body>',1)
               html.write_text(text,encoding='utf-8')
           PY
 
@@ -92,7 +92,7 @@ jobs:
           scripts=set()
           for html in root.glob('*.html'):
               text=html.read_text(encoding='utf-8', errors='ignore')
-              for src in re.findall(r'<script[^>]+src=[\\"\\']([^\\"\\']+)[\\"\\']', text, re.I):
+              for src in re.findall(r'<script[^>]+src=[\"\']([^\"\']+)[\"\']', text, re.I):
                   src=src.split('?',1)[0].split('#',1)[0]
                   if src.endswith('.js'): scripts.add(src.lstrip('./'))
           scripts.update({'i18n-dictionary.js','i18n-core.js','i18n-enhancements.js','student-product.js','student-experience-v3.js','daily-challenge-stable.js','daily-challenge-behavior-fix.js','daily-position-fix.js','admin-tools.js'})
@@ -105,7 +105,7 @@ jobs:
           root=pathlib.Path('_site'); scripts=set()
           for html in root.glob('*.html'):
               text=html.read_text(encoding='utf-8', errors='ignore')
-              for src in re.findall(r'<script[^>]+src=[\\"\\']([^\\"\\']+)[\\"\\']', text, re.I):
+              for src in re.findall(r'<script[^>]+src=[\"\']([^\"\']+)[\"\']', text, re.I):
                   src=src.split('?',1)[0].split('#',1)[0]
                   if src.endswith('.js'): scripts.add(src.lstrip('./'))
           scripts.update({'i18n-dictionary.js','i18n-core.js','i18n-enhancements.js','student-product.js','student-experience-v3.js','daily-challenge-stable.js','daily-challenge-behavior-fix.js','daily-position-fix.js','admin-tools.js'})
