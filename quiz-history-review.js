@@ -22,58 +22,39 @@ const addClearHistory=()=>{
  const head=card.querySelector('.section-head');
  if(!head)return;
  const b=document.createElement('button');
- b.type='button';
- b.className='secondary clear-history-btn no-print';
- b.dataset.clearHistory='true';
- b.textContent=ui('Clear history','مسح السجل','ניקוי ההיסטוריה');
- head.appendChild(b);
+ b.type='button';b.className='secondary clear-history-btn no-print';b.dataset.clearHistory='true';
+ b.textContent=ui('Clear history','مسح السجل','ניקוי ההיסטוריה');head.appendChild(b);
 };
 const addHistoryButtons=()=>{
- const list=document.getElementById('historyList');
- if(!list||list.classList.contains('hidden'))return;
+ const list=document.getElementById('historyList');if(!list||list.classList.contains('hidden'))return;
  const h=read();
  [...list.querySelectorAll('.history-row')].forEach((row,i)=>{
-  if(row.querySelector('[data-history-review]'))return;
-  const record=h[i];
-  if(!record?.reviewHtml)return;
-  const b=document.createElement('button');
-  b.type='button';
-  b.className='secondary history-review-btn';
-  b.dataset.historyReview=String(i);
-  b.textContent=ui('Review this quiz','مراجعة هذا الاختبار','סקירת החידון הזה');
-  row.appendChild(b);
+  if(row.querySelector('[data-history-review]'))return;const record=h[i];if(!record?.reviewHtml)return;
+  const b=document.createElement('button');b.type='button';b.className='secondary history-review-btn';b.dataset.historyReview=String(i);
+  b.textContent=ui('Review this quiz','مراجعة هذا الاختبار','סקירת החידון הזה');row.appendChild(b);
  });
 };
+const closeReview=()=>{const area=document.getElementById('scoreArea');if(area){area.innerHTML='';area.scrollIntoView({behavior:'smooth',block:'start')}}};
 const showReview=i=>{
- const record=read()[i];
- if(!record?.reviewHtml)return;
- const area=document.getElementById('scoreArea');
- if(!area)return;
- const d=new Date(record.date);
- const date=d.toLocaleString();
+ const record=read()[i];if(!record?.reviewHtml)return;const area=document.getElementById('scoreArea');if(!area)return;
+ const d=new Date(record.date),date=d.toLocaleString();
  const mode=record.experience==='quiz'?ui('Quiz','اختبار','חידון'):ui('Practice','تدريب','תרגול');
  const difficulty=record.difficulty?record.difficulty.charAt(0).toUpperCase()+record.difficulty.slice(1):'';
  const title=ui('Quiz review','مراجعة الاختبار','סקירת החידון');
- const subtitle=ui(`${mode} · ${difficulty} · ${date}`,`${mode} · ${difficulty} · ${date}`,`${mode} · ${difficulty} · ${date}`);
- area.innerHTML=`<div class="history-review-panel"><div class="history-review-context"><div><span>${ui('Reviewing','تراجع الآن','סקירה של')}</span><strong>${mode} · ${difficulty}</strong><small>${date}</small></div><div><span>${ui('Result','النتيجة','תוצאה')}</span><strong>${record.score} · ${record.pct}%</strong><small>${record.correct}/${record.answered} ${ui('correct','صحيح','נכון')}</small></div></div><div class="history-review-heading"><h3>${title}</h3><p>${subtitle}</p></div><div class="history-review-content quiz-review">${record.reviewHtml}</div></div>`;
+ const subtitle=`${mode} · ${difficulty} · ${date}`;
+ area.innerHTML=`<div class="history-review-panel"><div class="history-review-context"><div><span>${ui('Reviewing','تراجع الآن','סקירה של')}</span><strong>${mode} · ${difficulty}</strong><small>${date}</small></div><div><span>${ui('Result','النتيجة','תוצאה')}</span><strong>${record.score} · ${record.pct}%</strong><small>${record.correct}/${record.answered} ${ui('correct','صحيح','נכון')}</small></div></div><div class="history-review-heading"><div class="history-review-heading-row"><div><h3>${title}</h3><p>${subtitle}</p></div><button type="button" class="secondary close-review-btn no-print" data-close-review>✕ ${ui('Close review','إغلاق المراجعة','סגירת הסקירה')}</button></div></div><div class="history-review-content quiz-review">${record.reviewHtml}</div></div>`;
  area.scrollIntoView({behavior:'smooth',block:'start'});
 };
 const clearHistory=()=>{
  if(!read().length)return;
- const ok=window.confirm(ui('Clear all quiz history? This cannot be undone.','هل تريد مسح سجل الاختبارات بالكامل؟ لا يمكن التراجع عن ذلك.','לנקות את כל היסטוריית החידונים? לא ניתן לבטל פעולה זו.'));
- if(!ok)return;
- localStorage.removeItem(historyKey());
- const list=document.getElementById('historyList');
- if(list){list.innerHTML='';list.classList.add('hidden')}
+ const ok=window.confirm(ui('Clear all quiz history? This cannot be undone.','هل تريد مسح سجل الاختبارات بالكامل؟ لا يمكن التراجع عن ذلك.','לנקות את כל היסטוריית החידונים? לא ניתן לבטל פעולה זו.'));if(!ok)return;
+ localStorage.removeItem(historyKey());const list=document.getElementById('historyList');if(list){list.innerHTML='';list.classList.add('hidden')}
 };
 document.addEventListener('click',e=>{
- const reviewButton=e.target.closest('[data-history-review]');
- if(reviewButton){e.preventDefault();showReview(Number(reviewButton.dataset.historyReview));return}
- const clearButton=e.target.closest('[data-clear-history]');
- if(clearButton){e.preventDefault();clearHistory()}
+ const reviewButton=e.target.closest('[data-history-review]');if(reviewButton){e.preventDefault();showReview(Number(reviewButton.dataset.historyReview));return}
+ const closeButton=e.target.closest('[data-close-review]');if(closeButton){e.preventDefault();closeReview();return}
+ const clearButton=e.target.closest('[data-clear-history]');if(clearButton){e.preventDefault();clearHistory()}
 });
-const observer=new MutationObserver(()=>{captureReview();addHistoryButtons();addClearHistory()});
-observer.observe(document.body,{childList:true,subtree:true});
-setInterval(()=>{captureReview();addHistoryButtons();addClearHistory()},500);
-addClearHistory();
+const observer=new MutationObserver(()=>{captureReview();addHistoryButtons();addClearHistory()});observer.observe(document.body,{childList:true,subtree:true});
+setInterval(()=>{captureReview();addHistoryButtons();addClearHistory()},500);addClearHistory();
 })();
