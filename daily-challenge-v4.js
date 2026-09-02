@@ -82,8 +82,15 @@
       #daily-v5 .daily-hint { margin-top:9px; padding:12px 14px; border:1px solid var(--line); border-radius:12px; background:var(--surface-2,#f7f9fc); color:var(--muted); }
       #daily-v5 .daily-result { margin-top:16px; padding:18px; border:1px solid var(--line); border-radius:15px; }
       #daily-v5 .daily-score { font-size:38px; font-weight:900; }
+      #daily-v5 .daily-review { margin-top:16px; display:grid; gap:12px; }
+      #daily-v5 .daily-review-item { padding:14px; border:1px solid var(--line); border-radius:13px; background:var(--surface-2,#f7f9fc); }
+      #daily-v5 .daily-review-item.correct { border-inline-start:4px solid #2e8b57; }
+      #daily-v5 .daily-review-item.incorrect { border-inline-start:4px solid #d9534f; }
+      #daily-v5 .daily-review-q { font-weight:900; direction:ltr; text-align:left; }
+      #daily-v5 .daily-review-answer { margin-top:7px; direction:ltr; text-align:left; word-break:break-word; }
+      #daily-v5 .daily-review-explanation { margin-top:8px; color:var(--muted); }
       @media(max-width:760px){ #daily-v5 .daily-card{padding:17px;} #daily-v5 .daily-head,#daily-v5 .daily-meta{flex-direction:column;} #daily-v5 .daily-badge{align-self:flex-start;} #daily-v5 .daily-actions > *{flex:1 1 145px;} }
-      body.dark #daily-v5 .daily-note, body.dark #daily-v5 .daily-hint { background:#1b2330; }
+      body.dark #daily-v5 .daily-note, body.dark #daily-v5 .daily-hint, body.dark #daily-v5 .daily-review-item { background:#1b2330; }
     `;
     document.head.appendChild(style);
   }
@@ -195,8 +202,8 @@
       feedback.textContent = '';
       hintBox.hidden = true;
       note.textContent = recorded
-        ? tr('Answer recorded. Use Next question when ready.','تم تسجيل الإجابة. اضغط السؤال التالي عندما تكون مستعدًا.','התשובה נרשמה. עברו לשאלה הבאה כשתהיו מוכנים.')
-        : tr('Check your answer, or submit it when you are ready.','تحقق من إجابتك، أو أرسلها عندما تكون مستعدًا.','בדקו את התשובה, או שלחו אותה כשאתם מוכנים.');
+        ? tr('Answer submitted. Use Next question to continue.','تم إرسال الإجابة. اضغط السؤال التالي للمتابعة.','התשובה נשלחה. עברו לשאלה הבאה כדי להמשיך.')
+        : tr('Check gives feedback without locking your answer. Submit moves automatically to the next question.','التحقق يعطيك ملاحظات دون قفل إجابتك. الإرسال ينتقل تلقائيًا إلى السؤال التالي.','בדיקה מציגה משוב בלי לנעול את התשובה. שליחה עוברת אוטומטית לשאלה הבאה.');
       result.hidden = true;
     }
 
@@ -219,47 +226,88 @@
       if (remaining <= 0) finish();
     }
 
-    function evaluate(finalSubmission) {
-      if (!started || complete || status[index] > 0) return;
+    function checkAnswer() {
+      if (!started || complete || status[index] > 0) return false;
       const value = input.value.trim();
       if (!value) {
         feedback.textContent = '⚠️ ' + tr('Enter an answer first.','اكتب إجابة أولًا.','הקלידו תשובה קודם.');
-        return;
+        return false;
       }
       answers[index] = value;
       const correct = normalize(value) === normalize(qs[index][1]);
-      if (correct) {
-        status[index] = 1;
-        score += 1;
-        feedback.textContent = '✓ ' + tr('Correct! Great job.','صحيح! أحسنت.','נכון! עבודה מצוינת.');
-        note.textContent = tr('Correct. This feedback stays visible until you choose Next question.','إجابة صحيحة. ستبقى هذه الملاحظة ظاهرة حتى تختار السؤال التالي.','נכון. המשוב יישאר עד שתבחרו שאלה הבאה.');
-      } else if (finalSubmission) {
-        status[index] = 2;
-        feedback.textContent = '✕ ' + tr('Answer submitted. No point added.','تم إرسال الإجابة. لم تُضف نقطة.','התשובה נשלחה. לא נוספה נקודה.');
-        note.textContent = tr('Final answer recorded.','تم تسجيل الإجابة النهائية.','התשובה הסופית נרשמה.');
-      } else {
-        feedback.textContent = '❌ ' + tr('Not quite. Edit your answer and check again, or submit it without another check.','ليس تمامًا. عدّل إجابتك وتحقق مرة أخرى، أو أرسلها دون فحص آخر.','לא בדיוק. ערכו את התשובה ובדקו שוב, או שלחו אותה בלי בדיקה נוספת.');
-        save();
-        return;
+      feedback.textContent = correct
+        ? '✓ ' + tr('Correct! Great job.','صحيح! أحسنت.','נכון! עבודה מצוינת.')
+        : '❌ ' + tr('Not quite. You can edit your answer and check again.','ليس تمامًا. يمكنك تعديل إجابتك والتحقق مرة أخرى.','לא בדיוק. אפשר לערוך את התשובה ולבדוק שוב.');
+      note.textContent = correct
+        ? tr('Your answer is correct. Submit it to record the point and continue automatically.','إجابتك صحيحة. أرسلها لتسجيل النقطة والمتابعة تلقائيًا.','התשובה נכונה. שלחו אותה כדי לרשום את הנקודה ולהמשיך אוטומטית.')
+        : tr('This is only a check. Your answer is still editable.','هذا تحقق فقط. ما زال بإمكانك تعديل إجابتك.','זו רק בדיקה. עדיין אפשר לערוך את התשובה.');
+      save();
+      return correct;
+    }
+
+    function submitAnswer(autoAdvance = true) {
+      if (!started || complete || status[index] > 0) return false;
+      const value = input.value.trim();
+      if (!value) {
+        feedback.textContent = '⚠️ ' + tr('Enter an answer first.','اكتب إجابة أولًا.','הקלידו תשובה קודם.');
+        return false;
       }
+      answers[index] = value;
+      const correct = normalize(value) === normalize(qs[index][1]);
+      status[index] = correct ? 1 : 2;
+      if (correct) {
+        score += 1;
+        feedback.textContent = '✓ ' + tr('Correct! Point added.','صحيح! تمت إضافة نقطة.','נכון! נוספה נקודה.');
+      } else {
+        feedback.textContent = '✕ ' + tr('Answer submitted. No point added.','تم إرسال الإجابة. لم تُضف نقطة.','התשובה נשלחה. לא נוספה נקודה.');
+      }
+      note.textContent = tr('Answer recorded. Moving to the next question…','تم تسجيل الإجابة. الانتقال إلى السؤال التالي…','התשובה נרשמה. עוברים לשאלה הבאה…');
       save();
       checkButton.disabled = true;
       submitButton.disabled = true;
       input.disabled = true;
-      nextButton.hidden = false;
+      nextButton.hidden = true;
+      if (autoAdvance) {
+        window.setTimeout(nextQuestion, 250);
+      } else {
+        nextButton.hidden = false;
+      }
+      return true;
     }
 
     function nextQuestion() {
-      if (complete || status[index] === 0) return;
+      if (complete) return;
+      if (status[index] === 0) {
+        if (!submitAnswer(false)) return;
+      }
       if (index < 4) {
         index += 1;
         save();
         render();
-        input.disabled = false;
         input.focus();
       } else {
         finish();
       }
+    }
+
+    function reviewAnswers() {
+      const review = document.createElement('div');
+      review.className = 'daily-review';
+      qs.forEach((q, n) => {
+        const userAnswer = answers[n] || tr('No answer','لم تتم الإجابة','לא ניתנה תשובה');
+        const correct = status[n] === 1;
+        const item = document.createElement('div');
+        item.className = 'daily-review-item ' + (correct ? 'correct' : 'incorrect');
+        item.innerHTML = `<div><b>${correct ? '✓' : '✕'} ${tr('Question ' + (n + 1),'السؤال ' + (n + 1),'שאלה ' + (n + 1)}</b></div><div class="daily-review-q">${q[0]}</div><div class="daily-review-answer"><b>${tr('Your answer:','إجابتك:','התשובה שלך:')}</b> ${userAnswer}</div><div class="daily-review-answer"><b>${tr('Correct answer:','الإجابة الصحيحة:','התשובה الصحيحة:')}</b> ${q[1]}</div><div class="daily-review-explanation"><b>${tr('Explanation:','الشرح:','הסבר:')}</b> ${q[2]}</div>`;
+        review.appendChild(item);
+      });
+      result.innerHTML = '';
+      const title = document.createElement('h3');
+      title.textContent = tr('Daily quiz answer review','مراجعة إجابات الاختبار اليومي','סקירת תשובות החידון היומי');
+      result.appendChild(title);
+      result.appendChild(review);
+      result.hidden = false;
+      result.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }
 
     function finish() {
@@ -289,12 +337,13 @@
       else if (score >= 4) message = tr('Great work! ' + score + '/5 correct.','عمل رائع! ' + score + '/5 صحيحة.','עבודה נהדרת! ' + score + '/5 נכונות.');
       else if (score >= 3) message = tr('Good effort! ' + score + '/5 correct. Review the ones you missed.','محاولة جيدة! ' + score + '/5 صحيحة. راجع المعادلات التي أخطأت فيها.','מאמץ טוב! ' + score + '/5 נכונות. עברו על מה שפספסתם.');
       else message = tr('Keep practising! ' + score + '/5 correct. Come back tomorrow and try a new set.','واصل التدريب! ' + score + '/5 صحيحة. عد غدًا لمجموعة جديدة.','המשיכו לתרגל! ' + score + '/5 נכונות. חזרו מחר לסט חדש.');
-      result.innerHTML = '<div class="daily-score">' + score + '/5</div><p><b>' + message + '</b></p>';
+      result.innerHTML = '<div class="daily-score">' + score + '/5</div><p><b>' + message + '</b></p><button id="dailyReviewBtn" class="primary" type="button">📋 ' + tr('Review daily quiz answers','مراجعة إجابات الاختبار اليومي','סקירת תשובות החידון היומי') + '</button>';
+      $('dailyReviewBtn').addEventListener('click', reviewAnswers);
     }
 
     startButton.addEventListener('click', startChallenge);
-    checkButton.addEventListener('click', () => evaluate(false));
-    submitButton.addEventListener('click', () => evaluate(true));
+    checkButton.addEventListener('click', checkAnswer);
+    submitButton.addEventListener('click', () => submitAnswer(true));
     nextButton.addEventListener('click', nextQuestion);
     hintButton.addEventListener('click', () => {
       if (!started || complete) return;
@@ -302,7 +351,7 @@
       hintBox.textContent = '💡 ' + qs[index][2];
     });
     input.addEventListener('keydown', event => {
-      if (event.key === 'Enter') evaluate(false);
+      if (event.key === 'Enter') checkAnswer();
     });
 
     if (replay) {
