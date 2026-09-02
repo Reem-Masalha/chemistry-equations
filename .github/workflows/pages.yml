@@ -46,11 +46,14 @@ jobs:
               text=re.sub(r'theme\.js\?v=20260901-sitewide-\d+', 'theme.js?v=20260901-sitewide-13', text)
 
               if html.name=='learn.html':
-                  # Learn has one Daily Challenge only: the stable controller.
-                  text=re.sub(r'<script[^>]+src=[\"\'][^\"\']*(?:student-experience|daily-challenge)[^\"\']+\.js(?:\?[^\"\']*)?[\"\'][^>]*></script>\s*','',text,flags=re.I)
+                  # Learn must contain exactly one Daily Challenge controller.
+                  # Remove only legacy Daily Challenge/student loaders; never remove the stable controller.
+                  text=re.sub(r'<script[^>]+src=[\"\'][^\"\']*(?:student-experience|daily-challenge-v4|daily-challenge-behavior-fix|daily-challenge-final)\.js(?:\?[^\"\']*)?[\"\'][^>]*></script>\s*','',text,flags=re.I)
                   text=re.sub(r'<script[^>]+data-daily-(?:v5|v6|v7|v8)-loader[^>]*></script>\s*','',text,flags=re.I)
-                  text=re.sub(r'<script[^>]+src=[\"\']daily-challenge-final\.js(?:\?[^\"\']*)?[\"\'][^>]*></script>\s*','',text,flags=re.I)
                   text=text.replace('</head>','<link rel="stylesheet" href="legacy-daily-hide.css?v='+sha+'" data-legacy-daily-hide="1">\n<link rel="stylesheet" href="daily-challenge-spacing.css?v='+sha+'" data-daily-challenge-spacing="1">\n</head>',1)
+                  # Remove any existing stable loaders before adding the cache-busted one.
+                  text=re.sub(r'<script[^>]+src=[\"\']daily-challenge-stable\.js(?:\?[^\"\']*)?[\"\'][^>]*></script>\s*','',text,flags=re.I)
+                  text=re.sub(r'<script[^>]+src=[\"\']daily-position-fix\.js(?:\?[^\"\']*)?[\"\'][^>]*></script>\s*','',text,flags=re.I)
                   text=text.replace('</body>','<script src="daily-challenge-stable.js?v='+sha+'" defer data-daily-challenge-stable="1"></script>\n<script src="daily-position-fix.js?v='+sha+'" defer data-daily-position-fix="1"></script>\n</body>',1)
 
               if 'data-site-modern-refresh' not in text:
@@ -121,6 +124,7 @@ jobs:
           if t.count('daily-challenge-spacing.css') != 1: raise SystemExit('Daily Challenge spacing stylesheet missing or duplicated')
           if 'daily-challenge-behavior-fix.js' in t: raise SystemExit('obsolete Daily Challenge behavior fix remains')
           if 'daily-challenge-final.js' in t: raise SystemExit('legacy daily final loader remains')
+          if 'daily-challenge-v4.js' in t: raise SystemExit('legacy daily v4 loader remains')
           if 'student-experience-v3.js' in t: raise SystemExit('legacy student experience remains on Learn')
           for page in pathlib.Path('_site').glob('*.html'):
               html=page.read_text(encoding='utf-8',errors='ignore')
