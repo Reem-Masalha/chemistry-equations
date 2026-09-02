@@ -7,92 +7,45 @@
     return lang === 'ar' ? ar : lang === 'he' ? he : en;
   };
 
-  const equations = [
-    ['H₂ + O₂ → H₂O','2H₂ + O₂ → 2H₂O'], ['Na + Cl₂ → NaCl','2Na + Cl₂ → 2NaCl'],
-    ['Mg + O₂ → MgO','2Mg + O₂ → 2MgO'], ['N₂ + H₂ → NH₃','N₂ + 3H₂ → 2NH₃'],
-    ['Fe + O₂ → Fe₂O₃','4Fe + 3O₂ → 2Fe₂O₃'], ['Zn + HCl → ZnCl₂ + H₂','Zn + 2HCl → ZnCl₂ + H₂'],
-    ['KClO₃ → KCl + O₂','2KClO₃ → 2KCl + 3O₂'], ['Na₂O + H₂O → NaOH','Na₂O + H₂O → 2NaOH'],
-    ['C₃H₈ + O₂ → CO₂ + H₂O','C₃H₈ + 5O₂ → 3CO₂ + 4H₂O'], ['NH₃ + O₂ → NO + H₂O','4NH₃ + 5O₂ → 4NO + 6H₂O'],
-    ['FeS₂ + O₂ → Fe₂O₃ + SO₂','4FeS₂ + 11O₂ → 2Fe₂O₃ + 8SO₂'], ['Ca(OH)₂ + HCl → CaCl₂ + H₂O','Ca(OH)₂ + 2HCl → CaCl₂ + 2H₂O'],
-    ['Al + O₂ → Al₂O₃','4Al + 3O₂ → 2Al₂O₃'], ['CO + O₂ → CO₂','2CO + O₂ → 2CO₂'],
-    ['P + O₂ → P₂O₅','4P + 5O₂ → 2P₂O₅'], ['H₂ + Cl₂ → HCl','H₂ + Cl₂ → 2HCl'],
-    ['Ag + S → Ag₂S','2Ag + S → Ag₂S'], ['CH₄ + O₂ → CO₂ + H₂O','CH₄ + 2O₂ → CO₂ + 2H₂O'],
-    ['C₂H₆ + O₂ → CO₂ + H₂O','2C₂H₆ + 7O₂ → 4CO₂ + 6H₂O'], ['CaCO₃ → CaO + CO₂','CaCO₃ → CaO + CO₂'],
-    ['Cu + O₂ → CuO','2Cu + O₂ → 2CuO'], ['Cl₂ + NaBr → NaCl + Br₂','2NaBr + Cl₂ → 2NaCl + Br₂'],
-    ['H₂O₂ → H₂O + O₂','2H₂O₂ → 2H₂O + O₂'], ['SO₂ + O₂ → SO₃','2SO₂ + O₂ → 2SO₃'],
-    ['NO + O₂ → NO₂','2NO + O₂ → 2NO₂']
-  ];
-
-  const normalize = value => String(value || '')
-    .replace(/[₀₁₂₃₄₅₆₇₈₉]/g, c => '0123456789'['₀₁₂₃₄₅₆₇₈₉'.indexOf(c)])
-    .replace(/\s+/g, '')
-    .replace(/→|->|=/g, '>')
-    .toUpperCase()
-    .replace(/(^|>)1(?=[A-Z(])/g, '$1');
-
-  function todayKey() { return new Date().toISOString().slice(0, 10); }
-  function getState() { try { return JSON.parse(localStorage.getItem('chemistryDailyV5:' + todayKey()) || '{}'); } catch (_) { return {}; } }
-  function saveState(state) { try { localStorage.setItem('chemistryDailyV5:' + todayKey(), JSON.stringify(state)); } catch (_) {} }
-
-  function questionStart() {
-    const day = Math.floor((Date.parse(todayKey() + 'T00:00:00Z') - Date.parse('2020-01-01T00:00:00Z')) / 86400000);
-    return ((day * 5) % equations.length + equations.length) % equations.length;
-  }
-
-  function recordCurrent(root) {
-    const input = root.querySelector('#dailyInput');
-    if (!input) return false;
-    let state = getState();
-    const index = Math.max(0, Math.min(4, Number(state.index) || 0));
-    const value = input.value.trim();
-    if (!value) return false;
-
-    const answers = Array.isArray(state.answers) ? state.answers.slice() : [];
-    const status = Array.isArray(state.status) ? state.status.slice() : [];
-    if (Number(status[index]) === 0 || !status[index]) {
-      answers[index] = value;
-      const q = equations[(questionStart() + index) % equations.length];
-      const correct = normalize(value) === normalize(q[1]);
-      status[index] = correct ? 1 : 2;
-      let score = Math.max(0, Math.min(5, Number(state.score) || 0));
-      if (correct) score += 1;
-      state = { ...state, score, status, answers };
-    }
-
-    if (index < 4) {
-      state.index = index + 1;
-      saveState(state);
-      location.reload();
-    } else {
-      state.index = 5;
-      state.complete = true;
-      state.started = false;
-      saveState(state);
-      location.reload();
-    }
-    return true;
-  }
-
   function init() {
     const root = document.getElementById('daily-v5');
-    if (!root || root.dataset.submitFix === '8') return;
+    if (!root || root.dataset.submitFix === '9') return;
     const input = root.querySelector('#dailyInput');
     const submit = root.querySelector('#dailySubmit');
     const check = root.querySelector('#dailyCheck');
-    let next = root.querySelector('#dailyNext');
+    const next = root.querySelector('#dailyNext');
     const result = root.querySelector('#dailyResult');
     if (!input || !submit || !check || !next || !result) return;
-    root.dataset.submitFix = '8';
+    root.dataset.submitFix = '9';
 
-    // Replace both navigation buttons so the old Daily Quiz handlers cannot fight these handlers.
-    const submitReplacement = submit.cloneNode(true);
-    submit.replaceWith(submitReplacement);
-    submitReplacement.addEventListener('click', () => recordCurrent(root));
+    // Keep the original Daily Quiz handlers. Submit records the answer first,
+    // then advances; Next records an unsubmitted typed answer before advancing.
+    submit.addEventListener('click', event => {
+      if (!input.value.trim()) return;
+      setTimeout(() => {
+        if (!root.isConnected) return;
+        const currentNext = root.querySelector('#dailyNext');
+        if (currentNext && !currentNext.hidden) currentNext.click();
+      }, 0);
+    });
 
-    const nextReplacement = next.cloneNode(true);
-    next.replaceWith(nextReplacement);
-    next = nextReplacement;
-    next.addEventListener('click', () => recordCurrent(root));
+    next.addEventListener('click', event => {
+      if (!input.value.trim()) return;
+      // This runs after the user's Next click reaches the core handler only if
+      // the answer was already recorded. For an unrecorded typed answer, use
+      // the core Submit handler first so its private status/index state stays in sync.
+      const stateKey = 'chemistryDailyV5:' + new Date().toISOString().slice(0, 10);
+      let recorded = false;
+      try {
+        const state = JSON.parse(localStorage.getItem(stateKey) || '{}');
+        const index = Math.max(0, Math.min(4, Number(state.index) || 0));
+        recorded = Number(Array.isArray(state.status) ? state.status[index] : 0) > 0;
+      } catch (_) {}
+      if (!recorded) {
+        event.stopImmediatePropagation();
+        submit.click();
+      }
+    }, true);
 
     function addReviewButton() {
       if (root.querySelector('#dailyReviewBtn') || result.hidden) return;
@@ -114,10 +67,22 @@
     }
 
     function renderReview(panel) {
-      const state = getState();
+      let state = {};
+      try { state = JSON.parse(localStorage.getItem('chemistryDailyV5:' + new Date().toISOString().slice(0, 10)) || '{}'); } catch (_) {}
       const answers = Array.isArray(state.answers) ? state.answers : [];
       const status = Array.isArray(state.status) ? state.status : [];
-      const start = questionStart();
+      const equations = [
+        ['H₂ + O₂ → H₂O','2H₂ + O₂ → 2H₂O'], ['Na + Cl₂ → NaCl','2Na + Cl₂ → 2NaCl'], ['Mg + O₂ → MgO','2Mg + O₂ → 2MgO'],
+        ['N₂ + H₂ → NH₃','N₂ + 3H₂ → 2NH₃'], ['Fe + O₂ → Fe₂O₃','4Fe + 3O₂ → 2Fe₂O₃'], ['Zn + HCl → ZnCl₂ + H₂','Zn + 2HCl → ZnCl₂ + H₂'],
+        ['KClO₃ → KCl + O₂','2KClO₃ → 2KCl + 3O₂'], ['Na₂O + H₂O → NaOH','Na₂O + H₂O → 2NaOH'], ['C₃H₈ + O₂ → CO₂ + H₂O','C₃H₈ + 5O₂ → 3CO₂ + 4H₂O'],
+        ['NH₃ + O₂ → NO + H₂O','4NH₃ + 5O₂ → 4NO + 6H₂O'], ['FeS₂ + O₂ → Fe₂O₃ + SO₂','4FeS₂ + 11O₂ → 2Fe₂O₃ + 8SO₂'], ['Ca(OH)₂ + HCl → CaCl₂ + H₂O','Ca(OH)₂ + 2HCl → CaCl₂ + 2H₂O'],
+        ['Al + O₂ → Al₂O₃','4Al + 3O₂ → 2Al₂O₃'], ['CO + O₂ → CO₂','2CO + O₂ → 2CO₂'], ['P + O₂ → P₂O₅','4P + 5O₂ → 2P₂O₅'],
+        ['H₂ + Cl₂ → HCl','H₂ + Cl₂ → 2HCl'], ['Ag + S → Ag₂S','2Ag + S → Ag₂S'], ['CH₄ + O₂ → CO₂ + H₂O','CH₄ + 2O₂ → CO₂ + 2H₂O'],
+        ['C₂H₆ + O₂ → CO₂ + H₂O','2C₂H₆ + 7O₂ → 4CO₂ + 6H₂O'], ['CaCO₃ → CaO + CO₂','CaCO₃ → CaO + CO₂'], ['Cu + O₂ → CuO','2Cu + O₂ → 2CuO'],
+        ['Cl₂ + NaBr → NaCl + Br₂','2NaBr + Cl₂ → 2NaCl + Br₂'], ['H₂O₂ → H₂O + O₂','2H₂O₂ → 2H₂O + O₂'], ['SO₂ + O₂ → SO₃','2SO₂ + O₂ → 2SO₃'], ['NO + O₂ → NO₂','2NO + O₂ → 2NO₂']
+      ];
+      const day = Math.floor((Date.parse(new Date().toISOString().slice(0,10) + 'T00:00:00Z') - Date.parse('2020-01-01T00:00:00Z')) / 86400000);
+      const start = ((day * 5) % equations.length + equations.length) % equations.length;
       panel.replaceChildren();
       for (let i = 0; i < 5; i++) {
         const q = equations[(start + i) % equations.length];
@@ -132,12 +97,14 @@
       }
     }
 
-    const observer = new MutationObserver(addReviewButton);
-    observer.observe(result, { childList:true, subtree:true, attributes:true, attributeFilter:['hidden'] });
+    new MutationObserver(addReviewButton).observe(result, { childList: true, subtree: true, attributes: true, attributeFilter: ['hidden'] });
     addReviewButton();
   }
 
-  function wait() { if (document.getElementById('daily-v5')) init(); else setTimeout(wait, 50); }
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', wait, { once:true });
+  function wait() {
+    if (document.getElementById('daily-v5')) init();
+    else setTimeout(wait, 50);
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', wait, { once: true });
   else wait();
 })();
