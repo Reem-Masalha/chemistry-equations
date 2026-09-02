@@ -5,22 +5,10 @@ const getReview=()=>document.querySelector('.quiz-review');
 const printReview=()=>{
  const review=getReview();
  if(!review)return;
- const old=document.getElementById('quizPrintFrame');
- if(old)old.remove();
- const frame=document.createElement('iframe');
- frame.id='quizPrintFrame';
- frame.setAttribute('aria-hidden','true');
- frame.style.cssText='position:fixed;right:0;bottom:0;width:0;height:0;border:0;opacity:0;pointer-events:none;';
- document.body.appendChild(frame);
- const doc=frame.contentDocument;
- const clone=review.cloneNode(true);
- clone.querySelector('.quiz-review-actions')?.remove();
- const css=[...document.querySelectorAll('link[rel="stylesheet"]')].map(x=>x.href).filter(Boolean).map(h=>`<link rel="stylesheet" href="${h}">`).join('');
- doc.open();
- doc.write(`<!doctype html><html lang="${document.documentElement.lang||'en'}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">${css}<style>html,body{background:#fff!important;color:#000!important;margin:0;padding:0}.quiz-review{max-width:900px;margin:0 auto;padding:24px}.quiz-review-item{break-inside:avoid;page-break-inside:avoid}.no-print,.quiz-review-actions{display:none!important}@media print{.quiz-review{padding:0}body{background:#fff!important}}</style></head><body>${clone.outerHTML}</body></html>`);
- doc.close();
- const doPrint=()=>{try{frame.contentWindow.focus();frame.contentWindow.print()}catch(e){window.print()}setTimeout(()=>frame.remove(),1000)};
- setTimeout(doPrint,400);
+ document.body.classList.add('printing-quiz-review');
+ const cleanup=()=>document.body.classList.remove('printing-quiz-review');
+ window.addEventListener('afterprint',cleanup,{once:true});
+ setTimeout(()=>{window.print();setTimeout(cleanup,1500)},50);
 };
 const addReviewActions=()=>{
  const review=getReview();
