@@ -10,11 +10,23 @@ const captureReview=()=>{
  if(!review)return;
  const h=read();
  if(!h.length)return;
- const i=0;
  const clone=review.cloneNode(true);
  clone.querySelector('.quiz-review-actions')?.remove();
- h[i].reviewHtml=clone.innerHTML;
+ h[0].reviewHtml=clone.innerHTML;
  save(h);
+};
+const addClearHistory=()=>{
+ const list=document.getElementById('historyList');
+ const card=list?.closest('.stats-card');
+ if(!card||card.querySelector('[data-clear-history]'))return;
+ const head=card.querySelector('.section-head');
+ if(!head)return;
+ const b=document.createElement('button');
+ b.type='button';
+ b.className='secondary clear-history-btn no-print';
+ b.dataset.clearHistory='true';
+ b.textContent=ui('Clear history','مسح السجل','ניקוי ההיסטוריה');
+ head.appendChild(b);
 };
 const addHistoryButtons=()=>{
  const list=document.getElementById('historyList');
@@ -46,8 +58,22 @@ const showReview=i=>{
  area.innerHTML=`<div class="history-review-panel"><div class="history-review-context"><div><span>${ui('Reviewing','تراجع الآن','סקירה של')}</span><strong>${mode} · ${difficulty}</strong><small>${date}</small></div><div><span>${ui('Result','النتيجة','תוצאה')}</span><strong>${record.score} · ${record.pct}%</strong><small>${record.correct}/${record.answered} ${ui('correct','صحيح','נכון')}</small></div></div><div class="history-review-heading"><h3>${title}</h3><p>${subtitle}</p></div><div class="history-review-content quiz-review">${record.reviewHtml}</div></div>`;
  area.scrollIntoView({behavior:'smooth',block:'start'});
 };
-document.addEventListener('click',e=>{const b=e.target.closest('[data-history-review]');if(b){e.preventDefault();showReview(Number(b.dataset.historyReview))}});
-const observer=new MutationObserver(()=>{captureReview();addHistoryButtons()});
+const clearHistory=()=>{
+ if(!read().length)return;
+ const ok=window.confirm(ui('Clear all quiz history? This cannot be undone.','هل تريد مسح سجل الاختبارات بالكامل؟ لا يمكن التراجع عن ذلك.','לנקות את כל היסטוריית החידונים? לא ניתן לבטל פעולה זו.'));
+ if(!ok)return;
+ localStorage.removeItem(historyKey());
+ const list=document.getElementById('historyList');
+ if(list){list.innerHTML='';list.classList.add('hidden')}
+};
+document.addEventListener('click',e=>{
+ const reviewButton=e.target.closest('[data-history-review]');
+ if(reviewButton){e.preventDefault();showReview(Number(reviewButton.dataset.historyReview));return}
+ const clearButton=e.target.closest('[data-clear-history]');
+ if(clearButton){e.preventDefault();clearHistory()}
+});
+const observer=new MutationObserver(()=>{captureReview();addHistoryButtons();addClearHistory()});
 observer.observe(document.body,{childList:true,subtree:true});
-setInterval(()=>{captureReview();addHistoryButtons()},500);
+setInterval(()=>{captureReview();addHistoryButtons();addClearHistory()},500);
+addClearHistory();
 })();
