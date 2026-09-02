@@ -311,7 +311,6 @@
     }
 
     function finish() {
-      if (complete) return;
       clearInterval(timer);
       timer = null;
       complete = true;
