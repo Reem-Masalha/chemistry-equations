@@ -44,6 +44,8 @@ jobs:
               text=html.read_text(encoding='utf-8', errors='ignore')
               text=text.replace('loadStudentProduct();','')
               text=re.sub(r'theme\.js\?v=20260901-sitewide-\d+', 'theme.js?v=20260901-sitewide-13', text)
+              if 'theme.js?v=20260901-sitewide-13' not in text:
+                  text=text.replace('</head>','<script src="theme.js?v=20260901-sitewide-13" defer></script>\n</head>',1)
 
               if html.name=='learn.html':
                   # Restore the original Daily Quiz design: daily-challenge-v4 + its behavior helper.
@@ -94,7 +96,7 @@ jobs:
               for src in re.findall(r'<script[^>]+src=[\"\']([^\"\']+)[\"\']', text, re.I):
                   src=src.split('?',1)[0].split('#',1)[0]
                   if src.endswith('.js'): scripts.add(src.lstrip('./'))
-          scripts.update({'i18n-dictionary.js','i18n-core.js','i18n-enhancements.js','student-product.js','student-experience-v3.js','daily-challenge-v4.js','daily-challenge-behavior-fix.js','admin-tools.js'})
+          scripts.update({'i18n-dictionary.js','i18n-core.js','i18n-enhancements.js','student-product.js','student-experience-v3.js','daily-challenge-v4.js','daily-challenge-behavior-fix.js','admin-tools.js','theme.js'})
           missing=[src for src in sorted(scripts) if not (root/src).exists()]
           if missing: raise SystemExit('Missing referenced/dynamic scripts: '+', '.join(missing))
           PY
@@ -107,7 +109,7 @@ jobs:
               for src in re.findall(r'<script[^>]+src=[\"\']([^\"\']+)[\"\']', text, re.I):
                   src=src.split('?',1)[0].split('#',1)[0]
                   if src.endswith('.js'): scripts.add(src.lstrip('./'))
-          scripts.update({'i18n-dictionary.js','i18n-core.js','i18n-enhancements.js','student-product.js','student-experience-v3.js','daily-challenge-v4.js','daily-challenge-behavior-fix.js','admin-tools.js'})
+          scripts.update({'i18n-dictionary.js','i18n-core.js','i18n-enhancements.js','student-product.js','student-experience-v3.js','daily-challenge-v4.js','daily-challenge-behavior-fix.js','admin-tools.js','theme.js'})
           for src in sorted(scripts): print(root/src)
           PY
           )
