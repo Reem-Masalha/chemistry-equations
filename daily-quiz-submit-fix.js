@@ -48,10 +48,11 @@
     return { ...state, score, status, answers };
   }
 
-  function advance(root) {
+  function advance(root, requireVisibleNext) {
     const input = root.querySelector('#dailyInput');
     const next = root.querySelector('#dailyNext');
-    if (!input || !next || next.hidden || next.disabled) return;
+    if (!input || !next) return;
+    if (requireVisibleNext && (next.hidden || next.disabled)) return;
     let state = getState();
     const index = Math.max(0, Math.min(4, Number(state.index) || 0));
     const status = Array.isArray(state.status) ? state.status : [];
@@ -60,6 +61,7 @@
       if (!value) return;
       state = recordTypedAnswer(state, index, value);
     }
+    if (Number(state.status?.[index]) === 0) return;
     if (index < 4) {
       state.index = index + 1;
       saveState(state);
@@ -75,23 +77,23 @@
 
   function init() {
     const root = document.getElementById('daily-v5');
-    if (!root || root.dataset.submitFix === '6') return;
+    if (!root || root.dataset.submitFix === '7') return;
     const input = root.querySelector('#dailyInput');
     const submit = root.querySelector('#dailySubmit');
     const check = root.querySelector('#dailyCheck');
     let next = root.querySelector('#dailyNext');
     const result = root.querySelector('#dailyResult');
     if (!input || !submit || !check || !next || !result) return;
-    root.dataset.submitFix = '6';
+    root.dataset.submitFix = '7';
 
     const replacement = next.cloneNode(true);
     next.replaceWith(replacement);
     next = replacement;
-    next.addEventListener('click', () => advance(root));
+    next.addEventListener('click', () => advance(root, true));
 
     submit.addEventListener('click', () => {
       setTimeout(() => {
-        if (root.isConnected && !next.hidden && !next.disabled) advance(root);
+        if (root.isConnected) advance(root, false);
       }, 0);
     });
 
