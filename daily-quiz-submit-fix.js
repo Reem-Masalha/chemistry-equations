@@ -9,17 +9,16 @@
 
   function init() {
     const root = document.getElementById('daily-v5');
-    if (!root || root.dataset.submitFix === '2') return;
+    if (!root || root.dataset.submitFix === '3') return;
     const input = root.querySelector('#dailyInput');
     const submit = root.querySelector('#dailySubmit');
     const check = root.querySelector('#dailyCheck');
     const next = root.querySelector('#dailyNext');
     const result = root.querySelector('#dailyResult');
     if (!input || !submit || !check || !next || !result) return;
-    root.dataset.submitFix = '2';
+    root.dataset.submitFix = '3';
 
-    // Let the original quiz controller perform grading and state updates.
-    // Submit automatically advances after the original handler records it.
+    // Submit: let the quiz grade/save first, then advance automatically.
     submit.addEventListener('click', () => {
       setTimeout(() => {
         if (!root.isConnected || next.hidden || next.disabled) return;
@@ -27,12 +26,18 @@
       }, 0);
     });
 
-    // If Next is clicked with a typed answer, run the original Check handler
-    // first so the answer is graded/saved before the original Next handler runs.
-    root.addEventListener('click', event => {
-      if (!event.target.closest('#dailyNext')) return;
-      if (next.hidden || next.disabled || !input.value.trim()) return;
-      if (!check.disabled) check.click();
+    // Next: if the user typed an answer without using Check/Submit, grade it
+    // first, then run the quiz's own Next handler with the updated state.
+    // Stop the original click so it cannot see the old "Not answered" state.
+    next.addEventListener('click', event => {
+      if (next.hidden || next.disabled || !input.value.trim() || check.disabled) return;
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      check.click();
+      setTimeout(() => {
+        if (!root.isConnected || next.hidden || next.disabled) return;
+        next.click();
+      }, 0);
     }, true);
 
     function addReviewButton() {
