@@ -77,6 +77,8 @@
       #daily-v5 .daily-input { width:100%; box-sizing:border-box; padding:14px; border:1px solid var(--line); border-radius:11px; font-size:18px; text-align:center; direction:ltr; background:transparent; color:inherit; }
       #daily-v5 .daily-actions { display:flex; flex-wrap:wrap; gap:9px; margin-top:10px; }
       #daily-v5 .daily-actions > * { min-height:44px; }
+      #daily-v5 #dailySubmit { background:#fff; color:#1f2937; border:1px solid var(--line,#dce3ee); }
+      #daily-v5 #dailySubmit:hover:not(:disabled) { background:#f7f9fc; }
       #daily-v5 .daily-feedback { min-height:32px; margin-top:12px; font-weight:800; }
       #daily-v5 .daily-note { margin-top:9px; padding:12px 14px; border:1px solid var(--line); border-radius:12px; background:var(--surface-2,#f7f9fc); color:var(--muted); }
       #daily-v5 .daily-hint { margin-top:9px; padding:12px 14px; border:1px solid var(--line); border-radius:12px; background:var(--surface-2,#f7f9fc); color:var(--muted); }
@@ -149,8 +151,8 @@
       </div>`;
 
     const anchor = main.querySelector('#course-map');
-    if (anchor) anchor.insertAdjacentElement('beforebegin', section);
-    else main.prepend(section);
+    if (anchor) anchor.insertAdjacentElement('afterend', section);
+    else main.appendChild(section);
 
     const $ = id => section.querySelector('#' + id);
     const equation = $('dailyEquation');
@@ -196,7 +198,7 @@
       hintBox.hidden = true;
       note.textContent = recorded
         ? tr('Answer recorded. Use Next question when ready.','تم تسجيل الإجابة. اضغط السؤال التالي عندما تكون مستعدًا.','התשובה נרשמה. עברו לשאלה הבאה כשתהיו מוכנים.')
-        : tr('Check your answer, or submit it when you are ready.','تحقق من إجابتك، أو أرسلها عندما تكون مستعدًا.','בדקו את התשובה, או שלחו אותה כשאתם מוכנים.');
+        : tr('Check your answer, or submit it when you are ready.','تحقق من إجابتك، أو أرسلها عندما تكون مستعدًا.','בדקו את התשובה، או שלחו אותה כשאתם מוכנים.');
       result.hidden = true;
     }
 
@@ -238,7 +240,7 @@
         feedback.textContent = '✕ ' + tr('Answer submitted. No point added.','تم إرسال الإجابة. لم تُضف نقطة.','התשובה נשלחה. לא נוספה נקודה.');
         note.textContent = tr('Final answer recorded.','تم تسجيل الإجابة النهائية.','התשובה הסופית נרשמה.');
       } else {
-        feedback.textContent = '❌ ' + tr('Not quite. Edit your answer and check again, or submit it without another check.','ليس تمامًا. عدّل إجابتك وتحقق مرة أخرى، أو أرسلها دون فحص آخر.','לא בדיוק. ערכו את התשובה ובדקו שוב، או שלחו אותה בלי בדיקה נוספת.');
+        feedback.textContent = '❌ ' + tr('Not quite. Edit your answer and check again, or submit it without another check.','ليس تمامًا. عدّل إجابتك وتحقق مرة أخرى، أو أرسلها دون فحص آخر.','לא בדיוק. ערכו את התשובה ובדקו שוב, או שלחו אותה בלי בדיקה נוספת.');
         save();
         return;
       }
