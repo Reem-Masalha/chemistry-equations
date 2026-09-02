@@ -30,77 +30,70 @@
     .toUpperCase()
     .replace(/(^|>)1(?=[A-Z(])/g, '$1');
 
-  function getState() {
-    try {
-      return JSON.parse(localStorage.getItem('chemistryDailyV5:' + new Date().toISOString().slice(0, 10)) || '{}');
-    } catch (_) { return {}; }
-  }
+  function todayKey() { return new Date().toISOString().slice(0, 10); }
+  function getState() { try { return JSON.parse(localStorage.getItem('chemistryDailyV5:' + todayKey()) || '{}'); } catch (_) { return {}; } }
+  function saveState(state) { try { localStorage.setItem('chemistryDailyV5:' + todayKey(), JSON.stringify(state)); } catch (_) {} }
 
-  function saveState(state) {
-    try {
-      localStorage.setItem('chemistryDailyV5:' + new Date().toISOString().slice(0, 10), JSON.stringify(state));
-    } catch (_) {}
-  }
-
-  function markTypedAnswer(root) {
-    const input = root.querySelector('#dailyInput');
-    if (!input || !input.value.trim()) return false;
-
-    const state = getState();
-    const index = Math.max(0, Math.min(4, Number(state.index) || 0));
+  function recordTypedAnswer(state, index, value) {
     const answers = Array.isArray(state.answers) ? state.answers.slice() : [];
     const status = Array.isArray(state.status) ? state.status.slice() : [];
-    if (Number(status[index]) > 0) return true;
-
-    const value = input.value.trim();
+    if (Number(status[index]) > 0) return state;
     answers[index] = value;
-    const day = Math.floor((Date.parse(new Date().toISOString().slice(0,10) + 'T00:00:00Z') - Date.parse('2020-01-01T00:00:00Z')) / 86400000);
+    const day = Math.floor((Date.parse(todayKey() + 'T00:00:00Z') - Date.parse('2020-01-01T00:00:00Z')) / 86400000);
     const start = ((day * 5) % equations.length + equations.length) % equations.length;
-    const correctAnswer = equations[(start + index) % equations.length][1];
-    const correct = normalize(value) === normalize(correctAnswer);
-
+    const correct = normalize(value) === normalize(equations[(start + index) % equations.length][1]);
     status[index] = correct ? 1 : 2;
     let score = Math.max(0, Math.min(5, Number(state.score) || 0));
     if (correct) score += 1;
+    return { ...state, score, status, answers };
+  }
 
-    saveState({
-      index,
-      score,
-      started: !!state.started,
-      complete: !!state.complete,
-      endAt: Number(state.endAt) || 0,
-      status,
-      answers
-    });
-    return true;
+  function advance(root) {
+    const input = root.querySelector('#dailyInput');
+    const next = root.querySelector('#dailyNext');
+    if (!input || !next || next.hidden || next.disabled) return;
+    let state = getState();
+    const index = Math.max(0, Math.min(4, Number(state.index) || 0));
+    const status = Array.isArray(state.status) ? state.status : [];
+    if (Number(status[index]) === 0) {
+      const value = input.value.trim();
+      if (!value) return;
+      state = recordTypedAnswer(state, index, value);
+    }
+    if (index < 4) {
+      state.index = index + 1;
+      saveState(state);
+      location.reload();
+    } else {
+      state.index = 5;
+      state.complete = true;
+      state.started = false;
+      saveState(state);
+      location.reload();
+    }
   }
 
   function init() {
     const root = document.getElementById('daily-v5');
-    if (!root || root.dataset.submitFix === '4') return;
+    if (!root || root.dataset.submitFix === '6') return;
     const input = root.querySelector('#dailyInput');
     const submit = root.querySelector('#dailySubmit');
     const check = root.querySelector('#dailyCheck');
-    const next = root.querySelector('#dailyNext');
+    let next = root.querySelector('#dailyNext');
     const result = root.querySelector('#dailyResult');
     if (!input || !submit || !check || !next || !result) return;
-    root.dataset.submitFix = '4';
+    root.dataset.submitFix = '6';
 
-    // Submit: the quiz grades/saves first, then advances automatically.
+    const replacement = next.cloneNode(true);
+    next.replaceWith(replacement);
+    next = replacement;
+    next.addEventListener('click', () => advance(root));
+
     submit.addEventListener('click', () => {
       setTimeout(() => {
-        if (!root.isConnected || next.hidden || next.disabled) return;
-        next.click();
+        if (root.isConnected && !next.hidden && !next.disabled) advance(root);
       }, 0);
     });
-
-    // Next: finalize any typed answer directly in the same Daily Quiz state
-    // before the quiz's original Next handler runs. This prevents answered
-    // questions from being stored as "Not answered".
-    next.addEventListener('click', event => {
-      if (next.hidden || next.disabled || !input.value.trim()) return;
-      markTypedAnswer(root);
-    }, true);
 
     function addReviewButton() {
       if (root.querySelector('#dailyReviewBtn') || result.hidden) return;
@@ -109,15 +102,11 @@
       button.type = 'button';
       button.className = 'secondary';
       button.textContent = tr('Review daily quiz answers', 'مراجعة إجابات الاختبار اليومي', 'סקירת תשובות החידון היומי');
-
       const panel = document.createElement('div');
       panel.id = 'dailyReviewPanel';
       panel.hidden = true;
       panel.style.cssText = 'margin-top:14px;display:grid;gap:10px;text-align:left;';
-      button.addEventListener('click', () => {
-        panel.hidden = !panel.hidden;
-        if (!panel.hidden) renderReview(panel);
-      });
+      button.addEventListener('click', () => { panel.hidden = !panel.hidden; if (!panel.hidden) renderReview(panel); });
       result.appendChild(button);
       result.appendChild(panel);
     }
@@ -126,7 +115,7 @@
       const state = getState();
       const answers = Array.isArray(state.answers) ? state.answers : [];
       const status = Array.isArray(state.status) ? state.status : [];
-      const day = Math.floor((Date.parse(new Date().toISOString().slice(0,10) + 'T00:00:00Z') - Date.parse('2020-01-01T00:00:00Z')) / 86400000);
+      const day = Math.floor((Date.parse(todayKey() + 'T00:00:00Z') - Date.parse('2020-01-01T00:00:00Z')) / 86400000);
       const start = ((day * 5) % equations.length + equations.length) % equations.length;
       panel.replaceChildren();
       for (let i = 0; i < 5; i++) {
@@ -147,10 +136,7 @@
     addReviewButton();
   }
 
-  function wait() {
-    if (document.getElementById('daily-v5')) init();
-    else setTimeout(wait, 50);
-  }
+  function wait() { if (document.getElementById('daily-v5')) init(); else setTimeout(wait, 50); }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', wait, { once:true });
   else wait();
 })();
