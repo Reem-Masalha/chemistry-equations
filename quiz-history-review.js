@@ -26,14 +26,17 @@ const addClearHistory=()=>{
  b.textContent=ui('Clear history','مسح السجل','ניקוי ההיסטוריה');head.appendChild(b);
 };
 const addHistoryButtons=()=>{
- const list=document.getElementById('historyList');if(!list)return;
+ const list=document.getElementById('historyList');
+ if(!list||list.classList.contains('hidden'))return;
  const h=read();
- [...list.querySelectorAll('.history-row')].forEach((row,i)=>{
+ const rows=[...list.querySelectorAll('.history-row')];
+ rows.forEach((row,i)=>{
   if(row.querySelector('[data-history-review]'))return;
-  const record=h[i];
-  if(!record)return;
+  if(!h[i])return;
   const b=document.createElement('button');
-  b.type='button';b.className='secondary history-review-btn';b.dataset.historyReview=String(i);
+  b.type='button';
+  b.className='secondary history-review-btn';
+  b.dataset.historyReview=String(i);
   b.textContent=ui('Review this quiz','مراجعة هذا الاختبار','סקירת החידון הזה');
   row.appendChild(b);
  });
@@ -43,16 +46,13 @@ const showReview=i=>{
  const record=read()[i];if(!record)return;
  const area=document.getElementById('scoreArea');if(!area)return;
  if(!record.reviewHtml){
-  area.innerHTML=`<div class="history-review-panel"><div class="history-review-heading"><div class="history-review-heading-row"><div><h3>${ui('Review unavailable','المراجعة غير متاحة','הסקירה אינה זמינה')}</h3><p>${ui('Detailed review was not saved for this older quiz. New quizzes will keep their full review.','لم يتم حفظ المراجعة التفصيلية لهذا الاختبار القديم. ستحتفظ الاختبارات الجديدة بالمراجعة الكاملة.','הסקירה המפורטת לא נשמרה עבור החידון הישן הזה. חידונים חדשים ישמרו את הסקירה המלאה.')}</p></div><button type="button" class="secondary close-review-btn no-print" data-close-review>✕ ${ui('Close review','إغلاق المراجعة','סגירת הסקירה')}</button></div></div></div>`;
-  area.scrollIntoView({behavior:'smooth',block:'start'});
-  return;
+  area.innerHTML=`<div class="history-review-panel"><div class="history-review-heading"><div class="history-review-heading-row"><div><h3>${ui('Review unavailable','المراجعة غير متاحة','הסקירה אינה זמינה')}</h3><p>${ui('Detailed review was not saved for this older quiz. New quizzes will keep their full review.','لم يتم حفظ المراجعة التفصيلية لهذا الاختبار القديم. ستحتفظ الاختبارات الجديدة بالمراجعة الكاملة.','הסקירה המפורטة לא נשמרה עבור החידון הישן הזה. חידונים חדשים ישמרו את הסקירה המלאה.')}</p></div><button type="button" class="secondary close-review-btn no-print" data-close-review>✕ ${ui('Close review','إغلاق المراجعة','סגירת הסקירה')}</button></div></div></div>`;
+  area.scrollIntoView({behavior:'smooth',block:'start'});return;
  }
  const d=new Date(record.date),date=d.toLocaleString();
  const mode=record.experience==='quiz'?ui('Quiz','اختبار','חידון'):ui('Practice','تدريب','תרגול');
  const difficulty=record.difficulty?record.difficulty.charAt(0).toUpperCase()+record.difficulty.slice(1):'';
- const title=ui('Quiz review','مراجعة الاختبار','סקירת החידון');
- const subtitle=`${mode} · ${difficulty} · ${date}`;
- area.innerHTML=`<div class="history-review-panel"><div class="history-review-context"><div><span>${ui('Reviewing','تراجع الآن','סקירה של')}</span><strong>${mode} · ${difficulty}</strong><small>${date}</small></div><div><span>${ui('Result','النتيجة','תוצאה')}</span><strong>${record.score} · ${record.pct}%</strong><small>${record.correct}/${record.answered} ${ui('correct','صحيح','נכון')}</small></div></div><div class="history-review-heading"><div class="history-review-heading-row"><div><h3>${title}</h3><p>${subtitle}</p></div><button type="button" class="secondary close-review-btn no-print" data-close-review>✕ ${ui('Close review','إغلاق المراجعة','סגירת הסקירה')}</button></div></div><div class="history-review-content quiz-review">${record.reviewHtml}</div></div>`;
+ area.innerHTML=`<div class="history-review-panel"><div class="history-review-context"><div><span>${ui('Reviewing','تراجع الآن','סקירה של')}</span><strong>${mode} · ${difficulty}</strong><small>${date}</small></div><div><span>${ui('Result','النتيجة','תוצאה')}</span><strong>${record.score} · ${record.pct}%</strong><small>${record.correct}/${record.answered} ${ui('correct','صحيح','נכון')}</small></div></div><div class="history-review-heading"><div class="history-review-heading-row"><div><h3>${ui('Quiz review','مراجعة الاختبار','סקירת החידון')}</h3><p>${mode} · ${difficulty} · ${date}</p></div><button type="button" class="secondary close-review-btn no-print" data-close-review>✕ ${ui('Close review','إغلاق المراجعة','סגירת הסקירה')}</button></div></div><div class="history-review-content quiz-review">${record.reviewHtml}</div></div>`;
  area.scrollIntoView({behavior:'smooth',block:'start'});
 };
 const clearHistory=()=>{
@@ -61,12 +61,16 @@ const clearHistory=()=>{
  localStorage.removeItem(historyKey());const list=document.getElementById('historyList');if(list){list.innerHTML='';list.classList.add('hidden')}
 };
 document.addEventListener('click',e=>{
- const reviewButton=e.target.closest('[data-history-review]');if(reviewButton){e.preventDefault();showReview(Number(reviewButton.dataset.historyReview));return}
- const closeButton=e.target.closest('[data-close-review]');if(closeButton){e.preventDefault();closeReview();return}
- const clearButton=e.target.closest('[data-clear-history]');if(clearButton){e.preventDefault();clearHistory()}
+ const reviewButton=e.target.closest('[data-history-review]');
+ if(reviewButton){e.preventDefault();showReview(Number(reviewButton.dataset.historyReview));return}
+ const closeButton=e.target.closest('[data-close-review]');
+ if(closeButton){e.preventDefault();closeReview();return}
+ const clearButton=e.target.closest('[data-clear-history]');
+ if(clearButton){e.preventDefault();clearHistory();return}
 });
-const observer=new MutationObserver(()=>{captureReview();addHistoryButtons();addClearHistory()});
-observer.observe(document.body,{childList:true,subtree:true});
-setInterval(()=>{captureReview();addHistoryButtons();addClearHistory()},500);
-captureReview();addHistoryButtons();addClearHistory();
+const refresh=()=>{captureReview();addHistoryButtons();addClearHistory()};
+const observer=new MutationObserver(()=>{addHistoryButtons();addClearHistory()});
+if(document.body)observer.observe(document.body,{childList:true,subtree:true});
+setInterval(refresh,1000);
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',refresh);else refresh();
 })();
