@@ -18,6 +18,15 @@
       const cls=String(el.className||'').toLowerCase();
       if((id.includes('daily') || cls.includes('daily')) && !(el.textContent||'').trim()) el.remove();
     });
+
+    // Some older cached Daily versions used a generic container with no Daily id/class.
+    // Remove only empty top-level Learn containers so the real quiz is never affected.
+    document.querySelectorAll('main > section,main > article,main > div').forEach(el=>{
+      if(el.id==='daily-v5' || el.closest('#daily-v5')) return;
+      const text=String(el.textContent||'').replace(/\s+/g,'').trim();
+      const hasContent=el.querySelector('input,button,a,select,textarea,canvas,img,svg,iframe');
+      if(!text && !hasContent) el.remove();
+    });
   };
 
   const init=()=>{
