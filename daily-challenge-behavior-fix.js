@@ -41,30 +41,34 @@ const questionIndex=()=>{const s=read();return Math.max(0,Math.min(4,Number(s.in
 const replaceButton=id=>{const old=document.getElementById(id);if(!old||old.dataset.behaviorFix)return null;const b=old.cloneNode(true);b.dataset.behaviorFix='1';old.replaceWith(b);return b};
 function attach(){
  const root=document.getElementById('daily-stable');if(!root||root.dataset.behaviorFixed)return;
- root.dataset.behaviorFixed='1';
  const input=root.querySelector('#dsvInput'),feedback=root.querySelector('#dsvFeedback'),note=root.querySelector('#dsvNote');
- const check=replaceButton('dsvCheck'),next=replaceButton('dsvNext');
- if(!input||!feedback||!note||!check||!next)return;
+ const check=replaceButton('dsvCheck'),submit=replaceButton('dsvSubmit'),next=replaceButton('dsvNext');
+ if(!input||!feedback||!note||!check||!submit||!next)return;
+ root.dataset.behaviorFixed='1';
+ next.hidden=false;
  check.addEventListener('click',e=>{
    e.preventDefault();e.stopImmediatePropagation();
    const i=questionIndex(),q=QUESTIONS()[i],value=input.value.trim();
    if(!value){feedback.textContent='⚠️ '+T('Enter an answer first.','اكتب إجابة أولًا.','הקלידו תשובה קודם.');return}
    const correct=normalize(value)===normalize(q[1]);
    const s=read();s.answers=Array.isArray(s.answers)?s.answers.slice(0,5):[];s.answers[i]=value;write(s);
-   feedback.textContent=correct?'✓ '+T('Correct! Great job.','صحيح! أحسنت.','נכון! עבודה מצוינת.'):'❌ '+T('Not quite. You can edit your answer and check again.','ليس تمامًا. يمكنك تعديل إجابتك والتحقق مرة أخرى.','לא בדיוק. אפשר לערוך את התשובה ולבדוק שוב.');
-   note.textContent=correct?T('Your answer is correct. Submit it to record the point and continue automatically.','إجابتك صحيحة. أرسلها لتسجيل النقطة والمتابعة تلقائيًا.','התשובה נכונה. שלחו אותה כדי לרשום את הנקודה ולהמשיך אוטומטית.'):T('This is only a check. Your answer is still editable.','هذا تحقق فقط. ما زال بإمكانك تعديل إجابتك.','זו רק בדיקה. עדיין אפשר לערוך את התשובה.');
+   feedback.textContent=correct?'✓ '+T('Correct! Great job.','صحيح! أحسنت.','נכון! עבודה מצוינת.'):'❌ '+T('Not quite. Edit your answer and check again, or submit it.','ليس تمامًا. عدّل إجابتك وتحقق مرة أخرى، أو أرسلها.','לא בדיוק. ערכו את התשובה ובדקו שוב, או שלחו אותה.');
+   note.textContent=correct?T('Checked only — your answer is still editable. Submit or choose Next question to record it and continue.','تم التحقق فقط — ما زال بإمكانك تعديل الإجابة. أرسلها أو اختر السؤال التالي لتسجيلها والمتابعة.','נבדק בלבד — עדיין אפשר לערוך. שלחו או עברו לשאלה הבאה כדי לרשום ולהמשיך.'):T('Checked only — your answer is still editable.','تم التحقق فقط — ما زال بإمكانك تعديل الإجابة.','נבדק בלבד — עדיין אפשר לערוך.');
  },true);
- next.addEventListener('click',e=>{
-   const s=read(),i=questionIndex();
-   if(s.status&&s.status[i]>0)return;
+ const finalize=e=>{
    e.preventDefault();e.stopImmediatePropagation();
-   const value=input.value.trim();
+   const s=read(),i=questionIndex(),value=input.value.trim();
    if(!value){feedback.textContent='⚠️ '+T('Enter an answer first.','اكتب إجابة أولًا.','הקלידו תשובה קודם.');return}
+   if(s.status&&s.status[i]>0)return;
    const q=QUESTIONS()[i],correct=normalize(value)===normalize(q[1]);
-   s.answers=Array.isArray(s.answers)?s.answers.slice(0,5):[];s.status=Array.isArray(s.status)?s.status.slice(0,5):[];s.answers[i]=value;s.status[i]=correct?1:2;
-   if(correct)s.score=Math.min(5,(Number(s.score)||0)+1);
-   if(i<4){s.index=i+1;s.complete=false;s.started=true;write(s);location.reload()}else{s.index=5;s.complete=true;s.started=false;write(s);location.reload()}
- },true);
+   s.answers=Array.isArray(s.answers)?s.answers.slice(0,5):[];s.status=Array.isArray(s.status)?s.status.slice(0,5):[];
+   s.answers[i]=value;s.status[i]=correct?1:2;
+   s.score=Math.min(5,(Number(s.score)||0)+(correct?1:0));
+   if(i<4){s.index=i+1;s.complete=false;s.started=true;write(s);location.reload()}
+   else{s.index=5;s.complete=true;s.started=false;write(s);location.reload()}
+ };
+ submit.addEventListener('click',finalize,true);
+ next.addEventListener('click',finalize,true);
 }
 function addReview(){
  const root=document.getElementById('daily-stable');if(!root)return;
