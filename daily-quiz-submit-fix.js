@@ -9,22 +9,36 @@
 
   function init() {
     const root = document.getElementById('daily-v5');
-    if (!root || root.dataset.submitFix === '9') return;
+    if (!root || root.dataset.submitFix === '10') return;
     const input = root.querySelector('#dailyInput');
     const submit = root.querySelector('#dailySubmit');
     const check = root.querySelector('#dailyCheck');
     const next = root.querySelector('#dailyNext');
     const result = root.querySelector('#dailyResult');
     if (!input || !submit || !check || !next || !result) return;
-    root.dataset.submitFix = '9';
+    root.dataset.submitFix = '10';
 
-    // Keep Submit blue even after the core quiz disables it after submission.
+    // Submit must remain blue in every mouse/keyboard state, including hover,
+    // focus, active and disabled states. Do not let global button rules turn it white.
     const style = document.createElement('style');
-    style.textContent = '#daily-v5 #dailySubmit:disabled{background:var(--accent)!important;color:#fff!important;border-color:var(--accent)!important;opacity:1!important;}';
+    style.textContent = `
+      #daily-v5 #dailySubmit,
+      #daily-v5 #dailySubmit:hover,
+      #daily-v5 #dailySubmit:focus,
+      #daily-v5 #dailySubmit:focus-visible,
+      #daily-v5 #dailySubmit:active,
+      #daily-v5 #dailySubmit:disabled,
+      #daily-v5 #dailySubmit:disabled:hover,
+      #daily-v5 #dailySubmit:disabled:focus,
+      #daily-v5 #dailySubmit:disabled:active {
+        background: var(--accent) !important;
+        color: #fff !important;
+        border-color: var(--accent) !important;
+        opacity: 1 !important;
+      }
+    `;
     root.appendChild(style);
 
-    // Keep the original Daily Quiz handlers. Submit records the answer first,
-    // then advances; Next records an unsubmitted typed answer before advancing.
     submit.addEventListener('click', event => {
       if (!input.value.trim()) return;
       setTimeout(() => {
@@ -36,9 +50,6 @@
 
     next.addEventListener('click', event => {
       if (!input.value.trim()) return;
-      // This runs after the user's Next click reaches the core handler only if
-      // the answer was already recorded. For an unrecorded typed answer, use
-      // the core Submit handler first so its private status/index state stays in sync.
       const stateKey = 'chemistryDailyV5:' + new Date().toISOString().slice(0, 10);
       let recorded = false;
       try {
