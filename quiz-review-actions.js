@@ -22,7 +22,7 @@ const addReviewActions=()=>{
  if(!review||review.querySelector('.quiz-review-actions'))return;
  const actions=document.createElement('div');
  actions.className='quiz-review-actions no-print';
- actions.innerHTML=`<button type="button" class="secondary" data-review-print>🖨 ${ui('Print review','طباعة المراجعة','הדפסת הסקירה')}</button><button type="button" class="primary" data-review-pdf>📄 ${ui('Save as PDF','حفظ كملف PDF','שמירה כ-PDF')}</button>`;
+ actions.innerHTML=`<button type="button" class="secondary" data-review-print>🖨 ${ui('Print review','طباعة المراجعة','הדפסת הסקירה')}</button><button type="button" class="secondary" data-review-pdf>📄 ${ui('Save as PDF','حفظ كملف PDF','שמירה כ-PDF')}</button>`;
  actions.querySelector('[data-review-print]').addEventListener('click',printReview);
  actions.querySelector('[data-review-pdf]').addEventListener('click',printReview);
  review.prepend(actions);
