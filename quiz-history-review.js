@@ -41,12 +41,18 @@ const addHistoryButtons=()=>{
   row.appendChild(b);
  });
 };
-const closeReview=()=>{const area=document.getElementById('scoreArea');if(area){area.innerHTML='';area.scrollIntoView({behavior:'smooth',block:'start')}}};
+const closeReview=()=>{
+ const area=document.getElementById('scoreArea');
+ if(area){
+  area.innerHTML='';
+  area.scrollIntoView({behavior:'smooth',block:'start'});
+ }
+};
 const showReview=i=>{
  const record=read()[i];if(!record)return;
  const area=document.getElementById('scoreArea');if(!area)return;
  if(!record.reviewHtml){
-  area.innerHTML=`<div class="history-review-panel"><div class="history-review-heading"><div class="history-review-heading-row"><div><h3>${ui('Review unavailable','المراجعة غير متاحة','הסקירה אינה זמינה')}</h3><p>${ui('Detailed review was not saved for this older quiz. New quizzes will keep their full review.','لم يتم حفظ المراجعة التفصيلية لهذا الاختبار القديم. ستحتفظ الاختبارات الجديدة بالمراجعة الكاملة.','הסקירה המפורטة לא נשמרה עבור החידון הישן הזה. חידונים חדשים ישמרו את הסקירה המלאה.')}</p></div><button type="button" class="secondary close-review-btn no-print" data-close-review>✕ ${ui('Close review','إغلاق المراجعة','סגירת הסקירה')}</button></div></div></div>`;
+  area.innerHTML=`<div class="history-review-panel"><div class="history-review-heading"><div class="history-review-heading-row"><div><h3>${ui('Review unavailable','المراجعة غير متاحة','הסקירה אינה זמינה')}</h3><p>${ui('Detailed review was not saved for this older quiz. New quizzes will keep their full review.','لم يتم حفظ المراجعة التفصيلية لهذا الاختبار القديم. ستحتفظ الاختبارات الجديدة بالمراجعة الكاملة.','הסקירה המפורטת לא נשמרה עבור החידון הישן הזה. חידונים חדשים ישמרו את הסקירה המלאה.')}</p></div><button type="button" class="secondary close-review-btn no-print" data-close-review>✕ ${ui('Close review','إغلاق المراجعة','סגירת הסקירה')}</button></div></div></div>`;
   area.scrollIntoView({behavior:'smooth',block:'start'});return;
  }
  const d=new Date(record.date),date=d.toLocaleString();
