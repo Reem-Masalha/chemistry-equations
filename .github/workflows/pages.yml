@@ -54,6 +54,9 @@ jobs:
                   text=text.replace('</body>','<script src="admin-tools.js?v='+sha+'" defer data-admin-tools="1"></script>\n</body>',1)
               if html.name=='profile.html' and 'data-admin-tools-profile' not in text:
                   text=text.replace('</body>','<script src="admin-tools.js?v='+sha+'" defer data-admin-tools-profile="1"></script>\n</body>',1)
+              if html.name=='learn.html' and 'data-single-daily-guard' not in text:
+                  guard='<script data-single-daily-guard="1">(()=>{const clean=()=>document.querySelectorAll(\'#ce3-daily-card\').forEach(el=>el.remove());clean();new MutationObserver(clean).observe(document.documentElement,{childList:true,subtree:true});})();</script>\n'
+                  text=text.replace('</body>',guard+'</body>',1)
               html.write_text(text,encoding='utf-8')
           PY
 
@@ -97,6 +100,7 @@ jobs:
           if t.count('daily-challenge-clean.js') != 1: raise SystemExit('Learn must contain exactly one current Daily Challenge loader')
           if 'daily-challenge-v4.js' in t or 'daily-challenge-behavior-fix.js' in t: raise SystemExit('legacy Daily Challenge loader remains')
           if 'daily-legacy-blocker.js' in t: raise SystemExit('legacy Daily Challenge blocker remains')
+          if t.count('data-single-daily-guard') != 1: raise SystemExit('single Daily guard missing')
           for page in pathlib.Path('_site').glob('*.html'):
               html=page.read_text(encoding='utf-8',errors='ignore')
               if 'theme.js?v=20260901-sitewide-13' not in html: raise SystemExit(f'unified theme loader missing from {page.name}')
