@@ -48,7 +48,9 @@ jobs:
                   text=text.replace('</head>','<script src="theme.js?v=20260901-sitewide-13" defer></script>\n</head>',1)
               if 'data-site-modern-refresh' not in text:
                   text=text.replace('</head>','<link rel="stylesheet" href="modern-refresh.css?v='+sha+'" data-site-modern-refresh="1">\n</head>',1)
-              if html.name!='learn.html' and 'data-student-experience-v3' not in text:
+              # Keep the curated Learn homepage intact. The study-hub overlay is
+              # for the other pages and must not replace/obscure the homepage work.
+              if html.name not in {'learn.html','index.html'} and 'data-student-experience-v3' not in text:
                   text=text.replace('</body>','<script src="student-experience-v3.js?v='+sha+'" defer data-student-experience-v3="1"></script>\n</body>',1)
               if html.name=='admin.html' and 'data-admin-tools' not in text:
                   text=text.replace('</body>','<script src="admin-tools.js?v='+sha+'" defer data-admin-tools="1"></script>\n</body>',1)
@@ -60,8 +62,6 @@ jobs:
               html.write_text(text,encoding='utf-8')
           PY
 
-          # Repair the known malformed selector in the existing language script
-          # in the deployed copy, without rewriting the source file or changing its translations.
           python3 - <<'PY'
           import pathlib
           p=pathlib.Path('_site/site-language-final.js')
