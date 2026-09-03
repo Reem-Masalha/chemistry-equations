@@ -46,6 +46,7 @@ jobs:
           import pathlib,re
           root=pathlib.Path('_site')
           sha='${GITHUB_SHA}'
+          nav_css='''<style data-site-nav-consistency="1">\n.main-nav{display:flex!important;align-items:center!important;gap:7px!important}\n.main-nav a{box-sizing:border-box!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;height:38px!important;padding:9px 12px!important;margin:0!important;border-radius:10px!important;font:700 14px/1.2 Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif!important;white-space:nowrap!important;text-decoration:none!important}\n@media(max-width:760px){.main-nav{gap:4px!important;padding:3px 0 1px!important}.main-nav a{height:32px!important;padding:8px 9px!important;font-size:12px!important;flex:0 0 auto!important}}\n@media(max-width:390px){.main-nav a{height:30px!important;padding:7px 8px!important;font-size:11px!important}}\n</style>\n'''
           for html in root.glob('*.html'):
               text=html.read_text(encoding='utf-8', errors='ignore')
               text=text.replace('loadStudentProduct();','')
@@ -54,6 +55,8 @@ jobs:
                   text=text.replace('</head>','<script src="theme.js?v=20260901-sitewide-13" defer></script>\n</head>',1)
               if 'data-site-modern-refresh' not in text:
                   text=text.replace('</head>','<link rel="stylesheet" href="modern-refresh.css?v='+sha+'" data-site-modern-refresh="1">\n</head>',1)
+              if 'data-site-nav-consistency' not in text:
+                  text=text.replace('</head>',nav_css+'</head>',1)
               if html.name in {'learn.html','index.html'} and 'data-learn-home-polish' not in text:
                   text=text.replace('</head>','<link rel="stylesheet" href="learn-home-polish.css?v='+sha+'" data-learn-home-polish="1">\n</head>',1)
               if html.name not in {'learn.html','index.html'} and 'data-student-experience-v3' not in text:
@@ -114,6 +117,7 @@ jobs:
           for page in root.glob('*.html'):
               html=page.read_text(encoding='utf-8',errors='ignore')
               if 'theme.js?v=20260901-sitewide-13' not in html: raise SystemExit(f'unified theme loader missing from {page.name}')
+              if html.count('data-site-nav-consistency') != 1: raise SystemExit(f'unified navigation styling missing from {page.name}')
           PY
 
           printf '%s\n' "$GITHUB_SHA" > _site/DEPLOYMENT_COMMIT.txt
