@@ -54,7 +54,7 @@ jobs:
                   text=text.replace('</body>','<script src="admin-tools.js?v='+sha+'" defer data-admin-tools="1"></script>\n</body>',1)
               if html.name=='profile.html' and 'data-admin-tools-profile' not in text:
                   text=text.replace('</body>','<script src="admin-tools.js?v='+sha+'" defer data-admin-tools-profile="1"></script>\n</body>',1)
-              if html.name=='learn.html' and 'data-single-daily-guard' not in text:
+              if html.name in {'learn.html','index.html'} and 'data-single-daily-guard' not in text:
                   guard='''<script data-single-daily-guard="1">(()=>{\nconst legacyIds=['dailyChallengeCard','daily-stable','daily-final','dc-final','dc4','dc3','dc2','dc6','real-daily','ce3-daily-card','daily-question-card','daily-home-challenge'];\nconst isCurrent=el=>!!el.closest?.('#daily-v5');\nconst removeLegacy=()=>{\n  legacyIds.forEach(id=>{const el=document.getElementById(id);if(el&&!isCurrent(el))el.remove();});\n  document.querySelectorAll('section,article,div').forEach(el=>{\n    if(isCurrent(el))return;\n    const text=(el.textContent||'').trim();\n    if(text.length>900)return;\n    if(/DAILY CHEMISTRY CHALLENGE|TODAY.?S CHALLENGE|Can you balance this\\?|Try it in the Balancer|Start today.?s challenge|One equation\\. Every day\\./i.test(text)){\n      const target=el.closest('section,article')||el;\n      if(!isCurrent(target))target.remove();\n    }\n  });\n};\nremoveLegacy();\nnew MutationObserver(removeLegacy).observe(document.documentElement,{childList:true,subtree:true});\n})();</script>\n'''
                   text=text.replace('</body>',guard+'</body>',1)
               html.write_text(text,encoding='utf-8')
@@ -73,7 +73,7 @@ jobs:
           p.write_text(text,encoding='utf-8')
           PY
 
-          for f in index.html learn.html personal-quiz.html challenges.html checker.html profile.html admin.html i18n-dictionary.js i18n-core.js i18n-enhancements.js student-product.js student-product.css modern-refresh.css daily-challenge-clean.js admin-tools.js theme.js; do
+          for f in index.html learn.html balancer.html personal-quiz.html challenges.html checker.html profile.html admin.html i18n-dictionary.js i18n-core.js i18n-enhancements.js student-product.js student-product.css modern-refresh.css daily-challenge-clean.js admin-tools.js theme.js; do
             test -s "_site/$f"
           done
 
@@ -95,13 +95,15 @@ jobs:
 
           python3 - <<'PY'
           import pathlib
-          p=pathlib.Path('_site/learn.html')
-          t=p.read_text(encoding='utf-8',errors='ignore')
-          if t.count('daily-challenge-clean.js') != 1: raise SystemExit('Learn must contain exactly one current Daily Challenge loader')
-          if 'daily-challenge-v4.js' in t or 'daily-challenge-behavior-fix.js' in t: raise SystemExit('legacy Daily Challenge loader remains')
-          if 'daily-legacy-blocker.js' in t: raise SystemExit('legacy Daily Challenge blocker remains')
-          if t.count('data-single-daily-guard') != 1: raise SystemExit('single Daily guard missing')
-          for page in pathlib.Path('_site').glob('*.html'):
+          root=pathlib.Path('_site')
+          for name in ('learn.html','index.html'):
+              p=root/name
+              t=p.read_text(encoding='utf-8',errors='ignore')
+              if t.count('daily-challenge-clean.js') != 1: raise SystemExit(f'{name} must contain exactly one current Daily Challenge loader')
+              if 'daily-challenge-v4.js' in t or 'daily-challenge-behavior-fix.js' in t: raise SystemExit(f'legacy Daily Challenge loader remains in {name}')
+              if 'daily-legacy-blocker.js' in t: raise SystemExit(f'legacy Daily Challenge blocker remains in {name}')
+              if t.count('data-single-daily-guard') != 1: raise SystemExit(f'single Daily guard missing from {name}')
+          for page in root.glob('*.html'):
               html=page.read_text(encoding='utf-8',errors='ignore')
               if 'theme.js?v=20260901-sitewide-13' not in html: raise SystemExit(f'unified theme loader missing from {page.name}')
           PY
