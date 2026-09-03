@@ -48,6 +48,8 @@ jobs:
                   text=text.replace('</head>','<script src="theme.js?v=20260901-sitewide-13" defer></script>\n</head>',1)
               if 'data-site-modern-refresh' not in text:
                   text=text.replace('</head>','<link rel="stylesheet" href="modern-refresh.css?v='+sha+'" data-site-modern-refresh="1">\n</head>',1)
+              if html.name in {'learn.html','index.html'} and 'data-learn-home-polish' not in text:
+                  text=text.replace('</head>','<link rel="stylesheet" href="learn-home-polish.css?v='+sha+'" data-learn-home-polish="1">\n</head>',1)
               # Keep the curated Learn homepage intact. The study-hub overlay is
               # for the other pages and must not replace/obscure the homepage work.
               if html.name not in {'learn.html','index.html'} and 'data-student-experience-v3' not in text:
@@ -76,6 +78,7 @@ jobs:
           for f in index.html learn.html balancer.html personal-quiz.html challenges.html checker.html profile.html admin.html i18n-dictionary.js i18n-core.js i18n-enhancements.js student-product.js student-product.css modern-refresh.css daily-challenge-clean.js admin-tools.js theme.js; do
             test -s "_site/$f"
           done
+          test -s "_site/learn-home-polish.css"
 
           python3 - <<'PY'
           import pathlib,re
@@ -103,6 +106,7 @@ jobs:
               if 'daily-challenge-v4.js' in t or 'daily-challenge-behavior-fix.js' in t: raise SystemExit(f'legacy Daily Challenge loader remains in {name}')
               if 'daily-legacy-blocker.js' in t: raise SystemExit(f'legacy Daily Challenge blocker remains in {name}')
               if t.count('data-single-daily-guard') != 1: raise SystemExit(f'single Daily guard missing from {name}')
+              if t.count('data-learn-home-polish') != 1: raise SystemExit(f'Learn homepage polish missing from {name}')
           for page in root.glob('*.html'):
               html=page.read_text(encoding='utf-8',errors='ignore')
               if 'theme.js?v=20260901-sitewide-13' not in html: raise SystemExit(f'unified theme loader missing from {page.name}')
