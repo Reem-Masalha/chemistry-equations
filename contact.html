@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="site-build" content="20260903-contact-1">
+<title>Chemistry Equations — Contact & Suggestions</title>
+<link rel="stylesheet" href="style.css?v=20260831-daily">
+<link rel="stylesheet" href="mobile-fixes.css?v=20260901-stable">
+<style>
+.contact-wrap{max-width:760px;margin:0 auto;padding:48px 18px 70px}.contact-card{background:var(--surface);border:1px solid var(--line);border-radius:20px;box-shadow:var(--shadow);padding:28px}.contact-card h1{margin:6px 0 10px}.contact-card>p{color:var(--muted);line-height:1.6}.contact-form{display:grid;gap:15px;margin-top:24px}.contact-field{display:grid;gap:7px}.contact-field label{font-weight:700}.contact-field input,.contact-field select,.contact-field textarea{width:100%;box-sizing:border-box;border:1px solid var(--line);border-radius:11px;background:var(--surface);color:var(--text);padding:12px 13px;font:inherit}.contact-field textarea{min-height:150px;resize:vertical}.contact-field input:focus,.contact-field select:focus,.contact-field textarea:focus{outline:3px solid rgba(49,88,214,.15);border-color:var(--accent)}.contact-help{font-size:13px;color:var(--muted)}.contact-submit{justify-self:start;min-height:46px}.contact-status{margin:0;min-height:24px;font-weight:700}.contact-status.success{color:#087a22}.contact-status.error{color:#b00020}.contact-honeypot{position:absolute;left:-10000px;width:1px;height:1px;overflow:hidden}.contact-privacy{font-size:13px;color:var(--muted);margin:0}.contact-success{padding:14px 16px;border:1px solid #b9dfc2;border-radius:12px;background:#f0faf2;color:#176b2a}.contact-success[hidden]{display:none}body.dark .contact-success{background:#102317;border-color:#275d35;color:#a9e0b2}@media(max-width:600px){.contact-wrap{padding:30px 12px 50px}.contact-card{padding:20px}.contact-submit{width:100%}}
+</style>
+</head>
+<body>
+<header class="topbar">
+<a class="brand" href="index.html">⚗ Chemistry<span class="accent">Equations</span></a>
+<nav class="main-nav"><a href="index.html">Learn</a><a href="personal-quiz.html">Quiz</a><a href="challenges.html">Challenges</a><a href="balancer.html">Balancer</a><a href="checker.html">Checker</a><a class="active" href="contact.html">Contact</a></nav>
+<button id="accountTopBtn" class="account-top" type="button">👤 Account</button>
+</header>
+<main class="contact-wrap">
+<section class="contact-card">
+<span class="eyebrow">CONTACT</span>
+<h1>Suggestions &amp; feedback</h1>
+<p>Have an idea, found a bug, or want to ask a question? Send it here. You do not need an account.</p>
+<form id="contactForm" class="contact-form" novalidate>
+<div class="contact-field"><label for="feedbackType">What is this about?</label><select id="feedbackType" name="type"><option value="suggestion">Suggestion</option><option value="bug">Bug report</option><option value="question">Question</option><option value="other">Other</option></select></div>
+<div class="contact-field"><label for="feedbackName">Name <span class="contact-help">(optional)</span></label><input id="feedbackName" name="name" type="text" maxlength="80" autocomplete="name"></div>
+<div class="contact-field"><label for="feedbackEmail">Email <span class="contact-help">(optional — only if you want a reply)</span></label><input id="feedbackEmail" name="email" type="email" maxlength="160" autocomplete="email"></div>
+<div class="contact-field"><label for="feedbackMessage">Message</label><textarea id="feedbackMessage" name="message" maxlength="3000" required placeholder="Tell us what you would like to improve…"></textarea><span class="contact-help">Maximum 3000 characters.</span></div>
+<div class="contact-honeypot" aria-hidden="true"><label for="website">Website</label><input id="website" name="website" type="text" tabindex="-1" autocomplete="off"></div>
+<button class="primary contact-submit" type="submit">Send feedback</button>
+<p id="contactStatus" class="contact-status" role="status" aria-live="polite"></p>
+<div id="contactSuccess" class="contact-success" hidden>Thank you! Your message was sent successfully. We read every suggestion and use your feedback to improve the site.</div>
+<p class="contact-privacy">Please do not include passwords, payment information, or other sensitive personal information.</p>
+</form>
+</section>
+</main>
+<script src="theme.js?v=20260903-contact-1" defer></script>
+<script>
+(()=>{
+'use strict';
+const API='https://chemistry-equations-api.reemkhmasalha.workers.dev';
+const form=document.getElementById('contactForm'),status=document.getElementById('contactStatus'),success=document.getElementById('contactSuccess');
+const language=()=>{try{const l=localStorage.getItem('chemistryLanguage');return l==='ar'||l==='he'?l:'en'}catch{return'en'}};
+const text={en:{sending:'Sending…',sent:'Thank you! Your message was sent successfully.',required:'Please enter a message.',failed:'We could not send your message right now. Please try again.'},ar:{sending:'جارٍ الإرسال…',sent:'شكرًا! تم إرسال رسالتك بنجاح.',required:'يرجى كتابة رسالة.',failed:'تعذر إرسال رسالتك الآن. حاول مرة أخرى.'},he:{sending:'שולחים…',sent:'תודה! ההודעה נשלחה בהצלחה.',required:'נא לכתוב הודעה.',failed:'לא ניתן לשלוח את ההודעה כרגע. נסו שוב.'}};
+form.addEventListener('submit',async e=>{e.preventDefault();const l=language(),t=text[l]||text.en,fd=new FormData(form),message=String(fd.get('message')||'').trim();status.className='contact-status';success.hidden=true;if(!message){status.classList.add('error');status.textContent=t.required;return}if(String(fd.get('website')||'')){status.classList.add('success');status.textContent=t.sent;form.reset();return}status.textContent=t.sending;const payload={type:String(fd.get('type')||'suggestion'),name:String(fd.get('name')||'').trim(),email:String(fd.get('email')||'').trim(),message};try{const r=await fetch(API+'/api/feedback',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(payload)});let d={};try{d=await r.json()}catch{}if(!r.ok)throw new Error(d.error||t.failed);status.classList.add('success');status.textContent=t.sent;success.hidden=false;form.reset()}catch(err){status.classList.add('error');status.textContent=err.message||t.failed}}
+);
+})();
+</script>
+</body>
+</html>
