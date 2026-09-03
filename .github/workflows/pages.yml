@@ -55,7 +55,7 @@ jobs:
               if html.name=='profile.html' and 'data-admin-tools-profile' not in text:
                   text=text.replace('</body>','<script src="admin-tools.js?v='+sha+'" defer data-admin-tools-profile="1"></script>\n</body>',1)
               if html.name=='learn.html' and 'data-single-daily-guard' not in text:
-                  guard='<script data-single-daily-guard="1">(()=>{const clean=()=>document.querySelectorAll(\'#ce3-daily-card\').forEach(el=>el.remove());clean();new MutationObserver(clean).observe(document.documentElement,{childList:true,subtree:true});})();</script>\n'
+                  guard='''<script data-single-daily-guard="1">(()=>{\nconst legacyIds=['dailyChallengeCard','daily-stable','daily-final','dc-final','dc4','dc3','dc2','dc6','real-daily','ce3-daily-card','daily-question-card','daily-home-challenge'];\nconst isCurrent=el=>!!el.closest?.('#daily-v5');\nconst removeLegacy=()=>{\n  legacyIds.forEach(id=>{const el=document.getElementById(id);if(el&&!isCurrent(el))el.remove();});\n  document.querySelectorAll('section,article,div').forEach(el=>{\n    if(isCurrent(el))return;\n    const text=(el.textContent||'').trim();\n    if(text.length>900)return;\n    if(/DAILY CHEMISTRY CHALLENGE|TODAY.?S CHALLENGE|Can you balance this\\?|Try it in the Balancer|Start today.?s challenge|One equation\\. Every day\\./i.test(text)){\n      const target=el.closest('section,article')||el;\n      if(!isCurrent(target))target.remove();\n    }\n  });\n};\nremoveLegacy();\nnew MutationObserver(removeLegacy).observe(document.documentElement,{childList:true,subtree:true});\n})();</script>\n'''
                   text=text.replace('</body>',guard+'</body>',1)
               html.write_text(text,encoding='utf-8')
           PY
