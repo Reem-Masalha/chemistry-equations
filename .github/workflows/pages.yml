@@ -55,6 +55,8 @@ jobs:
                   text=text.replace('</head>','<script src="theme.js?v=20260901-sitewide-13" defer></script>\n</head>',1)
               if 'data-site-modern-refresh' not in text:
                   text=text.replace('</head>','<link rel="stylesheet" href="modern-refresh.css?v='+sha+'" data-site-modern-refresh="1">\n</head>',1)
+              if 'data-site-spacing-cleanup' not in text:
+                  text=text.replace('</head>','<link rel="stylesheet" href="site-spacing.css?v='+sha+'" data-site-spacing-cleanup="1">\n</head>',1)
               if 'data-site-nav-consistency' not in text:
                   text=text.replace('</head>',nav_css+'</head>',1)
               if html.name in {'learn.html','index.html'} and 'data-learn-home-polish' not in text:
@@ -86,6 +88,7 @@ jobs:
             test -s "_site/$f"
           done
           test -s "_site/learn-home-polish.css"
+          test -s "_site/site-spacing.css"
 
           python3 - <<'PY'
           import pathlib,re
@@ -118,6 +121,7 @@ jobs:
               html=page.read_text(encoding='utf-8',errors='ignore')
               if 'theme.js?v=20260901-sitewide-13' not in html: raise SystemExit(f'unified theme loader missing from {page.name}')
               if html.count('data-site-nav-consistency') != 1: raise SystemExit(f'unified navigation styling missing from {page.name}')
+              if html.count('data-site-spacing-cleanup') != 1: raise SystemExit(f'sitewide spacing cleanup missing from {page.name}')
           PY
 
           printf '%s\n' "$GITHUB_SHA" > _site/DEPLOYMENT_COMMIT.txt
