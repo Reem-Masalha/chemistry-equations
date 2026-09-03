@@ -46,23 +46,10 @@ jobs:
               text=re.sub(r'theme\.js\?v=20260901-sitewide-\d+', 'theme.js?v=20260901-sitewide-13', text)
               if 'theme.js?v=20260901-sitewide-13' not in text:
                   text=text.replace('</head>','<script src="theme.js?v=20260901-sitewide-13" defer></script>\n</head>',1)
-
-              if html.name=='learn.html':
-                  # Restore the original Daily Quiz design: daily-challenge-v4 + its behavior helper.
-                  # Remove only any newer stable/fallback Daily Challenge loaders.
-                  text=re.sub(r'<script[^>]+src=[\"\'][^\"\']*(?:daily-challenge-stable|daily-position-fix|daily-challenge-final)\.js(?:\?[^\"\']*)?[\"\'][^>]*></script>\s*','',text,flags=re.I)
-                  text=re.sub(r'<script[^>]+data-daily-(?:v5|v6|v7|v8)-loader[^>]*></script>\s*','',text,flags=re.I)
-                  # Ensure the original v4 controllers are present exactly once.
-                  text=re.sub(r'<script[^>]+src=[\"\']daily-challenge-v4\.js(?:\?[^\"\']*)?[\"\'][^>]*></script>\s*','',text,flags=re.I)
-                  text=re.sub(r'<script[^>]+src=[\"\']daily-challenge-behavior-fix\.js(?:\?[^\"\']*)?[\"\'][^>]*></script>\s*','',text,flags=re.I)
-                  text=text.replace('</body>','<script src="daily-challenge-v4.js?v='+sha+'" defer></script>\n<script src="daily-challenge-behavior-fix.js?v='+sha+'" defer></script>\n</body>',1)
-
               if 'data-site-modern-refresh' not in text:
                   text=text.replace('</head>','<link rel="stylesheet" href="modern-refresh.css?v='+sha+'" data-site-modern-refresh="1">\n</head>',1)
-
               if html.name!='learn.html' and 'data-student-experience-v3' not in text:
                   text=text.replace('</body>','<script src="student-experience-v3.js?v='+sha+'" defer data-student-experience-v3="1"></script>\n</body>',1)
-
               if html.name=='admin.html' and 'data-admin-tools' not in text:
                   text=text.replace('</body>','<script src="admin-tools.js?v='+sha+'" defer data-admin-tools="1"></script>\n</body>',1)
               if html.name=='profile.html' and 'data-admin-tools-profile' not in text:
@@ -70,64 +57,36 @@ jobs:
               html.write_text(text,encoding='utf-8')
           PY
 
-          test -s _site/index.html
-          test -s _site/learn.html
-          test -s _site/personal-quiz.html
-          test -s _site/challenges.html
-          test -s _site/checker.html
-          test -s _site/profile.html
-          test -s _site/admin.html
-          test -s _site/i18n-dictionary.js
-          test -s _site/i18n-core.js
-          test -s _site/i18n-enhancements.js
-          test -s _site/student-product.js
-          test -s _site/student-product.css
-          test -s _site/modern-refresh.css
-          test -s _site/daily-challenge-v4.js
-          test -s _site/daily-challenge-behavior-fix.js
-          test -s _site/admin-tools.js
+          for f in index.html learn.html personal-quiz.html challenges.html checker.html profile.html admin.html i18n-dictionary.js i18n-core.js i18n-enhancements.js student-product.js student-product.css modern-refresh.css daily-challenge-clean.js admin-tools.js theme.js; do
+            test -s "_site/$f"
+          done
 
           python3 - <<'PY'
-          import re, pathlib
+          import pathlib,re
           root=pathlib.Path('_site')
           scripts=set()
           for html in root.glob('*.html'):
-              text=html.read_text(encoding='utf-8', errors='ignore')
-              for src in re.findall(r'<script[^>]+src=[\"\']([^\"\']+)[\"\']', text, re.I):
+              text=html.read_text(encoding='utf-8',errors='ignore')
+              for src in re.findall(r'<script[^>]+src=[\"\']([^\"\']+)[\"\']',text,re.I):
                   src=src.split('?',1)[0].split('#',1)[0]
                   if src.endswith('.js'): scripts.add(src.lstrip('./'))
-          scripts.update({'i18n-dictionary.js','i18n-core.js','i18n-enhancements.js','student-product.js','student-experience-v3.js','daily-challenge-v4.js','daily-challenge-behavior-fix.js','admin-tools.js','theme.js'})
+          scripts.update({'i18n-dictionary.js','i18n-core.js','i18n-enhancements.js','student-product.js','student-experience-v3.js','daily-challenge-clean.js','admin-tools.js','theme.js'})
           missing=[src for src in sorted(scripts) if not (root/src).exists()]
           if missing: raise SystemExit('Missing referenced/dynamic scripts: '+', '.join(missing))
           PY
 
-          while IFS= read -r f; do node --check "$f" >/dev/null; done < <(python3 - <<'PY'
-          import re, pathlib
-          root=pathlib.Path('_site'); scripts=set()
-          for html in root.glob('*.html'):
-              text=html.read_text(encoding='utf-8', errors='ignore')
-              for src in re.findall(r'<script[^>]+src=[\"\']([^\"\']+)[\"\']', text, re.I):
-                  src=src.split('?',1)[0].split('#',1)[0]
-                  if src.endswith('.js'): scripts.add(src.lstrip('./'))
-          scripts.update({'i18n-dictionary.js','i18n-core.js','i18n-enhancements.js','student-product.js','student-experience-v3.js','daily-challenge-v4.js','daily-challenge-behavior-fix.js','admin-tools.js','theme.js'})
-          for src in sorted(scripts): print(root/src)
-          PY
-          )
+          while IFS= read -r f; do node --check "$f" >/dev/null; done < <(find _site -type f -name '*.js' -print)
 
           python3 - <<'PY'
           import pathlib
           p=pathlib.Path('_site/learn.html')
           t=p.read_text(encoding='utf-8',errors='ignore')
-          if t.count('daily-challenge-v4.js') != 1: raise SystemExit('Learn must contain exactly one original Daily Quiz loader')
-          if t.count('daily-challenge-behavior-fix.js') != 1: raise SystemExit('Daily Quiz behavior helper missing or duplicated')
-          if 'daily-challenge-stable.js' in t: raise SystemExit('new stable Daily Challenge loader remains')
-          if 'daily-position-fix.js' in t: raise SystemExit('new Daily Challenge fallback loader remains')
-          if 'daily-challenge-final.js' in t: raise SystemExit('new/legacy final Daily Challenge loader remains')
-          if 'student-experience-v3.js' in t: raise SystemExit('legacy student experience remains on Learn')
+          if t.count('daily-challenge-clean.js') != 1: raise SystemExit('Learn must contain exactly one current Daily Challenge loader')
+          if 'daily-challenge-v4.js' in t or 'daily-challenge-behavior-fix.js' in t: raise SystemExit('legacy Daily Challenge loader remains')
+          if 'daily-legacy-blocker.js' in t: raise SystemExit('legacy Daily Challenge blocker remains')
           for page in pathlib.Path('_site').glob('*.html'):
               html=page.read_text(encoding='utf-8',errors='ignore')
-              if 'theme.js?v=20260901-sitewide-13' not in html:
-                  raise SystemExit(f'unified theme/localization loader missing from {page.name}')
+              if 'theme.js?v=20260901-sitewide-13' not in html: raise SystemExit(f'unified theme loader missing from {page.name}')
           PY
 
           printf '%s\n' "$GITHUB_SHA" > _site/DEPLOYMENT_COMMIT.txt
