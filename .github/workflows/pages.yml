@@ -24,8 +24,14 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v5
         with:
-          ref: main
+          ref: ${{ github.sha }}
           fetch-depth: 1
+
+      - name: Verify deployment source
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "${GITHUB_SHA}"
 
       - name: Prepare Pages site
         shell: bash
@@ -50,8 +56,6 @@ jobs:
                   text=text.replace('</head>','<link rel="stylesheet" href="modern-refresh.css?v='+sha+'" data-site-modern-refresh="1">\n</head>',1)
               if html.name in {'learn.html','index.html'} and 'data-learn-home-polish' not in text:
                   text=text.replace('</head>','<link rel="stylesheet" href="learn-home-polish.css?v='+sha+'" data-learn-home-polish="1">\n</head>',1)
-              # Keep the curated Learn homepage intact. The study-hub overlay is
-              # for the other pages and must not replace/obscure the homepage work.
               if html.name not in {'learn.html','index.html'} and 'data-student-experience-v3' not in text:
                   text=text.replace('</body>','<script src="student-experience-v3.js?v='+sha+'" defer data-student-experience-v3="1"></script>\n</body>',1)
               if html.name=='admin.html' and 'data-admin-tools' not in text:
