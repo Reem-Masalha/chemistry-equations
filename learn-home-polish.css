@@ -1,0 +1,51 @@
+/* Learn homepage — deliberate visual polish. Loaded after the shared design system. */
+.home-page main{position:relative}
+.home-page .hero{padding:56px 0 28px!important;align-items:center!important}
+.home-page .hero:before{top:12px!important;height:330px!important;border-radius:36px!important;opacity:.8}
+.home-page .hero>div:first-child{max-width:760px}
+.home-page .hero h1{font-size:clamp(42px,5vw,66px)!important;line-height:1.02!important;margin-bottom:18px!important}
+.home-page .hero>div:first-child>p{font-size:18px!important;line-height:1.65!important;max-width:680px!important}
+.home-page .hero-card{max-width:360px!important;padding:24px!important;border-radius:24px!important;position:relative;overflow:hidden}
+.home-page .hero-card:after{content:"";position:absolute;width:150px;height:150px;border-radius:50%;right:-70px;top:-70px;background:rgba(49,88,214,.08);pointer-events:none}
+.home-page .atom{width:64px!important;height:64px!important;border-radius:18px!important;font-size:31px!important;margin-bottom:18px!important}
+.home-page .home-value{margin-top:22px!important;gap:10px!important}
+.home-page .home-value-card{padding:15px 16px!important;border-radius:14px!important;box-shadow:0 5px 16px rgba(31,48,82,.05)!important}
+.home-page .home-value-card b{font-size:14px!important;margin-bottom:4px!important}
+.home-page .home-value-card p{font-size:12.5px!important;line-height:1.45!important}
+.home-page .home-note{margin:9px 0 0!important;font-size:12.5px!important}
+/* The curriculum follows the hero closely; no oversized empty band. */
+.home-page #course-map{padding-top:24px!important}
+.home-page #course-map .section-head{margin-bottom:18px!important}
+.home-page #course-map .section-head h2{font-size:clamp(28px,3vw,38px)!important}
+.home-page #course-map .course-map{margin-top:16px!important;gap:13px!important}
+.home-page #course-map .course-map article{padding:18px!important;border-radius:16px!important;box-shadow:0 6px 18px rgba(31,48,82,.055)!important}
+.home-page #course-map .course-map article:hover{transform:translateY(-3px)!important}
+.home-page #course-map .course-map h3{font-size:18px!important;margin:7px 0 6px!important}
+.home-page #course-map .course-map p,.home-page #course-map .course-map ul{font-size:13px!important}
+.home-page #course-map .course-note{margin-top:14px!important;padding:12px 15px!important;border-radius:12px!important}
+/* Make the learning paths the visual next step rather than another distant block. */
+.home-page #paths{padding-top:42px!important;padding-bottom:58px!important}
+.home-page #paths .section-head{margin-bottom:18px!important}
+.home-page #paths .path-grid{gap:14px!important}
+.home-page #paths .path-card{min-height:218px!important;padding:22px!important;border-radius:18px!important}
+.home-page #paths .path-card h3{font-size:21px!important}
+.home-page #paths .path-card .primary{margin-top:14px!important}
+/* Subsequent lesson sections remain spacious, but not excessively separated. */
+.home-page .section{padding-top:58px!important;padding-bottom:58px!important}
+.home-page .section.alt{padding-top:54px!important;padding-bottom:54px!important}
+.home-page .section-head{margin-bottom:20px!important}
+.home-page .lesson-grid{gap:14px!important}
+.home-page .lesson{min-height:200px!important;padding:20px!important;border-radius:16px!important}
+.home-page .lesson h3{font-size:18px!important}
+@media(max-width:760px){
+  .home-page .hero{padding:32px 0 18px!important}
+  .home-page .hero h1{font-size:42px!important}
+  .home-page .hero>div:first-child>p{font-size:16px!important}
+  .home-page .hero-card{max-width:none!important;margin-top:18px!important}
+  .home-page #course-map{padding-top:16px!important}
+  .home-page #paths{padding-top:30px!important}
+  .home-page .section{padding-top:40px!important;padding-bottom:40px!important}
+  .home-page .section.alt{padding-top:38px!important;padding-bottom:38px!important}
+}
+body.dark .home-page .home-value-card{box-shadow:0 6px 18px rgba(0,0,0,.18)!important}
+body.dark .home-page .hero-card:after{background:rgba(120,145,255,.08)}
