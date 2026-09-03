@@ -57,6 +57,19 @@ jobs:
               html.write_text(text,encoding='utf-8')
           PY
 
+          # Repair the known malformed selector in the existing language script
+          # in the deployed copy, without rewriting the source file or changing its translations.
+          python3 - <<'PY'
+          import pathlib
+          p=pathlib.Path('_site/site-language-final.js')
+          text=p.read_text(encoding='utf-8',errors='ignore')
+          bad="[data-equation],[data-chemical],#site-language-control)}"
+          good="[data-equation],[data-chemical],#site-language-control')}"
+          if bad in text:
+              text=text.replace(bad,good,1)
+          p.write_text(text,encoding='utf-8')
+          PY
+
           for f in index.html learn.html personal-quiz.html challenges.html checker.html profile.html admin.html i18n-dictionary.js i18n-core.js i18n-enhancements.js student-product.js student-product.css modern-refresh.css daily-challenge-clean.js admin-tools.js theme.js; do
             test -s "_site/$f"
           done
