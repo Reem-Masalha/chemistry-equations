@@ -84,7 +84,7 @@ jobs:
           p.write_text(text,encoding='utf-8')
           PY
 
-          for f in index.html learn.html balancer.html personal-quiz.html challenges.html checker.html profile.html admin.html i18n-dictionary.js i18n-core.js i18n-enhancements.js student-product.js student-product.css modern-refresh.css daily-challenge-clean.js admin-tools.js theme.js; do
+          for f in index.html learn.html balancer.html personal-quiz.html challenges.html checker.html profile.html admin.html contact.html i18n-dictionary.js i18n-core.js i18n-enhancements.js student-product.js student-product.css modern-refresh.css daily-challenge-clean.js admin-tools.js theme.js; do
             test -s "_site/$f"
           done
           test -s "_site/learn-home-polish.css"
