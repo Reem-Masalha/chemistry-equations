@@ -122,6 +122,28 @@ jobs:
               if 'theme.js?v=20260901-sitewide-13' not in html: raise SystemExit(f'unified theme loader missing from {page.name}')
               if html.count('data-site-nav-consistency') != 1: raise SystemExit(f'unified navigation styling missing from {page.name}')
               if html.count('data-site-spacing-cleanup') != 1: raise SystemExit(f'sitewide spacing cleanup missing from {page.name}')
+
+          # Regression guards for recently stabilized quiz behavior.
+          quiz=(root/'personal-quiz.html').read_text(encoding='utf-8',errors='ignore')
+          if re.search(r'\b(?:reply|replay)\s+quiz\b',quiz,re.I):
+              raise SystemExit('Forbidden Reply/Replay quiz UI text found in personal-quiz.html')
+          for legacy in ('quiz-v1.js','quiz-system.js','daily-challenge-v4.js','daily-challenge-behavior-fix.js'):
+              if legacy in quiz or legacy in (root/'learn.html').read_text(encoding='utf-8',errors='ignore'):
+                  raise SystemExit(f'Legacy quiz/daily script reference remains: {legacy}')
+
+          # Regression guard: all local HTML/CSS/JS assets referenced by HTML must exist.
+          missing=[]
+          for page in root.glob('*.html'):
+              text=page.read_text(encoding='utf-8',errors='ignore')
+              refs=re.findall(r'(?:href|src)=[\"\']([^\"\']+)[\"\']',text,re.I)
+              for ref in refs:
+                  ref=ref.split('?',1)[0].split('#',1)[0]
+                  if not ref or ref.startswith(('#','/','http://','https://','mailto:','tel:','data:','javascript:')): continue
+                  target=(page.parent/ref).resolve()
+                  try: target.relative_to(root.resolve())
+                  except ValueError: continue
+                  if not target.exists(): missing.append(f'{page.name} -> {ref}')
+          if missing: raise SystemExit('Broken local HTML asset references: '+', '.join(missing))
           PY
 
           printf '%s\n' "$GITHUB_SHA" > _site/DEPLOYMENT_COMMIT.txt
