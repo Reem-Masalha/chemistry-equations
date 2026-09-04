@@ -1,0 +1,25 @@
+/* Quiz setup: clear choices, less form-like, stronger visual hierarchy. */
+.quiz-settings{gap:22px!important;align-items:stretch!important}
+.quiz-settings>.card{padding:26px!important;border-radius:22px!important;box-shadow:0 10px 30px rgba(31,48,82,.07)!important}
+.quiz-settings>.card h2{font-size:25px!important;margin:4px 0 5px!important}
+.quiz-settings .setup-helper{margin:0 0 18px!important;color:var(--muted)!important;font-size:14px!important;line-height:1.5!important}
+.quiz-settings .stage-list{grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:10px!important}
+.quiz-settings .stage{min-height:116px!important;padding:17px 15px!important;justify-content:flex-start!important;border:1px solid var(--line)!important;border-radius:16px!important;background:linear-gradient(180deg,var(--surface),#fafbfe)!important;box-shadow:none!important;transform:none!important}
+.quiz-settings .stage:hover{transform:translateY(-2px)!important;box-shadow:0 8px 20px rgba(31,48,82,.08)!important}
+.quiz-settings .stage b{font-size:15px!important;line-height:1.25!important;color:var(--text)!important}
+.quiz-settings .stage small{margin-top:auto!important;font-size:12px!important;line-height:1.4!important;color:var(--muted)!important}
+.quiz-settings .stage.active-stage{border:2px solid var(--accent)!important;background:linear-gradient(180deg,#f3f5ff,var(--surface))!important;box-shadow:0 7px 20px rgba(49,88,214,.12)!important}
+.quiz-settings .stage.active-stage b{color:var(--accent)!important}
+.quiz-settings .stage.active-stage:after{right:10px!important;top:10px!important;transform:none!important;width:23px!important;height:23px!important;font-size:13px!important}
+.experience-options,.type-options{gap:10px!important}
+.experience-options label,.type-options label{min-height:70px!important;padding:12px 14px!important;border-radius:15px!important;background:var(--surface)!important;box-shadow:none!important}
+.experience-options label>span,.type-options label>span{display:flex!important;flex-direction:column!important;gap:3px!important;min-width:0!important}
+.experience-options label b,.type-options label b{font-size:15px!important;color:var(--text)!important}
+.experience-options label small,.type-options label small{font-size:12px!important;font-weight:500!important;color:var(--muted)!important;line-height:1.35!important}
+.experience-options label:has(input:checked),.type-options label:has(input:checked){border:2px solid var(--accent)!important;background:#f3f5ff!important;box-shadow:0 6px 18px rgba(49,88,214,.09)!important}
+.experience-options label:has(input:checked) b,.type-options label:has(input:checked) b{color:var(--accent)!important}
+.quiz-settings #questionType{margin-top:22px!important;padding-top:21px!important}
+.quiz-settings #questionType h2{font-size:21px!important}
+.quiz-settings #newQuiz{margin-top:16px!important;min-height:50px!important;border-radius:14px!important}
+@media(max-width:900px){.quiz-settings .stage-list{grid-template-columns:1fr!important}.quiz-settings .stage{min-height:92px!important}.quiz-settings .stage small{margin-top:2px!important}}
+@media(max-width:760px){.quiz-settings{gap:14px!important}.quiz-settings>.card{padding:20px!important;border-radius:18px!important}.quiz-settings>.card h2{font-size:22px!important}.quiz-settings .stage-list{grid-template-columns:1fr!important}.quiz-settings .stage{min-height:84px!important;padding:14px!important}.experience-options label,.type-options label{min-height:66px!important}}
