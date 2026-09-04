@@ -109,7 +109,7 @@ async function changePassword(env,request,body){
   const auth=String(request.headers.get("Authorization")||""), current=auth.startsWith("Bearer ")?auth.slice(7):"";
   const username=clean(body?.username,120)?.toLowerCase(), oldPassword=String(body?.currentPassword??""), newPassword=String(body?.newPassword??""), confirm=String(body?.confirmPassword??"");
   if(!current||!username||!oldPassword||!newPassword)return json({error:"Missing required account information."},400);
-  if(newPassword.length<8)return json({error:"Password must be at least 8 characters."},400);
+  if(newPassword.length<8)return json({error:"New password must be at least 8 characters."},400);
   if(newPassword!==confirm)return json({error:"Passwords do not match."},400);
   const user=await getUser(env,username);
   if(!user||!(await verifyPassword(oldPassword,user)))return json({error:"Current password is incorrect."},401);
@@ -130,12 +130,33 @@ async function adminResetPassword(env,request,body){
 }
 
 function geo(request){const cf=request.cf||{};return{country:clean(cf.country,10),region:clean(cf.region,120),city:clean(cf.city,120),timezone:clean(cf.timezone,120),continent:clean(cf.continent,10)};}
-async function ensureLocationTable(env){await env.DB.prepare(`CREATE TABLE IF NOT EXISTS visitor_locations (id INTEGER PRIMARY KEY AUTOINCREMENT,visitor_id TEXT NOT NULL,path TEXT NOT NULL,country TEXT,region TEXT,city TEXT,timezone TEXT,continent TEXT,created_at TEXT NOT NULL)`).run();}
+function isBot(request){
+  const ua=String(request.headers.get("User-Agent")||"").toLowerCase();
+  return /bot|crawler|spider|slurp|bingpreview|facebookexternalhit|facebot|headless|lighthouse|pagespeed|prerender|uptimerobot|pingdom|semrush|ahrefs|yandex|baidu|duckduckgo|google-inspectiontool|googleother/i.test(ua);
+}
+function isBrowserAnalyticsRequest(request,body){
+  if(isBot(request))return false;
+  if(request.headers.get("Origin")!=="https://reem-masalha.github.io")return false;
+  const mode=String(request.headers.get("Sec-Fetch-Mode")||"").toLowerCase();
+  const site=String(request.headers.get("Sec-Fetch-Site")||"").toLowerCase();
+  if(mode&&mode!=="cors")return false;
+  if(site&&site!=='cross-site'&&site!=='same-site')return false;
+  const s=body?.browserSignal;
+  if(!s||s.visible!==true||s.webdriver===true||s.language!==true||s.cookies!==true||s.screen!==true||s.viewport!==true)return false;
+  return true;
+}
+async function ensureLocationTable(env){
+  await env.DB.prepare(`CREATE TABLE IF NOT EXISTS visitor_locations (id INTEGER PRIMARY KEY AUTOINCREMENT,visitor_id TEXT NOT NULL,path TEXT NOT NULL,country TEXT,region TEXT,city TEXT,timezone TEXT,continent TEXT,browser_verified INTEGER NOT NULL DEFAULT 0,created_at TEXT NOT NULL)`).run();
+  try{await env.DB.prepare(`ALTER TABLE visitor_locations ADD COLUMN browser_verified INTEGER NOT NULL DEFAULT 0`).run();}catch{}
+}
 async function trackVisit(request,env){
-  const body=await request.json().catch(()=>({})), visitorId=clean(body?.visitorId,200), path=clean(body?.path,200); if(!visitorId||!path)return json({error:"visitorId and path are required."},400);
+  const body=await request.json().catch(()=>({})), visitorId=clean(body?.visitorId,200), path=clean(body?.path,200);
+  if(!visitorId||!path)return json({error:"visitorId and path are required."},400);
+  if(!isBrowserAnalyticsRequest(request,body))return json({ok:true,counted:false});
+  if(body?.ownerTest===true)return json({ok:true,counted:false});
   const existing=await env.DB.prepare(`SELECT id FROM visits WHERE visitor_id=? AND path=? AND created_at>=datetime('now','-30 minutes') LIMIT 1`).bind(visitorId,path).first(); if(existing)return json({ok:true,counted:false});
   const created=now(); await env.DB.prepare(`INSERT INTO visits (visitor_id,path,created_at) VALUES (?,?,?)`).bind(visitorId,path,created).run(); await ensureLocationTable(env); const g=geo(request);
-  await env.DB.prepare(`INSERT INTO visitor_locations (visitor_id,path,country,region,city,timezone,continent,created_at) VALUES (?,?,?,?,?,?,?,?)`).bind(visitorId,path,g.country,g.region,g.city,g.timezone,g.continent,created).run(); return json({ok:true,counted:true});
+  await env.DB.prepare(`INSERT INTO visitor_locations (visitor_id,path,country,region,city,timezone,continent,browser_verified,created_at) VALUES (?,?,?,?,?,?,?,?,?)`).bind(visitorId,path,g.country,g.region,g.city,g.timezone,g.continent,1,created).run(); return json({ok:true,counted:true});
 }
 async function trackEvent(request,env){
   const p=await request.json().catch(()=>({})); if(!p?.eventType)return json({error:"eventType is required."},400);
@@ -145,14 +166,14 @@ async function stats(env,request){
   const key=String(request.headers.get("X-Admin-Key")||""); if(!env.ADMIN_KEY||!safeEqual(key,env.ADMIN_KEY))return json({error:"Unauthorized."},401); await ensureLocationTable(env);
   const [users,totals,periods,activeUsers,pages,days,scores,countries,cities]=await Promise.all([
     env.DB.prepare(`SELECT id,name,username,created_at FROM users ORDER BY created_at DESC`).all(),
-    env.DB.prepare(`SELECT COUNT(*) AS visits,COUNT(DISTINCT visitor_id) AS unique_visitors FROM visits`).first(),
-    env.DB.prepare(`SELECT COUNT(DISTINCT CASE WHEN created_at>=datetime('now','-1 day') THEN visitor_id END) AS daily,COUNT(DISTINCT CASE WHEN created_at>=datetime('now','-7 day') THEN visitor_id END) AS weekly,COUNT(DISTINCT CASE WHEN created_at>=datetime('now','-30 day') THEN visitor_id END) AS monthly FROM visits`).first(),
-    env.DB.prepare(`SELECT COUNT(DISTINCT visitor_id) AS active_users FROM visits WHERE visitor_id LIKE 'account:%' AND created_at>=datetime('now','-30 minutes')`).first(),
-    env.DB.prepare(`SELECT path,COUNT(*) AS views,COUNT(DISTINCT visitor_id) AS visitors FROM visits GROUP BY path ORDER BY views DESC`).all(),
-    env.DB.prepare(`SELECT date(created_at) AS day,COUNT(*) AS views,COUNT(DISTINCT visitor_id) AS visitors FROM visits WHERE created_at>=datetime('now','-30 day') GROUP BY date(created_at) ORDER BY day`).all(),
+    env.DB.prepare(`SELECT COUNT(*) AS visits,COUNT(DISTINCT visitor_id) AS unique_visitors FROM visitor_locations WHERE browser_verified=1`).first(),
+    env.DB.prepare(`SELECT COUNT(DISTINCT CASE WHEN created_at>=datetime('now','-1 day') THEN visitor_id END) AS daily,COUNT(DISTINCT CASE WHEN created_at>=datetime('now','-7 day') THEN visitor_id END) AS weekly,COUNT(DISTINCT CASE WHEN created_at>=datetime('now','-30 day') THEN visitor_id END) AS monthly FROM visitor_locations WHERE browser_verified=1`).first(),
+    env.DB.prepare(`SELECT COUNT(DISTINCT visitor_id) AS active_users FROM visitor_locations WHERE browser_verified=1 AND visitor_id LIKE 'account:%' AND created_at>=datetime('now','-30 minutes')`).first(),
+    env.DB.prepare(`SELECT v.path,COUNT(*) AS views,COUNT(DISTINCT v.visitor_id) AS visitors FROM visits v WHERE EXISTS (SELECT 1 FROM visitor_locations l WHERE l.visitor_id=v.visitor_id AND l.browser_verified=1) GROUP BY v.path ORDER BY views DESC`).all(),
+    env.DB.prepare(`SELECT date(v.created_at) AS day,COUNT(*) AS views,COUNT(DISTINCT v.visitor_id) AS visitors FROM visits v WHERE EXISTS (SELECT 1 FROM visitor_locations l WHERE l.visitor_id=v.visitor_id AND l.browser_verified=1) AND v.created_at>=datetime('now','-30 day') GROUP BY date(v.created_at) ORDER BY day`).all(),
     env.DB.prepare(`SELECT u.username,u.name,s.stage,s.score,s.total,s.created_at FROM scores s JOIN users u ON u.id=s.user_id ORDER BY s.created_at DESC LIMIT 500`).all(),
-    env.DB.prepare(`SELECT COALESCE(NULLIF(country,''),'Unknown') AS country,COUNT(DISTINCT visitor_id) AS visitors,COUNT(*) AS views FROM visitor_locations GROUP BY COALESCE(NULLIF(country,''),'Unknown') ORDER BY visitors DESC,views DESC`).all(),
-    env.DB.prepare(`SELECT COALESCE(NULLIF(city,''),'Unknown') AS city,COALESCE(NULLIF(country,''),'Unknown') AS country,COUNT(DISTINCT visitor_id) AS visitors,COUNT(*) AS views FROM visitor_locations GROUP BY COALESCE(NULLIF(city,''),'Unknown'),COALESCE(NULLIF(country,''),'Unknown') ORDER BY visitors DESC,views DESC`).all()
+    env.DB.prepare(`SELECT COALESCE(NULLIF(country,''),'Unknown') AS country,COUNT(DISTINCT visitor_id) AS visitors,COUNT(*) AS views FROM visitor_locations WHERE browser_verified=1 GROUP BY COALESCE(NULLIF(country,''),'Unknown') ORDER BY visitors DESC,views DESC`).all(),
+    env.DB.prepare(`SELECT COALESCE(NULLIF(city,''),'Unknown') AS city,COALESCE(NULLIF(country,''),'Unknown') AS country,COUNT(DISTINCT visitor_id) AS visitors,COUNT(*) AS views FROM visitor_locations WHERE browser_verified=1 GROUP BY COALESCE(NULLIF(city,''),'Unknown'),COALESCE(NULLIF(country,''),'Unknown') ORDER BY visitors DESC,views DESC`).all()
   ]);
   return json({users:users.results,totals,periods,active_users:Number(activeUsers?.active_users||0),pages:pages.results,visitorsByDay:days.results,scores:scores.results,countries:countries.results,cities:cities.results});
 }
