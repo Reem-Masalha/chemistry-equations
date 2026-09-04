@@ -46,7 +46,7 @@ jobs:
           import pathlib,re
           root=pathlib.Path('_site')
           sha='${GITHUB_SHA}'
-          nav_css='''<style data-site-nav-consistency="1">\n.main-nav{display:flex!important;align-items:center!important;gap:7px!important}\n.main-nav a{box-sizing:border-box!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;height:38px!important;padding:9px 12px!important;margin:0!important;border-radius:10px!important;font:700 14px/1.2 Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif!important;white-space:nowrap!important;text-decoration:none!important}\n.main-nav a:focus-visible,.main-nav button:focus-visible,button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid color-mix(in srgb,var(--accent) 55%,white)!important;outline-offset:3px!important}\n@media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}\n@media(max-width:760px){.main-nav{gap:4px!important;padding:3px 0 1px!important}.main-nav a{height:32px!important;padding:8px 9px!important;font-size:12px!important;flex:0 0 auto!important}}\n@media(max-width:390px){.main-nav a{height:30px!important;padding:7px 8px!important;font-size:11px!important}}\n</style>\n'''
+          nav_css='''<style data-site-nav-consistency="1">\n.main-nav{display:flex!important;align-items:center!important;gap:7px!important}\n.main-nav a{box-sizing:border-box!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;height:38px!important;padding:9px 12px!important;margin:0!important;border-radius:10px!important;font:700 14px/1.2 Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif!important;white-space:nowrap!important}\n.main-nav a:focus-visible,.main-nav button:focus-visible,button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid color-mix(in srgb,var(--accent) 55%,white)!important;outline-offset:3px!important}\n@media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}\n@media(max-width:760px){.main-nav{gap:4px!important;padding:3px 0 1px!important}.main-nav a{height:32px!important;padding:8px 9px!important;font-size:12px!important;flex:0 0 auto!important}}\n@media(max-width:390px){.main-nav a{height:30px!important;padding:7px 8px!important;font-size:11px!important}}\n</style>\n'''
           for html in root.glob('*.html'):
               text=html.read_text(encoding='utf-8', errors='ignore')
               text=text.replace('loadStudentProduct();','')
@@ -130,6 +130,23 @@ jobs:
           for legacy in ('quiz-v1.js','quiz-system.js','daily-challenge-v4.js','daily-challenge-behavior-fix.js'):
               if legacy in quiz or legacy in (root/'learn.html').read_text(encoding='utf-8',errors='ignore'):
                   raise SystemExit(f'Legacy quiz/daily script reference remains: {legacy}')
+
+          # Stronger regression guard: forbidden quiz UI and retired loaders must
+          # not reappear on any deployed HTML page, not only the main quiz page.
+          legacy_scripts={'quiz-v1.js','quiz-system.js','daily-challenge-v4.js','daily-challenge-behavior-fix.js','daily-legacy-blocker.js'}
+          for page in root.glob('*.html'):
+              html=page.read_text(encoding='utf-8',errors='ignore')
+              if re.search(r'\b(?:reply|replay)\s+quiz\b',html,re.I):
+                  raise SystemExit(f'Forbidden Reply/Replay quiz UI text found in {page.name}')
+              found=sorted(s for s in legacy_scripts if s in html)
+              if found:
+                  raise SystemExit(f'Retired quiz/daily scripts found in {page.name}: '+', '.join(found))
+
+          # Critical loaders must not be duplicated by future page edits.
+          quiz=(root/'personal-quiz.html').read_text(encoding='utf-8',errors='ignore')
+          for loader in ('quiz-system-v2.js','quiz-ui-final.js','quiz-final-fixes-v2.js'):
+              if quiz.count(loader) != 1:
+                  raise SystemExit(f'personal-quiz.html must contain exactly one {loader}')
 
           # Regression guard: all local HTML/CSS/JS assets referenced by HTML must exist.
           missing=[]
