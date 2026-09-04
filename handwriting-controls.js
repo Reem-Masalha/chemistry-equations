@@ -1,4 +1,4 @@
-(() => {
+(()=>{
   const canvas = document.getElementById('pad');
   if (!canvas) return;
   const ctx = canvas.getContext('2d');
@@ -51,6 +51,7 @@
 
   const SUB = {'₀':'0','₁':'1','₂':'2','₃':'3','₄':'4','₅':'5','₆':'6','₇':'7','₈':'8','₉':'9'};
   const normalizeDigits = s => String(s || '').replace(/[₀₁₂₃₄₅₆₇₈₉]/g, c => SUB[c]);
+  const normalizeStates = s => String(s || '').replace(/\(\s*(aq|s|l|g)\s*\)/gi, (_, state) => `(${state.toLowerCase()})`);
   const snapshot = () => ctx.getImageData(0, 0, canvas.width, canvas.height);
   const restore = img => { ctx.clearRect(0, 0, canvas.width, canvas.height); if (img) ctx.putImageData(img, 0, 0); };
   const updateButtons = () => { if (undo) undo.disabled = historyIndex <= 0; if (redo) redo.disabled = historyIndex < 0 || historyIndex >= history.length - 1; };
@@ -72,13 +73,13 @@
   pastePad?.addEventListener('click',async e=>{e.preventDefault();e.stopImmediatePropagation();try{if(!navigator.clipboard?.read)throw new Error('Clipboard image paste is not supported here. Try Ctrl+V instead.');for(const item of await navigator.clipboard.read()){const type=item.types.find(t=>t.startsWith('image/'));if(type&&await pasteImageBlob(await item.getType(type)))return}throw new Error('No image was found in the clipboard.')}catch(err){if(status)status.textContent=err.message||'Paste failed. Browser clipboard permission may be required.';}});
   window.addEventListener('paste',async e=>{if(document.activeElement===input||document.activeElement?.tagName==='TEXTAREA')return;const files=[...(e.clipboardData?.items||[])].filter(x=>x.type.startsWith('image/'));if(!files.length)return;e.preventDefault();await pasteImageBlob(files[0].getAsFile());});
 
-  const normalize=s=>normalizeDigits(String(s||'')).replace(/[\r\n]+/g,' ').replace(/[→⟶⇒➜⟹⟾]/g,' -> ').replace(/[×]/g,' + ').replace(/\s*[-]+>\s*/g,' -> ').replace(/\s*\+\s*/g,' + ').replace(/\s+/g,' ').trim();
-  const pretty=s=>normalizeDigits(String(s||'')).replace(/([A-Z][a-z]?)(\d+)/g,'$1<sub>$2</sub>').replace(/\s*->\s*/g,' → ');
+  const normalize=s=>normalizeStates(normalizeDigits(String(s||'')).replace(/[\r\n]+/g,' ').replace(/[→⟶⇒➜⟹⟾]/g,' -> ').replace(/[×]/g,' + ').replace(/\s*[-]+>\s*/g,' -> ').replace(/\s*\+\s*/g,' + ').replace(/\s+/g,' ').trim());
+  const pretty=s=>normalizeStates(normalizeDigits(String(s||'')).replace(/([A-Z][a-z]?)(\d+)/g,'$1<sub>$2</sub>').replace(/\s*->\s*/g,' → '));
   const confidence=d=>{let n=Number(d?.confidence??d?.score??d?.data?.confidence);if(!Number.isFinite(n))return null;if(n<=1)n*=100;return Math.max(0,Math.min(100,Math.round(n)));};
   async function recognizeCloudflare(image){const base=window.CHEMISTRY_HANDWRITING_WORKER;if(!base)throw Error('Cloudflare handwriting Worker is not configured.');const r=await fetch(base.replace(/\/$/,'')+'/recognize',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({image})});let d={};try{d=await r.json();}catch(_){}if(!r.ok)throw Error(d.error||`Cloudflare recognition returned HTTP ${r.status}`);if(!d.text)throw Error('Cloudflare returned no recognized equation.');return d;}
   async function recognizeLocal(image){if(!window.Tesseract)throw Error('Browser OCR is unavailable.');const r=await Tesseract.recognize(image,'eng');return {text:r.data?.text||'',confidence:r.data?.confidence};}
   async function recognize(){const correction=document.getElementById('recognitionCorrection'),edit=document.getElementById('recognizedEdit'),conf=document.getElementById('recognitionConfidence');if(status)status.textContent='Trying Cloudflare AI…';if(out){out.classList.remove('hidden');out.innerHTML='<p>Recognizing handwriting…</p>';}correction?.classList.add('hidden');let d,source='Cloudflare AI';try{d=await recognizeCloudflare(canvas.toDataURL('image/png'));}catch(_){source='Browser OCR';try{d=await recognizeLocal(canvas.toDataURL('image/png'));}catch(e2){if(status)status.textContent='Recognition failed';if(out)out.innerHTML=`<div class="validation-error"><b>Could not recognize the handwriting.</b><p>${e2.message}</p><p>Try larger, clearer symbols with spaces around + and →.</p></div>`;return;}}
     const text=normalize(d.text),score=confidence(d),uncertain=score!==null&&score<70;if(status)status.textContent=`Recognized with ${source}`;if(out)out.innerHTML=`<p><b>Recognized:</b> <span class="equation">${pretty(text)}</span></p><p class="muted">${score===null?'Recognition confidence is not available from this recognition service. Please verify every symbol, subscript, and arrow before balancing.':`Confidence: ${score}%${uncertain?' — uncertain; please check it.':''}`}</p>`;if(edit&&correction){edit.value=text;correction.classList.remove('hidden');if(conf)conf.innerHTML=score===null?'This recognizer does not provide a confidence score. Please check the transcription carefully before balancing.':`Recognition confidence: <b>${score}%</b>. ${uncertain?'Please correct the equation before balancing.':'Please verify capitalization and subscripts.'}`;}}
   use?.addEventListener('click',e=>{e.preventDefault();e.stopImmediatePropagation();recognize();});
-  document.getElementById('balanceRecognized')?.addEventListener('click',e=>{e.preventDefault();const v=normalizeDigits(document.getElementById('recognizedEdit')?.value||'');const input=document.getElementById('equationInput');if(input)input.value=v;if(typeof window.showBalance==='function')window.showBalance(v);else document.getElementById('balanceBtn')?.click();});
+  document.getElementById('balanceRecognized')?.addEventListener('click',e=>{e.preventDefault();const v=normalizeStates(normalizeDigits(document.getElementById('recognizedEdit')?.value||''));const input=document.getElementById('equationInput');if(input)input.value=v;if(typeof window.showBalance==='function')window.showBalance(v);else document.getElementById('balanceBtn')?.click();});
 })();
