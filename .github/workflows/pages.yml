@@ -107,7 +107,7 @@ jobs:
           while IFS= read -r f; do node --check "$f" >/dev/null; done < <(find _site -type f -name '*.js' -print)
 
           python3 - <<'PY'
-          import pathlib
+          import pathlib,re
           root=pathlib.Path('_site')
           for name in ('learn.html','index.html'):
               p=root/name
