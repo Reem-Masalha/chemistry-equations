@@ -2,7 +2,7 @@
 'use strict';
 const KEY='chemistryEquationHistory';
 const SUB_TO_DIGIT={'₀':'0','₁':'1','₂':'2','₃':'3','₄':'4','₅':'5','₆':'6','₇':'7','₈':'8','₉':'9'};
-const DIGIT_TO_SUB={'0':'₀','1':'₁','2':'₂','3':'₃','4':'₄','5':'₅','6':'₆','₇':'₇','₈':'₈','₉':'₉'};
+const DIGIT_TO_SUB={'0':'₀','1':'₁','2':'₂','3':'₃','4':'₄','5':'₅','6':'₆','7':'₇','8':'₈','9':'₉'};
 const getUser=()=>{try{return JSON.parse(localStorage.getItem('chemistryCurrentUser')||sessionStorage.getItem('chemistryCurrentUser')||'null')}catch{return null}};
 const storageKey=()=>{const u=getUser();return KEY+':'+(u?.id||u?.username||'guest')};
 const fromSubscripts=s=>String(s??'').replace(/[₀₁₂₃₄₅₆₇₈₉]/g,d=>SUB_TO_DIGIT[d]);
