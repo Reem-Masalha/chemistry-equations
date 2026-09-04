@@ -12,15 +12,14 @@ const save=s=>{try{localStorage.setItem(KEY,JSON.stringify(s))}catch{}};
 const page=(location.pathname.split('/').pop()||'learn.html').toLowerCase();
 const current=CONFIG[page];
 if(current){
-  const s=read();
   const nav=document.getElementById('lesson-navigation');
   const next=nav?.querySelector('.lesson-nav-next');
   if(next&&!next.dataset.progressBound){
     next.dataset.progressBound='1';
     next.addEventListener('click',()=>{const p=read();p.completed=Math.max(Number(p.completed)||0,current.n);save(p)});
   }
-  const s2=read();
-  if((Number(s2.completed)||0)>=current.n){
+  const s=read();
+  if((Number(s.completed)||0)>=current.n){
     const progress=document.querySelector('.lesson-progress');
     if(progress&&!progress.querySelector('.lesson-complete')){
       const done=document.createElement('span');
@@ -31,7 +30,7 @@ if(current){
     }
   }
 }
-if(page==='learn.html'||page===''){
+if(page==='learn.html'||page==='index.html'||page===''){
   if(document.getElementById('learning-continue'))return;
   const main=document.querySelector('main');
   if(!main)return;
