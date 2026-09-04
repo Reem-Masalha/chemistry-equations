@@ -7,7 +7,7 @@ const digits='₀₁₂₃₄₅₆₇₈₉';
 const subDigits={'0':'₀','1':'₁','2':'₂','3':'₃','4':'₄','5':'₅','6':'₆','7':'₇','8':'₈','9':'₉'};
 const normalize=s=>String(s||'').replace(/[₀₁₂₃₄₅₆₇₈₉]/g,c=>'0123456789'[digits.indexOf(c)]).replace(/⟶|⇒|➜|⟹|⟾|=>|->/g,'→').replace(/=(?!>)/g,'→').replace(/\s+/g,' ').trim();
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const prettyFormula=src=>{const raw=String(src??'').replace(/[₀₁₂₃₄₅₆₇₈₉]/g,c=>({'₀':'0','₁':'1','₂':'2','₃':'3','₄':'4','₅':'5','₆':'6','₇':'7','₈':'8','₉':'9'}[c]));const safe=esc(raw);let out='',i=0;while(i<safe.length){if(/\d/.test(safe[i])){let j=i;while(j<safe.length&&/\d/.test(safe[j]))j++;out+=safe.slice(i,j).replace(/\d/g,d=>subDigits[d]);i=j;continue}out+=safe[i++]}return out};
+const prettyFormula=src=>{const raw=String(src??'').replace(/\s*\((aq|s|l|g)\)\s*$/i,(_,state)=>`(${state.toLowerCase()})`).replace(/[₀₁₂₃₄₅₆₇₈₉]/g,c=>({'₀':'0','₁':'1','₂':'2','₃':'3','₄':'4','₅':'5','₆':'6','₇':'7','₈':'8','₉':'9'}[c]));const safe=esc(raw);let out='',i=0;while(i<safe.length){if(/\d/.test(safe[i])){let j=i;while(j<safe.length&&/\d/.test(safe[j]))j++;out+=safe.slice(i,j).replace(/\d/g,d=>subDigits[d]);i=j;continue}out+=safe[i++]}return out};
 const prettyEquation=eq=>String(eq||'').replace(/[⟶⇒➜⟹⟾]/g,'→').replace(/\s*(?:=>|->|→)\s*/g,' → ').split(' → ').map(side=>side.split(/\s*\+\s*/).map(part=>{const m=part.trim().match(/^(\d+)\s*(.*)$/);return m?`${m[1]==='1'?'':m[1]}${prettyFormula(m[2])}`:prettyFormula(part.trim())}).join(' + ')).join(' → ');
 const gcd=(a,b)=>{a=Math.abs(a);b=Math.abs(b);while(b){[a,b]=[b,a%b]}return a};
 const lcm=(a,b)=>Math.abs(a/gcd(a,b)*b);
