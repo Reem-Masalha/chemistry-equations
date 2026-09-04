@@ -4,6 +4,7 @@ const SUB='₀₁₂₃₄₅₆₇₈₉';
 const REV=Object.fromEntries([...SUB].map((c,i)=>[c,String(i)]));
 const selectors=['.equation','.history-equation','.history-solution','.history-balanced-equation','.checker-equation','.explanation-equation','.problem-preview','.practice-equation','.practice-choice','.checker-balance-cta'];
 const normal=s=>[...String(s||'')].map(c=>REV[c]??c).join('');
+const lowerStates=s=>String(s??'').replace(/\(\s*(AQ|S|L|G)\s*\)/g,(_,state)=>`(${state.toLowerCase()})`);
 function isMoleculeStartSub(el){
   if(!el||el.tagName!=='SUB')return false;
   const raw=(el.textContent||'').trim();
@@ -31,7 +32,8 @@ function fix(root=document){
     for(const node of nodes){
       if(node.parentElement?.tagName==='SUB')continue;
       const old=node.nodeValue||'';
-      const fixed=old.replace(/(^|[+→]\s*)([₀₁₂₃₄₅₆₇₈₉]+)(?=\s*[A-Z])/g,(m,p,d)=>p+normal(d));
+      let fixed=lowerStates(old);
+      fixed=fixed.replace(/(^|[+→]\s*)([₀₁₂₃₄₅₆₇₈₉]+)(?=\s*[A-Z])/g,(m,p,d)=>p+normal(d));
       if(fixed!==old)node.nodeValue=fixed;
     }
   }
