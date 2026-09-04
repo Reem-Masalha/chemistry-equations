@@ -1,0 +1,15 @@
+/* Quiz experience polish: clearer choices without changing quiz behavior. */
+#experienceChoice .experience-options{display:grid!important;gap:10px!important;margin-top:10px!important}
+#experienceChoice .experience-options label{display:flex!important;align-items:flex-start!important;gap:10px!important;padding:12px 14px!important;border:1px solid var(--line)!important;border-radius:12px!important;background:var(--surface-2,#f7f9fc)!important;cursor:pointer!important;line-height:1.4!important;transition:none!important}
+#experienceChoice .experience-options label:hover{border-color:var(--accent)!important;background:var(--surface,#fff)!important}
+#experienceChoice .experience-options label:has(input:checked){border-color:var(--accent)!important;background:var(--surface,#fff)!important;box-shadow:0 0 0 1px var(--accent) inset!important}
+#experienceChoice .experience-options input{margin-top:3px!important;flex:0 0 auto!important;accent-color:var(--accent)!important}
+.quiz-experience-guide{margin-top:8px!important}
+.quiz-experience-guide .quiz-experience-card{min-height:0!important}
+.quiz-review{scroll-margin-top:90px!important}
+.quiz-review-item{position:relative!important}
+.quiz-review-item .quiz-review-question{font-weight:700!important}
+.quiz-review-item .quiz-review-answer{padding:8px 10px!important;border-radius:8px!important;background:var(--surface-2,#f7f9fc)!important}
+.quiz-review-item .quiz-review-explanation{display:block!important;margin-top:12px!important;padding:12px 14px!important;border-top:1px solid var(--line)!important;border-radius:8px!important;background:var(--surface-2,#f7f9fc)!important;line-height:1.5!important}
+.quiz-review-item .quiz-review-explanation::before{content:'Explanation';display:block!important;margin-bottom:4px!important;font-weight:700!important;color:var(--text)!important}
+@media(max-width:760px){#experienceChoice .experience-options label{padding:11px 12px!important}.quiz-review-item .quiz-review-explanation{padding:11px 12px!important}}
