@@ -14,7 +14,7 @@ const current=CONFIG[page];
 function practiceComplete(){
   const cards=[...document.querySelectorAll('.lesson-practice-card')];
   if(!cards.length)return false;
-  return cards.every(card=>card.querySelector('.practice-correct'));
+  return cards.every(card=>card.dataset.practicePassed==='1');
 }
 function completionMessage(){
   const existing=document.getElementById('learning-progress-message');
@@ -37,7 +37,8 @@ if(current){
       if(!practiceComplete()){
         event.preventDefault();
         completionMessage();
-        document.querySelector('.lesson-practice-card:not(:has(.practice-correct))')?.scrollIntoView({behavior:'smooth',block:'center'});
+        const incomplete=[...document.querySelectorAll('.lesson-practice-card')].find(card=>card.dataset.practicePassed!=='1');
+        incomplete?.scrollIntoView({behavior:'smooth',block:'center'});
         return;
       }
       const p=read();
