@@ -1,6 +1,6 @@
 (()=>{
   'use strict';
-  // Public analytics are enabled. Owner/test traffic and obvious bots are excluded.
+  // Public analytics are enabled. Only verified browser traffic is sent.
   const PUBLIC_ANALYTICS_LIVE=true;
   if(!PUBLIC_ANALYTICS_LIVE)return;
   const API=window.CHEMISTRY_API_WORKER||'https://chemistry-equations-api.reemkhmasalha.workers.dev';
@@ -44,13 +44,33 @@
   if(path==='/'||path==='/index.html'||path.endsWith('/index.html')){
     if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',startBalancerGuard,{once:true});else startBalancerGuard();
   }
+  // Do not report until the page is a normal, visible browser document with
+  // the browser APIs expected from a real interactive page load.
+  const browserVerified=()=>{
+    if(document.visibilityState!=='visible')return false;
+    if(navigator.webdriver===true)return false;
+    if(!navigator.userAgent||navigator.userAgent.length<20)return false;
+    if(!navigator.language&&!navigator.languages?.length)return false;
+    if(!navigator.cookieEnabled)return false;
+    if(!window.screen||screen.width<200||screen.height<200)return false;
+    if(!window.innerWidth||!window.innerHeight)return false;
+    return true;
+  };
   let visitorId=get(KEY);if(!visitorId){visitorId=(crypto.randomUUID?crypto.randomUUID():(Date.now().toString(36)+'-'+Math.random().toString(36).slice(2)));set(KEY,visitorId)}
   const user=(()=>{try{return JSON.parse(get('chemistryCurrentUser')||sessionStorage.getItem('chemistryCurrentUser')||'null')}catch{return null}})();
   const identity=user?.id?'account:'+String(user.id):'anonymous:'+visitorId;
   const post=(url,body)=>{try{fetch(API+url,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(body),keepalive:true}).catch(()=>{})}catch{}};
-  const sendVisit=()=>post('/api/track-visit',{visitorId:identity,path,userId:user?.id||null,ownerTest:get('chemistryOwnerAnalyticsIgnore')==='1'});
+  const browserSignal={
+    visible:document.visibilityState==='visible',
+    webdriver:navigator.webdriver===true,
+    language:Boolean(navigator.language||navigator.languages?.length),
+    cookies:Boolean(navigator.cookieEnabled),
+    screen:Boolean(window.screen&&screen.width>=200&&screen.height>=200),
+    viewport:Boolean(window.innerWidth&&window.innerHeight)
+  };
+  const sendVisit=()=>{if(!browserVerified())return;post('/api/track-visit',{visitorId:identity,path,userId:user?.id||null,ownerTest:get('chemistryOwnerAnalyticsIgnore')==='1',browserSignal});};
   const visitKey='chemistryTracked:'+location.pathname;
   let first=false;try{first=sessionStorage.getItem(visitKey)!=='1';if(first)sessionStorage.setItem(visitKey,'1')}catch{first=true}
   if(first)sendVisit();
-  if(user?.id){const heartbeat=()=>{sendVisit();post('/api/track-event',{visitorId:identity,userId:String(user.id),eventType:'heartbeat',feature:null,metadata:{path},ownerTest:get('chemistryOwnerAnalyticsIgnore')==='1'})};heartbeat();setInterval(heartbeat,60000)}
+  if(user?.id){const heartbeat=()=>{if(!browserVerified())return;sendVisit();post('/api/track-event',{visitorId:identity,userId:String(user.id),eventType:'heartbeat',feature:null,metadata:{path},ownerTest:get('chemistryOwnerAnalyticsIgnore')==='1',browserVerified:true})};heartbeat();setInterval(heartbeat,60000)}
 })();
