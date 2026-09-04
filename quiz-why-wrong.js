@@ -1,0 +1,10 @@
+(()=>{
+'use strict';
+const clean=s=>String(s||'').replace(/[₀₁₂₃₄₅₆₇₈₉]/g,c=>'0123456789'['₀₁₂₃₄₅₆₇₈₉'.indexOf(c)]).replace(/\s+/g,'').replace(/->|=|⟶|⇒|➜|⟹|⟾/g,'→');
+const merge=(a,b,m=1)=>{Object.entries(b).forEach(([k,v])=>a[k]=(a[k]||0)+v*m);return a};
+function formula(s){const out={};let i=0;const readGroup=stop=>{const x={};while(i<s.length){if(s[i]===stop){i++;break}if(s[i]==='('){i++;const inner=readGroup(')');let n='';while(i<s.length&&/\d/.test(s[i]))n+=s[i++];merge(x,inner,Number(n)||1);continue}const m=s.slice(i).match(/^([A-Z][a-z]?)(\d*)/);if(!m)throw Error('formula');i+=m[0].length;x[m[1]]=(x[m[1]]||0)+(Number(m[2])||1)}return x};return readGroup()}
+function equation(s){const sides=clean(s).split('→');if(sides.length!==2)throw Error('equation');const side=x=>x.split('+').reduce((tot,item)=>{const m=item.match(/^(\d*)(.*)$/);if(!m||!m[2])throw Error('term');return merge(tot,formula(m[2]),Number(m[1])||1)},{});return [side(sides[0]),side(sides[1])]}
+function explain(user,correct){try{const [ul,ur]=equation(user),[cl,cr]=equation(correct);const elems=[...new Set([...Object.keys(cl),...Object.keys(cr)])];const mismatches=elems.filter(e=>(ul[e]||0)!==(cl[e]||0)||(ur[e]||0)!==(cr[e]||0)).map(e=>{const l=ul[e]||0,r=ur[e]||0,el=cl[e]||0,er=cr[e]||0;return `${e}: your equation has ${l} left / ${r} right; correct is ${el} left / ${er} right`});if(mismatches.length)return `Why it is wrong: ${mismatches.slice(0,3).join(' · ')}.`;return ''}catch{return ''}}
+function enhance(){document.querySelectorAll('.quiz-q.incorrect').forEach(q=>{const input=q.querySelector('input'),solution=q.querySelector('.solution'),hint=q.querySelector('.hint');if(!input||!solution||!hint||hint.dataset.whyWrong==='1')return;const text=solution.textContent||'',correct=text.replace(/^Solution:\s*/,'').split('\n')[0].trim(),why=explain(input.value,correct);if(why){hint.textContent=why;hint.dataset.whyWrong='1'}})}
+new MutationObserver(enhance).observe(document.body,{subtree:true,childList:true,attributes:true,attributeFilter:['class']});
+})();
