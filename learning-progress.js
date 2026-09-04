@@ -11,12 +11,41 @@ const read=()=>{try{return JSON.parse(localStorage.getItem(KEY)||'{}')}catch{ret
 const save=s=>{try{localStorage.setItem(KEY,JSON.stringify(s))}catch{}};
 const page=(location.pathname.split('/').pop()||'learn.html').toLowerCase();
 const current=CONFIG[page];
+function practiceComplete(){
+  const cards=[...document.querySelectorAll('.lesson-practice-card')];
+  if(!cards.length)return false;
+  return cards.every(card=>card.querySelector('.practice-correct'));
+}
+function completionMessage(){
+  const existing=document.getElementById('learning-progress-message');
+  if(existing)return existing;
+  const el=document.createElement('p');
+  el.id='learning-progress-message';
+  el.setAttribute('role','status');
+  el.style.cssText='margin:10px 0 0;padding:10px 12px;border-radius:10px;background:var(--surface,#fff);border:1px solid var(--line);color:var(--muted);font-weight:700';
+  el.textContent=tr('Finish all practice questions correctly before continuing.','أجب عن جميع أسئلة التدريب بشكل صحيح قبل المتابعة.','ענו נכון על כל שאלות התרגול לפני שממשיכים.');
+  const nav=document.getElementById('lesson-navigation');
+  nav?.appendChild(el);
+  return el;
+}
 if(current){
   const nav=document.getElementById('lesson-navigation');
   const next=nav?.querySelector('.lesson-nav-next');
   if(next&&!next.dataset.progressBound){
     next.dataset.progressBound='1';
-    next.addEventListener('click',()=>{const p=read();p.completed=Math.max(Number(p.completed)||0,current.n);save(p)});
+    next.addEventListener('click',event=>{
+      if(!practiceComplete()){
+        event.preventDefault();
+        completionMessage();
+        document.querySelector('.lesson-practice-card:not(:has(.practice-correct))')?.scrollIntoView({behavior:'smooth',block:'center'});
+        return;
+      }
+      const p=read();
+      p.completed=Math.max(Number(p.completed)||0,current.n);
+      p.completedLessons=Array.isArray(p.completedLessons)?p.completedLessons:[];
+      if(!p.completedLessons.includes(page))p.completedLessons.push(page);
+      save(p);
+    });
   }
   const s=read();
   if((Number(s.completed)||0)>=current.n){
