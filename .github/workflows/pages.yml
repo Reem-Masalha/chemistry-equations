@@ -142,6 +142,22 @@ jobs:
               if found:
                   raise SystemExit(f'Retired quiz/daily scripts found in {page.name}: '+', '.join(found))
 
+          # Stronger repository-wide guard: retired quiz/daily loaders or the
+          # unwanted Reply/Replay quiz UI must not be reintroduced in JS/CSS/HTML.
+          scan_ext={'.html','.js','.css'}
+          legacy_names={'quiz-v1.js','quiz-system.js','daily-challenge-v4.js','daily-challenge-behavior-fix.js','daily-legacy-blocker.js'}
+          bad=[]
+          for path in root.rglob('*'):
+              if path.is_file() and path.suffix.lower() in scan_ext:
+                  text=path.read_text(encoding='utf-8',errors='ignore')
+                  if re.search(r'\b(?:reply|replay)\s+quiz\b',text,re.I):
+                      bad.append(f'{path.relative_to(root)}: forbidden Reply/Replay quiz text')
+                  for legacy in legacy_names:
+                      if legacy in text:
+                          bad.append(f'{path.relative_to(root)}: retired loader {legacy}')
+          if bad:
+              raise SystemExit('Regression protection failed:\n'+'\n'.join(sorted(bad)))
+
           # Critical loaders must not be duplicated by future page edits.
           quiz=(root/'personal-quiz.html').read_text(encoding='utf-8',errors='ignore')
           for loader in ('quiz-system-v2.js','quiz-ui-final.js','quiz-final-fixes-v2.js'):
