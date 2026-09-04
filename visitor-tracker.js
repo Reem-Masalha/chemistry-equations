@@ -1,5 +1,9 @@
 (()=>{
   'use strict';
+  // Analytics stay OFF until the site is officially launched.
+  // Change this to true only when the owner is ready to start collecting public visitor data.
+  const PUBLIC_ANALYTICS_LIVE=false;
+  if(!PUBLIC_ANALYTICS_LIVE)return;
   const API=window.CHEMISTRY_API_WORKER||'https://chemistry-equations-api.reemkhmasalha.workers.dev';
   const KEY='chemistryVisitorId';
   const path=(location.pathname||'/').slice(0,200);
