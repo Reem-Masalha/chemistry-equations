@@ -4,7 +4,8 @@ const input=document.getElementById('equationInput'),out=document.getElementById
 if(!input||!out)return;
 const ARROW_RE=/→|->|=>/;
 const normalize=s=>String(s||'').replace(/[₀₁₂₃₄₅₆₇₈₉]/g,c=>'0123456789'["₀₁₂₃₄₅₆₇₈₉".indexOf(c)]).replace(/⟶|⇒|➜|⟹|⟾/g,'→');
-const pretty=s=>String(s||'').replace(/([A-Z][a-z]?)(\d+)/g,'$1<sub>$2</sub>');
+const normalizeState=s=>String(s||'').replace(/\s*\(\s*(aq|s|l|g)\s*\)\s*$/i,(_,state)=>`(${state.toLowerCase()})`);
+const pretty=s=>{const raw=normalizeState(s);return raw.replace(/([A-Z][a-z]?)(\d+)/g,'$1<sub>$2</sub>')};
 const gcd=(a,b)=>{a=Math.abs(a);b=Math.abs(b);while(b){[a,b]=[b,a%b]}return a};
 const lcm=(a,b)=>Math.abs(a/gcd(a)*b);
 function parseFormula(text){const s=String(text||'').replace(/\s+/g,'').replace(/\((?:aq|s|l|g)\)$/i,'');let i=0;function group(close){const a={};while(i<s.length){if(close&&s[i]===close){i++;return a}if(s[i]===')')throw Error('Invalid formula');if(s[i]==='('){i++;const g=group(')'),m=s.slice(i).match(/^\d+/),k=m?+m[0]:1;if(m)i+=m[0].length;for(const e in g)a[e]=(a[e]||0)+g[e]*k;continue}const em=s.slice(i).match(/^[A-Z][a-z]?/);if(!em)throw Error('Invalid formula');const e=em[0];i+=e.length;const m=s.slice(i).match(/^\d+/),k=m?+m[0]:1;if(m)i+=m[0].length;a[e]=(a[e]||0)+k}if(close)throw Error('Invalid formula');return a}return group()}
