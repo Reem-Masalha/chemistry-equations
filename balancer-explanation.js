@@ -8,86 +8,20 @@ const normalize=s=>String(s||'').replace(/[₀₁₂₃₄₅₆₇₈₉]/g,c=>
 const pretty=s=>String(s||'').replace(/([A-Z][a-z]?)(\d+)/g,'$1<sub>$2</sub>');
 const gcd=(a,b)=>{a=Math.abs(a);b=Math.abs(b);while(b){[a,b]=[b,a%b]}return a};
 const lcm=(a,b)=>Math.abs(a/gcd(a,b)*b);
-function parseFormula(text){
-  const s=String(text||'').replace(/\s+/g,'');let i=0;
-  function group(close){
-    const a={};
-    while(i<s.length){
-      if(close&&s[i]===close){i++;return a;}
-      if(s[i]===')')throw Error('Invalid formula');
-      if(s[i]==='('){i++;const g=group(')'),m=s.slice(i).match(/^\d+/),k=m?+m[0]:1;if(m)i+=m[0].length;for(const e in g)a[e]=(a[e]||0)+g[e]*k;continue;}
-      const em=s.slice(i).match(/^[A-Z][a-z]?/);if(!em)throw Error('Invalid formula');
-      const e=em[0];i+=e.length;const m=s.slice(i).match(/^\d+/),k=m?+m[0]:1;if(m)i+=m[0].length;a[e]=(a[e]||0)+k;
-    }
-    if(close)throw Error('Invalid formula');return a;
-  }
-  return group();
-}
-function parse(raw){
-  const s=normalize(raw).trim();
-  if(!ARROW_RE.test(s))return null;
-  const parts=s.split(ARROW_RE);if(parts.length!==2)return null;
-  const side=x=>x.split('+').map(z=>z.trim()).filter(Boolean).map(z=>{const m=z.match(/^(\d+)\s*(.+)$/),coef=m?+m[1]:1,formula=m?m[2]:z;return{formula,coef,atoms:parseFormula(formula)}});
-  const left=side(parts[0]),right=side(parts[1]);if(!left.length||!right.length)return null;return{left,right};
-}
-function solve(eq){
-  const all=[...eq.left,...eq.right],els=[...new Set(all.flatMap(x=>Object.keys(x.atoms)))],n=all.length,m=els.length;
-  if(n<2)return null;
-  const A=els.map(e=>all.map((x,i)=>(i<eq.left.length?1:-1)*(x.atoms[e]||0))),rows=A.map(r=>r.map(Number));
-  let r=0,piv=[];
-  for(let c=0;c<n&&r<m;c++){let q=r;for(let k=r+1;k<m;k++)if(Math.abs(rows[k][c])>Math.abs(rows[q][c]))q=k;if(Math.abs(rows[q][c])<1e-12)continue;[rows[r],rows[q]]=[rows[q],rows[r]];const d=rows[r][c];for(let j=c;j<n;j++)rows[r][j]/=d;for(let k=0;k<m;k++)if(k!==r){const f=rows[k][c];if(Math.abs(f)>1e-12)for(let j=c;j<n;j++)rows[k][j]-=f*rows[r][j]}piv.push(c);r++}
-  const free=[];for(let c=0;c<n;c++)if(!piv.includes(c))free.push(c);if(!free.length)return null;
-  let answer=null;
-  function attempt(pos,vals){if(answer)return;if(pos===free.length){const v=Array(n).fill(0);free.forEach((c,i)=>v[c]=vals[i]);for(let q=piv.length-1;q>=0;q--){const c=piv[q];let z=0;for(let j=c+1;j<n;j++)z+=rows[q][j]*v[j];v[c]=-z;}if(v.some(x=>!Number.isFinite(x)||x<=0))return;let den=1;for(const x of v){for(let d=1;d<=1000;d++)if(Math.abs(x*d-Math.round(x*d))<1e-8){den=lcm(den,d);break;}}let co=v.map(x=>Math.round(x*den)),g=co.reduce(gcd,0);if(g)co=co.map(x=>x/g);if(co.some(x=>x<=0||x>100000))return;for(let i=0;i<m;i++){let sum=0;for(let j=0;j<n;j++)sum+=A[i][j]*co[j];if(sum!==0)return;}answer=co;return;}for(let x=1;x<=12;x++)attempt(pos+1,[...vals,x]);}
-  attempt(0,[]);return answer;
-}
-function counts(eq,co){const all=[...eq.left,...eq.right],L={},R={};let i=0;for(const x of eq.left){const c=co[i++];for(const[e,n]of Object.entries(x.atoms))L[e]=(L[e]||0)+n*c}for(const x of eq.right){const c=co[i++];for(const[e,n]of Object.entries(x.atoms))R[e]=(R[e]||0)+n*c}return{L,R};}
-function ratioText(nums){const g=nums.reduce(gcd,0)||1;return nums.map(x=>x/g).join(' : ')}
+function parseFormula(text){const s=String(text||'').replace(/\s+/g,'');let i=0;function group(close){const a={};while(i<s.length){if(close&&s[i]===close){i++;return a}if(s[i]===')')throw Error('Invalid formula');if(s[i]==='('){i++;const g=group(')'),m=s.slice(i).match(/^\d+/),k=m?+m[0]:1;if(m)i+=m[0].length;for(const e in g)a[e]=(a[e]||0)+g[e]*k;continue}const em=s.slice(i).match(/^[A-Z][a-z]?/);if(!em)throw Error('Invalid formula');const e=em[0];i+=e.length;const m=s.slice(i).match(/^\d+/),k=m?+m[0]:1;if(m)i+=m[0].length;a[e]=(a[e]||0)+k}if(close)throw Error('Invalid formula');return a}return group()}
+function parse(raw){const s=normalize(raw).trim();if(!ARROW_RE.test(s))return null;const parts=s.split(ARROW_RE);if(parts.length!==2)return null;const side=x=>x.split('+').map(z=>z.trim()).filter(Boolean).map(z=>{const m=z.match(/^(\d+)\s*(.+)$/),coef=m?+m[1]:1,formula=m?m[2]:z;return{formula,coef,atoms:parseFormula(formula)}});const left=side(parts[0]),right=side(parts[1]);if(!left.length||!right.length)return null;return{left,right}}
+function solve(eq){const all=[...eq.left,...eq.right],els=[...new Set(all.flatMap(x=>Object.keys(x.atoms)))],n=all.length,m=els.length;if(n<2)return null;const A=els.map(e=>all.map((x,i)=>(i<eq.left.length?1:-1)*(x.atoms[e]||0))),rows=A.map(r=>r.map(Number));let r=0,piv=[];for(let c=0;c<n&&r<m;c++){let q=r;for(let k=r+1;k<m;k++)if(Math.abs(rows[k][c])>Math.abs(rows[q][c]))q=k;if(Math.abs(rows[q][c])<1e-12)continue;[rows[r],rows[q]]=[rows[q],rows[r]];const d=rows[r][c];for(let j=c;j<n;j++)rows[r][j]/=d;for(let k=0;k<m;k++)if(k!==r){const f=rows[k][c];if(Math.abs(f)>1e-12)for(let j=c;j<n;j++)rows[k][j]-=f*rows[r][j]}piv.push(c)}const free=[];for(let c=0;c<n;c++)if(!piv.includes(c))free.push(c);if(!free.length)return null;let answer=null;function attempt(pos,vals){if(answer)return;if(pos===free.length){const v=Array(n).fill(0);free.forEach((c,i)=>v[c]=vals[i]);for(let q=piv.length-1;q>=0;q--){const c=piv[q];let z=0;for(let j=c+1;j<n;j++)z+=rows[q][j]*v[j];v[c]=-z}if(v.some(x=>!Number.isFinite(x)||x<=0))return;let den=1;for(const x of v){for(let d=1;d<=1000;d++)if(Math.abs(x*d-Math.round(x*d))<1e-8){den=lcm(den,d);break}}let co=v.map(x=>Math.round(x*den)),g=co.reduce(gcd,0);if(g)co=co.map(x=>x/g);if(co.some(x=>x<=0||x>100000))return;for(let i=0;i<m;i++){let sum=0;for(let j=0;j<n;j++)sum+=A[i][j]*co[j];if(sum!==0)return}answer=co;return}for(let x=1;x<=12&&!answer;x++)attempt(pos+1,[...vals,x])}attempt(0,[]);return answer}
 function equationWithCo(eq,co){let i=0;const side=a=>a.map(x=>{const c=co[i++];return `${c===1?'':c}${pretty(x.formula)}`}).join(' + ');return `${side(eq.left)} → ${side(eq.right)}`}
-function scaleCo(co,mul){return co.map(x=>x*mul)}
-function explain(eq,finalCo){
-  const all=[...eq.left,...eq.right];
-  const base=all.map(x=>x.coef);
-  const original=base.slice();
-  const steps=[];
-  const working=base.slice();
-  const total=(e,arr)=>{let s=0,i=0;for(const x of eq.left){s+=(x.atoms[e]||0)*arr[i++]}i=eq.left.length;for(const x of eq.right){s-=(x.atoms[e]||0)*arr[i++]}return s};
-  const elements=[...new Set(all.flatMap(x=>Object.keys(x.atoms)))];
-  for(const e of elements){
-    if(total(e,working)===0)continue;
-    let left=0,right=0,li=0,ri=eq.left.length;
-    eq.left.forEach(x=>left+=(x.atoms[e]||0)*working[li++]);
-    eq.right.forEach(x=>right+=(x.atoms[e]||0)*working[ri++]);
-    if(!left||!right)continue;
-    let changed=false;
-    const leftCandidates=eq.left.map((x,i)=>({i,atoms:x.atoms[e]||0})).filter(x=>x.atoms>0).sort((a,b)=>b.atoms-a.atoms);
-    const rightCandidates=eq.right.map((x,i)=>({i:i+eq.left.length,atoms:x.atoms[e]||0})).filter(x=>x.atoms>0).sort((a,b)=>b.atoms-a.atoms);
-    if(rightCandidates.length){const target=right;const c=rightCandidates[0];if(target%c.atoms>0){working[c.i]=target/c.atoms;changed=true;}}
-    if(leftCandidates.length&&total(e,working)!==0){const target=right;const c=leftCandidates[0];working[c.i]=target/c.atoms;changed=true;}
-    if(changed)steps.push({element:e,co:working.slice(),reason:`Adjust the coefficient(s) containing ${e} so the number of ${e} atoms matches on both sides.`});
-  }
-  const nums=finalCo.slice();
-  const denom=lcm(nums.reduce((a,b)=>lcm(a,b),1),1);
-  const stageCo=working.some((x,i)=>x!==finalCo[i])?working.slice():original.slice();
-  const normalized=stageCo.map(x=>Number.isInteger(x)?x: x);
-  const finalScale=(()=>{let s=1;for(const x of normalized){if(Number.isInteger(x))continue;for(let d=1;d<=100;d++)if(Math.abs(x*d-Math.round(x*d))<1e-8){s=lcm(s,d);break;}}return s})();
-  if(finalScale>1){const scaled=scaleCo(normalized,finalScale);steps.push({element:null,co:scaled,reason:`The temporary ratio contains fractions, so multiply every coefficient by ${finalScale}. This keeps the atom ratios unchanged and converts them to whole numbers.`});}
-  if(!steps.length){
-    steps.push({element:null,co:finalCo.slice(),reason:'The equation is already balanced, so no coefficient changes are required.'});
-  }
-  steps.push({element:null,co:finalCo.slice(),reason:`The coefficients are reduced to the smallest whole-number ratio: ${ratioText(finalCo)}.`});
-  return steps;
-}
-function inject(){
-  if(out.querySelector('#explanationToggle'))return;
-  if(!out.querySelector('.equation'))return;
-  const btn=document.createElement('button');btn.id='explanationToggle';btn.className='secondary explanation-toggle';btn.type='button';btn.textContent='Explanation';
-  const panel=document.createElement('div');panel.id='balancingExplanation';panel.className='balancing-explanation';panel.hidden=true;
-  btn.addEventListener('click',()=>{panel.hidden=!panel.hidden;btn.textContent=panel.hidden?'Explanation':'Hide explanation';});
-  const eq=parse(input.value);if(!eq)return;const co=solve(eq);if(!co)return;
-  const steps=explain(eq,co);
-  panel.innerHTML=`<div class="explanation-title"><b>Step-by-step balancing</b><p>Each step explains why the coefficient changes and how the atom counts stay conserved.</p></div>${steps.map((s,i)=>{const label=s.element?`Step ${i+1}: Balance ${s.element}`:(i===steps.length-1?'Final:':'Step '+(i+1));return `<div class="explanation-step"><b>${label}</b><div class="explanation-equation">${equationWithCo(eq,s.co)}</div><p>${s.reason}</p></div>`}).join('')}`;
-  const wrap=document.createElement('div');wrap.className='explanation-controls';wrap.append(btn,panel);out.appendChild(wrap);
-}
+function ratioText(nums){const g=nums.reduce(gcd,0)||1;return nums.map(x=>x/g).join(' : ')}
+function isCombustion(eq){return eq.left.length===1&&eq.left[0].atoms.C&&eq.left[0].atoms.H&&eq.right.some(x=>x.formula==='CO2'||x.formula==='CO₂')&&eq.right.some(x=>x.formula==='H2O'||x.formula==='H₂O')&&eq.right.some(x=>x.formula==='O2'||x.formula==='O₂')}
+function combustionExplain(eq,co){const fuel=eq.left[0],base=Array(eq.left.length+eq.right.length).fill(1),ci=eq.left.length+eq.right.findIndex(x=>x.formula==='CO2'||x.formula==='CO₂'),hi=eq.left.length+eq.right.findIndex(x=>x.formula==='H2O'||x.formula==='H₂O'),oi=eq.left.length+eq.right.findIndex(x=>x.formula==='O2'||x.formula==='O₂');const fc=co[0],cc=co[ci],hc=co[hi],oc=co[oi],C=fuel.atoms.C,H=fuel.atoms.H,productO=cc*2+hc;const s1=base.slice();s1[0]=fc;s1[ci]=cc;const s2=s1.slice();s2[hi]=hc;return[
+{label:'Step 1: Balance carbon',eq:equationWithCo(eq,s1),reason:`${fuel.formula} has ${C} carbon atom${C===1?'':'s'}, so place ${cc} ${pretty('CO2')} on the products side. That gives ${C*fc} carbon atoms on each side.`},
+{label:'Step 2: Balance hydrogen',eq:equationWithCo(eq,s2),reason:`${fuel.formula} has ${H} hydrogen atoms. Each ${pretty('H2O')} has 2 hydrogen atoms, so ${hc} ${pretty('H2O')} gives ${H} hydrogen atoms on each side.`},
+{label:'Step 3: Balance oxygen last',eq:equationWithCo(eq,co),reason:`Now count oxygen on the products: ${cc} ${pretty('CO2')} gives ${cc*2} O atoms and ${hc} ${pretty('H2O')} gives ${hc} O atoms, for ${productO} O atoms. Because each ${pretty('O2')} has 2 O atoms, use ${oc} ${pretty('O2')}.`},
+{label:'Final:',eq:equationWithCo(eq,co),reason:`The equation is balanced with the smallest whole-number ratio: ${ratioText(co)}.`}
+]}
+function genericExplain(eq,co){const all=[...eq.left,...eq.right],original=all.map(x=>x.coef),elements=[...new Set(all.flatMap(x=>Object.keys(x.atoms)))],steps=[];for(const e of elements){let before=0;for(let i=0;i<all.length;i++)before+=(i<eq.left.length?1:-1)*(all[i].atoms[e]||0)*original[i];if(before!==0)steps.push({label:`Balance ${e}`,eq:equationWithCo(eq,co),reason:`Adjust the coefficients of the compounds containing ${e} until the number of ${e} atoms is equal on both sides.`})}if(!steps.length)steps.push({label:'Step 1: Check the atom counts',eq:equationWithCo(eq,co),reason:'The balanced coefficients make the number of atoms of every element equal on both sides.'});steps.push({label:'Final:',eq:equationWithCo(eq,co),reason:`All elements are balanced. The smallest whole-number coefficient ratio is ${ratioText(co)}.`});return steps}
+function explain(eq,co){return isCombustion(eq)?combustionExplain(eq,co):genericExplain(eq,co)}
+function inject(){if(out.querySelector('#explanationToggle'))return;if(!out.querySelector('.equation'))return;const btn=document.createElement('button');btn.id='explanationToggle';btn.className='secondary explanation-toggle';btn.type='button';btn.textContent='Explanation';const panel=document.createElement('div');panel.id='balancingExplanation';panel.className='balancing-explanation';panel.hidden=true;btn.addEventListener('click',()=>{panel.hidden=!panel.hidden;btn.textContent=panel.hidden?'Explanation':'Hide explanation'});const eq=parse(input.value);if(!eq)return;const co=solve(eq);if(!co)return;const steps=explain(eq,co);panel.innerHTML=`<div class="explanation-title"><b>Step-by-step balancing</b><p>We balance one element at a time, usually leaving oxygen until the end in combustion reactions.</p></div>${steps.map((s,i)=>`<div class="explanation-step"><b>${s.label||('Step '+(i+1))}</b><div class="explanation-equation">${s.eq}</div><p>${s.reason}</p></div>`).join('')}`;const wrap=document.createElement('div');wrap.className='explanation-controls';wrap.append(btn,panel);out.appendChild(wrap)}
 const obs=new MutationObserver(()=>inject());obs.observe(out,{subtree:true,childList:true});inject();
 })();
