@@ -28,12 +28,26 @@ async function adminFeedback(request,env){
   const rows=await env.DB.prepare(`SELECT id,type,name,email,message,status,created_at FROM feedback ORDER BY created_at DESC,id DESC LIMIT 500`).all();
   return json({feedback:rows.results||[]});
 }
+async function adminStats(request,env,ctx){
+  if(!adminOk(request,env))return json({error:'Unauthorized.'},401);
+  const response=await legacy.fetch(request,env,ctx);
+  const data=await response.json().catch(()=>null);
+  if(!data)return response;
+  try{
+    const locations=await env.DB.prepare(`SELECT COALESCE(NULLIF(city,''),'Unknown') AS city,COALESCE(NULLIF(country,''),'Unknown') AS country,COUNT(DISTINCT visitor_id) AS visitors,COUNT(*) AS views FROM visitor_locations GROUP BY COALESCE(NULLIF(city,''),'Unknown'),COALESCE(NULLIF(country,''),'Unknown') ORDER BY visitors DESC,views DESC`).all();
+    const countries=await env.DB.prepare(`SELECT COALESCE(NULLIF(country,''),'Unknown') AS country,COUNT(DISTINCT visitor_id) AS visitors,COUNT(*) AS views FROM visitor_locations GROUP BY COALESCE(NULLIF(country,''),'Unknown') ORDER BY visitors DESC,views DESC`).all();
+    data.cities=locations.results||data.cities||[];
+    data.countries=countries.results||data.countries||[];
+    return json(data,response.status);
+  }catch{return json(data,response.status)}
+}
 export default {async fetch(request,env,ctx){
   const url=new URL(request.url);
   try{
     if(request.method==='OPTIONS')return new Response(null,{status:204,headers:CORS});
     if(url.pathname==='/api/feedback'&&request.method==='POST')return await feedback(request,env);
     if(url.pathname==='/api/admin/feedback'&&request.method==='GET')return await adminFeedback(request,env);
+    if(url.pathname==='/api/admin/stats'&&request.method==='POST')return await adminStats(request,env,ctx);
     return legacy.fetch(request,env,ctx);
   }catch(e){return json({error:e?.message||'Server error'},500)}
 }};
