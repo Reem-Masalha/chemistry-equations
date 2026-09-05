@@ -33,7 +33,6 @@ const enhance=()=>{
     card.appendChild(e);
   });
 };
-const mo=new MutationObserver(enhance);
-const start=()=>{enhance();mo.observe(document.documentElement,{childList:true,subtree:true})};
-if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();
+enhance();
+document.addEventListener('click',e=>{if(e.target.closest?.('#daily-v5'))setTimeout(enhance,0)},true);
 })();
