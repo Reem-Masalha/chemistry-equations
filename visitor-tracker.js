@@ -36,16 +36,10 @@
       });
     }catch{}
   }
-  function startBalancerGuard(){
-    cleanBalancerExtras();
-    const mo=new MutationObserver(()=>cleanBalancerExtras());
-    mo.observe(document.documentElement,{childList:true,subtree:true});
-  }
+  function startBalancerGuard(){cleanBalancerExtras();}
   if(path==='/'||path==='/index.html'||path.endsWith('/index.html')){
     if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',startBalancerGuard,{once:true});else startBalancerGuard();
   }
-  // Do not report until the page is a normal, visible browser document with
-  // the browser APIs expected from a real interactive page load.
   const browserVerified=()=>{
     if(document.visibilityState!=='visible')return false;
     if(navigator.webdriver===true)return false;
