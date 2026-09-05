@@ -1,0 +1,38 @@
+/* Chemistry Equations — canonical cross-page design contract v13. */
+:root{--site-width:1160px;--site-gap:56px;--site-radius:20px;--site-section:84px;--site-blue:#3158d6;--site-purple:#6c4de8}
+html,body{width:100%;max-width:100%;min-width:0;overflow-x:clip}
+body{box-sizing:border-box}
+.topbar{box-sizing:border-box;width:100%;min-height:72px;padding:10px max(18px,calc((100% - var(--site-width))/2));display:flex;align-items:center;gap:18px}
+.brand{margin-right:auto;white-space:nowrap}
+.main-nav{display:flex;align-items:center;gap:7px;flex:0 0 auto;white-space:nowrap}
+.main-nav a{padding:9px 12px;border-radius:10px;white-space:nowrap}
+main{box-sizing:border-box;width:100%;max-width:var(--site-width);margin:0 auto;min-width:0}
+.hero,.home-page .hero,.quiz-page .hero{box-sizing:border-box;width:100%;min-height:390px;margin:0;padding:68px 0 36px;display:grid;grid-template-columns:minmax(0,1.2fr) minmax(300px,.8fr);gap:var(--site-gap);align-items:center;background:transparent}
+.hero>div:first-child{min-width:0}
+.hero h1{margin:18px 0 20px;font-size:clamp(42px,6vw,70px);line-height:1.02;letter-spacing:-.055em}
+.hero h1 span{background:linear-gradient(135deg,var(--site-blue),var(--site-purple));-webkit-background-clip:text;background-clip:text;color:transparent}
+.hero p{max-width:650px;font-size:18px;line-height:1.55}
+.hero-card,.home-page .hero-card,.quiz-page .hero-card{box-sizing:border-box;width:100%;min-width:0;min-height:140px;margin:0;padding:28px;display:flex;align-items:center;gap:18px;border:1px solid var(--modern-border,#d8e1ed);border-radius:var(--site-radius);background:linear-gradient(145deg,#fff,#f4f7ff);box-shadow:var(--modern-shadow,0 12px 32px rgba(25,43,76,.09))}
+.hero-card .atom{width:90px;height:90px;flex:0 0 90px}
+.hero-card b{font-size:17px}.hero-card p{margin:6px 0 0;line-height:1.5;font-size:16px}
+.section,.home-page .section,.quiz-page .section{box-sizing:border-box;width:100%;margin:0;padding:var(--site-section) 0;background:transparent}
+.section.alt,.home-page .alt,.quiz-page .alt{background:transparent}
+.section-head{box-sizing:border-box;width:100%;margin-bottom:22px}
+.section-head h2{margin-bottom:7px}.section-head p{max-width:760px}
+.card,.hero-card,.lesson,.quiz-q,.steps article,.challenge-feature,.experience-card,.course-map article,.mistake,.course-note,.stats-card,.home-value-card,.next-card{box-sizing:border-box;border:1px solid var(--modern-border,#d8e1ed);border-radius:var(--site-radius);background:#fff;box-shadow:var(--modern-shadow,0 12px 32px rgba(25,43,76,.09))}
+.card:hover,.lesson:hover,.quiz-q:hover,.challenge-feature:hover,.experience-card:hover,.course-map article:hover,.mistake:hover,.home-value-card:hover{box-shadow:var(--modern-shadow-lg,0 22px 55px rgba(25,43,76,.14))}
+.primary,.secondary,.chips button{min-height:45px;border-radius:12px;font-weight:800}
+footer{box-sizing:border-box;width:100%;min-height:64px}
+/* Feature layouts may vary; their visual language must not. */
+.course-map,.lesson-grid,.steps,.quiz-list,.progress-grid{gap:18px}
+.course-map article,.mistake{padding:20px}
+.home-value{gap:18px;margin-top:26px}.home-value-card{min-height:120px;padding:20px}
+.path-card{position:relative;overflow:hidden}.path-card:before{content:"";position:absolute;left:0;right:0;top:0;height:4px;background:linear-gradient(90deg,var(--site-blue),var(--site-purple))}
+body.dark .hero-card{background:linear-gradient(145deg,#171f2d,#1b2435);border-color:#2b394d;color:#edf2fa}
+body.dark .card,body.dark .lesson,body.dark .quiz-q,body.dark .steps article,body.dark .challenge-feature,body.dark .experience-card,body.dark .course-map article,body.dark .mistake,body.dark .course-note,body.dark .stats-card,body.dark .home-value-card,body.dark .next-card{background:#171f2d;border-color:#2b394d;color:#edf2fa}
+@media(max-width:1100px){.topbar{gap:12px}.main-nav{gap:4px}.main-nav a{padding:9px 10px;font-size:13px}.hero,.home-page .hero,.quiz-page .hero{gap:32px}}
+@media(max-width:760px){
+ .topbar{display:grid;grid-template-columns:minmax(0,1fr) auto auto auto;align-items:center;gap:7px;padding:8px 12px}
+ .brand{min-width:0;overflow:hidden;text-overflow:ellipsis}.main-nav{display:none}
+ main{padding:0 12px}.hero,.home-page .hero,.quiz-page .hero{display:block;min-height:0;padding:48px 0 42px}.hero h1{font-size:clamp(38px,12vw,54px)}.hero p{font-size:16px}.hero-card{margin-top:22px;min-height:0;padding:19px}.hero-card .atom{width:58px;height:58px;flex-basis:58px}.section,.home-page .section,.quiz-page .section{padding:34px 0}.home-value{grid-template-columns:1fr;gap:12px;margin-top:20px}.home-value-card{min-height:0;padding:18px}
+}
