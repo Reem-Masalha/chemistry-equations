@@ -1,7 +1,7 @@
 (()=>{
 'use strict';
 const KEY='chemistryTheme';
-const DESIGN=['modern-refresh.css?v=20260905-unified-site-11','site-shell.css?v=20260905-shell-parity-11'];
+const DESIGN=['modern-refresh.css?v=20260905-unified-site-12','site-shell.css?v=20260905-shell-parity-12'];
 const installDesign=()=>DESIGN.forEach((href,i)=>{const key='unified-design-'+i;if(document.querySelector('link[data-'+key+']'))return;const l=document.createElement('link');l.rel='stylesheet';l.href=href;l.dataset[key]='1';(document.head||document.documentElement).appendChild(l)});
 const loadScript=src=>{if(document.querySelector(`script[src^="${src}"]`))return Promise.resolve();return new Promise(resolve=>{const s=document.createElement('script');s.src=src;s.defer=true;s.onload=resolve;s.onerror=resolve;(document.head||document.documentElement).appendChild(s)})};
 const installShellParity=()=>{if(document.getElementById('siteShellParity'))return;const s=document.createElement('style');s.id='siteShellParity';s.textContent=`
