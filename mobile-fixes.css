@@ -2,6 +2,9 @@
 /* Admin testing controls use the same blue primary treatment as the rest of the site and retain the original readable button size. */
 #adminTesting .admin-tools-buttons button{background:var(--accent,#3158d6)!important;color:#fff!important;border-color:var(--accent,#3158d6)!important;font-size:16px!important;font-weight:600!important;line-height:1.2!important}
 #adminTesting .admin-tools-buttons button:hover{filter:brightness(.96)}
+/* Button normalization: Learning-page path buttons must use the exact shared .primary geometry. */
+.home-page .hero .primary{min-height:45px!important;padding:10px 15px!important;border-radius:12px!important;font-weight:800!important;box-shadow:0 10px 24px rgba(49,88,214,.22)!important}
+.home-page .path-card .path-button{width:auto!important;min-height:45px!important;margin-top:18px!important;padding:10px 15px!important;display:inline-flex!important;flex-direction:row!important;align-items:center!important;justify-content:center!important;gap:0!important;text-align:center!important;line-height:1.2!important;border-radius:12px!important;font-size:16px!important;font-weight:800!important;white-space:normal!important}
 @media (max-width: 760px) {
   html, body { max-width: 100%; overflow-x: hidden; }
   body { padding-bottom: 64px; }
@@ -36,9 +39,8 @@
   .input-row > * { width: 100%; min-width: 0; min-height: 48px; }
   .chips { grid-template-columns: 1fr 1fr; }
   .chips button { min-height: 46px; padding: 10px 7px; }
-  .path-card .path-button { width: 100%; min-height: 54px; display: grid !important; grid-template-columns: 1fr auto 1fr; align-items: center !important; padding: 12px 14px !important; gap: 0 !important; text-align: center !important; }
-  .path-card .path-button span:first-child { grid-column: 1 / 4; grid-row: 1; justify-self: center; }
-  .path-card .path-button span:last-child { grid-column: 3; grid-row: 1; justify-self: end; margin-left: 8px; }
+  .path-card .path-button{width:auto!important;min-height:45px!important;margin-top:18px!important;display:inline-flex!important;grid-template-columns:none!important;align-items:center!important;justify-content:center!important;padding:10px 15px!important;gap:0!important;text-align:center!important;border-radius:12px!important;font-size:15px!important;font-weight:800!important;white-space:normal!important}
+  .path-card .path-button span:first-child,.path-card .path-button span:last-child{grid-column:auto!important;grid-row:auto!important;justify-self:auto!important;margin-left:0!important}
   .stage-list .stage { min-height: 58px; }
   table { min-width: 560px; }
   .scroll { max-width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
