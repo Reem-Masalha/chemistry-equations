@@ -27,7 +27,7 @@ jobs:
           ref: ${{ github.sha }}
           fetch-depth: 1
 
-      - name: Defer Daily Challenge startup on Learn
+      - name: Disable Daily Challenge startup on Learn
         shell: bash
         run: |
           set -euo pipefail
@@ -35,11 +35,12 @@ jobs:
           from pathlib import Path
           p=Path('learn.html')
           s=p.read_text(encoding='utf-8')
-          old='''<script src="daily-challenge-clean.js?v=20260903-stable-2" defer></script><script src="daily-challenge-habit.js?v=20260903-habit-1" defer></script>'''
-          new='''<script src="daily-challenge-loader.js?v=20260905-lazy-1" defer></script>'''
-          if old not in s:
-              raise SystemExit('Expected Daily Challenge startup scripts were not found in learn.html')
-          p.write_text(s.replace(old,new),encoding='utf-8')
+          import re
+          pattern=r'<script src="daily-challenge-(?:clean|habit|polish|loader)\.js[^>]*></script>'
+          s2=re.sub(pattern,'',s)
+          if s2==s:
+              raise SystemExit('No Daily Challenge startup scripts were found in learn.html')
+          p.write_text(s2,encoding='utf-8')
           PY
 
       - name: Verify JavaScript
