@@ -1,7 +1,7 @@
 (()=>{
 'use strict';
 const KEY='chemistryTheme';
-const DESIGN=['modern-refresh.css?v=20260905-unified-site-12','site-shell.css?v=20260905-shell-parity-12'];
+const DESIGN=['modern-refresh.css?v=20260905-unified-site-13','site-shell.css?v=20260905-shell-parity-13','site-unified-v13.css?v=20260905-canonical-design-13'];
 const installDesign=()=>DESIGN.forEach((href,i)=>{const key='unified-design-'+i;if(document.querySelector('link[data-'+key+']'))return;const l=document.createElement('link');l.rel='stylesheet';l.href=href;l.dataset[key]='1';(document.head||document.documentElement).appendChild(l)});
 const loadScript=src=>{if(document.querySelector(`script[src^="${src}"]`))return Promise.resolve();return new Promise(resolve=>{const s=document.createElement('script');s.src=src;s.defer=true;s.onload=resolve;s.onerror=resolve;(document.head||document.documentElement).appendChild(s)})};
 const installShellParity=()=>{if(document.getElementById('siteShellParity'))return;const s=document.createElement('style');s.id='siteShellParity';s.textContent=`
@@ -31,7 +31,6 @@ main{box-sizing:border-box!important;width:100%!important;max-width:var(--site-c
 .card:hover,.experience-card:hover,.lesson:hover,.course-map article:hover,.home-value-card:hover{box-shadow:var(--modern-shadow-lg,0 22px 55px rgba(25,43,76,.14))!important}
 .primary,.secondary,.chips button{min-height:45px!important;border-radius:12px!important;font-weight:800!important}
 footer{box-sizing:border-box!important;width:100%!important;min-height:64px!important}
-.home-value{gap:18px!important;margin-top:26px!important}.home-value-card{min-height:120px!important;padding:20px!important}.course-map article{padding:20px!important}.course-note,.mistakes-card{border-radius:20px!important}.home-page .lesson{border-radius:20px!important}.home-page .alt{background:transparent!important}
 body.dark{background:#0b111b!important;color:#edf2fa!important}
 body.dark .hero-card{background:linear-gradient(145deg,#171f2d,#1b2435)!important;border-color:#2b394d!important;color:#edf2fa!important}
 body.dark .card,body.dark .experience-card,body.dark .challenge-feature,body.dark .quiz-q,body.dark .steps article,body.dark .lesson,body.dark .course-map article,body.dark .mistake,body.dark .course-note,body.dark .stats-card,body.dark .home-value-card,body.dark .next-card{background:#171f2d!important}
