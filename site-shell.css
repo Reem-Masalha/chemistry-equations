@@ -6,17 +6,19 @@
 .account-top,#themeToggle{flex:0 0 auto!important;min-height:45px!important;padding:10px 14px!important;border-radius:12px!important;font-weight:800!important;white-space:nowrap!important}
 #themeToggle{border:1px solid #d4deeb!important;background:#fff!important;color:#142033!important;box-shadow:0 5px 16px rgba(25,43,76,.07)!important;cursor:pointer!important}
 #themeToggle:hover{transform:translateY(-1px)!important;border-color:#b7c7dc!important;background:#f7f9ff!important}
-/* Make legacy page-title pages use the same two-column hero structure as Learn, Quiz and Balancer. */
-.page-title{position:relative!important;display:grid!important;grid-template-columns:minmax(0,1fr) minmax(300px,420px)!important;align-items:center!important;gap:56px!important;padding-top:88px!important;padding-bottom:78px!important}
-.page-title>div:first-child{min-width:0!important}
-.page-title h1{font-size:clamp(42px,6vw,70px)!important;line-height:1.02!important;letter-spacing:-.055em!important;margin-top:18px!important}
-.page-title p{max-width:820px!important;font-size:19px!important;line-height:1.72!important}
-.page-title h1 span{background:linear-gradient(135deg,#3158d6,#6c4de8);-webkit-background-clip:text;background-clip:text;color:transparent!important}
-.page-title .eyebrow{display:inline-flex!important;align-items:center!important;padding:7px 12px!important;border-radius:999px!important;background:#e9edff!important;color:#3158d6!important;letter-spacing:.12em!important}
+/* Legacy pages now use the same actual two-column geometry as the main .hero. */
+.page-title{position:relative!important;display:grid!important;grid-template-columns:minmax(0,1fr) minmax(300px,420px)!important;grid-template-rows:auto auto auto!important;align-items:center!important;gap:0 56px!important;padding-top:88px!important;padding-bottom:78px!important}
+.page-title>.eyebrow{grid-column:1!important;grid-row:1!important;align-self:end!important}
+.page-title>h1{grid-column:1!important;grid-row:2!important;align-self:start!important}
+.page-title>p{grid-column:1!important;grid-row:3!important;align-self:start!important}
 .page-title:before{content:""!important;position:absolute!important;left:-7%!important;right:-7%!important;top:28px!important;height:390px!important;border-radius:42px!important;background:linear-gradient(135deg,rgba(255,255,255,.72),rgba(239,243,255,.62),rgba(250,248,255,.38))!important;z-index:-1!important;pointer-events:none!important}
-.page-title:after{content:"⚗\A Chemistry tools"!important;white-space:pre!important;display:flex!important;flex-direction:column!important;justify-content:center!important;align-items:center!important;text-align:center!important;min-height:190px!important;padding:28px!important;border:1px solid #d3ddeb!important;border-radius:20px!important;background:linear-gradient(145deg,#fff,#f4f7ff)!important;box-shadow:0 12px 32px rgba(25,43,76,.09)!important;font-size:18px!important;font-weight:800!important;line-height:1.55!important;color:#142033!important}
+.page-title:after{content:"⚗\A Chemistry tools"!important;white-space:pre!important;grid-column:2!important;grid-row:1 / 4!important;align-self:center!important;justify-self:stretch!important;display:flex!important;flex-direction:column!important;justify-content:center!important;align-items:center!important;text-align:center!important;min-height:190px!important;padding:28px!important;border:1px solid #d3ddeb!important;border-radius:20px!important;background:linear-gradient(145deg,#fff,#f4f7ff)!important;box-shadow:0 12px 32px rgba(25,43,76,.09)!important;font-size:18px!important;font-weight:800!important;line-height:1.55!important;color:#142033!important;box-sizing:border-box!important}
 body:has(.challenge-hero) .page-title:after{content:"🏆\A Live challenge"!important}
 body:has(.checker-card) .page-title:after{content:"✓\A Check every element"!important}
+.page-title h1{font-size:clamp(42px,6vw,70px)!important;line-height:1.02!important;letter-spacing:-.055em!important;margin-top:18px!important;margin-bottom:.5rem!important}
+.page-title p{max-width:820px!important;font-size:19px!important;line-height:1.72!important;margin-bottom:0!important}
+.page-title h1 span{background:linear-gradient(135deg,#3158d6,#6c4de8);-webkit-background-clip:text;background-clip:text;color:transparent!important}
+.page-title .eyebrow{display:inline-flex!important;align-items:center!important;padding:7px 12px!important;border-radius:999px!important;background:#e9edff!important;color:#3158d6!important;letter-spacing:.12em!important}
 .section{padding-top:84px!important;padding-bottom:84px!important}
 .card,.experience-card,.challenge-feature,.next-card{border-radius:20px!important}
 .primary,.secondary,.chips button{min-height:45px!important;border-radius:12px!important;font-weight:800!important}
@@ -27,7 +29,7 @@ body.dark #themeToggle:hover{background:#202b3d!important;border-color:#455773!i
 body.dark .page-title .eyebrow{background:#202c52!important;color:#b9c5ff!important}
 body.dark .page-title:before{background:linear-gradient(135deg,rgba(27,37,64,.72),rgba(24,32,49,.62),rgba(16,22,34,.18))!important}
 body.dark .page-title:after{border-color:#2b394d!important;background:linear-gradient(145deg,#171f2d,#1b2435)!important;color:#edf2fa!important;box-shadow:0 12px 34px rgba(0,0,0,.21)!important}
-@media(max-width:1100px){.topbar{gap:12px!important}.main-nav{gap:4px!important}.main-nav a{padding:9px 10px!important;font-size:13px!important}.account-top{padding:9px 10px!important}.page-title{gap:32px!important;grid-template-columns:minmax(0,1fr) minmax(250px,340px)!important}}
+@media(max-width:1100px){.topbar{gap:12px!important}.main-nav{gap:4px!important}.main-nav a{padding:9px 10px!important;font-size:13px!important}.account-top{padding:9px 10px!important}.page-title{gap:0 32px!important;grid-template-columns:minmax(0,1fr) minmax(250px,340px)!important}}
 @media(max-width:760px){
 html,body{width:100%!important;max-width:100%!important;overflow-x:clip!important}
 main{width:100%!important;max-width:100%!important;min-width:0!important}
@@ -39,10 +41,11 @@ main{width:100%!important;max-width:100%!important;min-width:0!important}
 #themeToggle::first-letter{font-size:18px!important}
 .account-top{grid-column:3!important;font-size:0!important}
 .account-top::first-letter{font-size:18px!important}
-.page-title{display:block!important;padding-top:38px!important;padding-bottom:34px!important}
-.page-title h1{font-size:clamp(38px,12vw,54px)!important}
-.page-title p{font-size:17px!important;line-height:1.6!important}
+.page-title{display:grid!important;grid-template-columns:1fr!important;grid-template-rows:auto auto auto auto!important;gap:0!important;padding-top:38px!important;padding-bottom:34px!important}
+.page-title>.eyebrow{grid-column:1!important;grid-row:1!important}
+.page-title>h1{grid-column:1!important;grid-row:2!important;font-size:clamp(38px,12vw,54px)!important}
+.page-title>p{grid-column:1!important;grid-row:3!important;font-size:17px!important;line-height:1.6!important}
 .page-title:before{top:8px!important;height:260px!important;border-radius:28px!important}
-.page-title:after{margin-top:22px!important;min-height:120px!important;padding:20px!important;border-radius:17px!important}
+.page-title:after{grid-column:1!important;grid-row:4!important;margin-top:22px!important;min-height:120px!important;padding:20px!important;border-radius:17px!important}
 .section{padding-top:34px!important;padding-bottom:34px!important}
 }
