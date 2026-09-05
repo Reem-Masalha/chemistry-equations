@@ -1,32 +1,30 @@
-/* Learning path buttons — polished layout */
-.path-grid{align-items:stretch!important;}
-.path-card{display:flex!important;flex-direction:column!important;}
+/* Learning path buttons — use the same shared button design as the rest of the site. */
+.path-grid{align-items:stretch!important}
+.path-card{display:flex!important;flex-direction:column!important}
 .path-card > .path-button,
 .path-card > a.primary,
 #beginner .section-head > .path-button,
 #intermediate .section-head > .path-button,
 #advanced .section-head > .path-button{
-  width:100%!important;
-  min-height:54px!important;
-  margin-top:auto!important;
-  padding:12px 18px!important;
-  display:flex!important;
+  width:auto!important;
+  min-height:45px!important;
+  margin-top:18px!important;
+  padding:12px 16px!important;
+  display:inline-flex!important;
   flex-direction:row!important;
   align-items:center!important;
   justify-content:center!important;
-  align-content:center!important;
-  text-align:center!important;
   gap:9px!important;
-  border-radius:15px!important;
+  border-radius:12px!important;
   color:#fff!important;
   -webkit-text-fill-color:#fff!important;
   font-weight:800!important;
   line-height:1.2!important;
-  letter-spacing:.01em!important;
+  letter-spacing:normal!important;
   text-decoration:none!important;
   white-space:nowrap!important;
-  box-shadow:0 8px 18px rgba(49,88,214,.18)!important;
-  transition:transform .18s ease,box-shadow .18s ease,filter .18s ease!important;
+  box-shadow:0 10px 24px rgba(49,88,214,.22)!important;
+  transition:transform .16s ease,box-shadow .16s ease,border-color .16s ease,background .16s ease,filter .16s ease!important;
 }
 .path-card > .path-button:hover,
 .path-card > a.primary:hover,
@@ -34,8 +32,8 @@
 #intermediate .section-head > .path-button:hover,
 #advanced .section-head > .path-button:hover{
   transform:translateY(-2px)!important;
-  filter:brightness(1.06)!important;
-  box-shadow:0 12px 24px rgba(49,88,214,.24)!important;
+  filter:saturate(1.07)!important;
+  box-shadow:0 16px 34px rgba(49,88,214,.28)!important;
 }
 .path-card > .path-button:focus-visible,
 .path-card > a.primary:focus-visible,
@@ -52,25 +50,25 @@
 #advanced .section-head > .path-button > span{
   flex:0 0 auto!important;
 }
-@media (max-width:760px){
+@media(max-width:760px){
   .path-card > .path-button,
   .path-card > a.primary,
   #beginner .section-head > .path-button,
   #intermediate .section-head > .path-button,
   #advanced .section-head > .path-button{
-    min-height:54px!important;
-    border-radius:14px!important;
+    min-height:45px!important;
+    border-radius:12px!important;
     font-size:15px!important;
-    padding:13px 14px!important;
+    padding:12px 14px!important;
   }
 }
-@media (max-width:390px){
+@media(max-width:390px){
   .path-card > .path-button,
   .path-card > a.primary,
   #beginner .section-head > .path-button,
   #intermediate .section-head > .path-button,
   #advanced .section-head > .path-button{
-    min-height:52px!important;
+    min-height:45px!important;
     font-size:14px!important;
   }
 }
