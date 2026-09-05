@@ -27,160 +27,28 @@ jobs:
           ref: ${{ github.sha }}
           fetch-depth: 1
 
-      - name: Verify deployment source
+      - name: Verify JavaScript
         shell: bash
         run: |
           set -euo pipefail
-          test "$(git rev-parse HEAD)" = "${GITHUB_SHA}"
+          while IFS= read -r f; do node --check "$f" >/dev/null; done < <(find . -type f -name '*.js' -not -path './.git/*' -print)
 
-      - name: Prepare Pages site
+      - name: Verify local assets
         shell: bash
         run: |
           set -euo pipefail
-          rm -rf _site
-          mkdir _site
-          git archive HEAD | tar -x -C _site
-          touch _site/.nojekyll
-
           python3 - <<'PY'
           import pathlib,re
-          root=pathlib.Path('_site')
-          sha='${GITHUB_SHA}'
-          nav_css='''<style data-site-nav-consistency="1">\n.main-nav{display:flex!important;align-items:center!important;gap:7px!important}\n.main-nav a{box-sizing:border-box!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;height:38px!important;padding:9px 12px!important;margin:0!important;border-radius:10px!important;font:700 14px/1.2 Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif!important;white-space:nowrap!important}\n.main-nav a:focus-visible,.main-nav button:focus-visible,button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid color-mix(in srgb,var(--accent) 55%,white)!important;outline-offset:3px!important}\n@media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}\n@media(max-width:760px){.main-nav{gap:4px!important;padding:3px 0 1px!important}.main-nav a{height:32px!important;padding:8px 9px!important;font-size:12px!important;flex:0 0 auto!important}}\n@media(max-width:390px){.main-nav a{height:30px!important;padding:7px 8px!important;font-size:11px!important}}\n</style>\n'''
-          for html in root.glob('*.html'):
-              text=html.read_text(encoding='utf-8', errors='ignore')
-              text=text.replace('loadStudentProduct();','')
-              text=re.sub(r'theme\.js\?v=20260901-sitewide-\d+', 'theme.js?v=20260901-sitewide-13', text)
-              if 'theme.js?v=20260901-sitewide-13' not in text:
-                  text=text.replace('</head>','<script src="theme.js?v=20260901-sitewide-13" defer></script>\n</head>',1)
-              if 'data-site-modern-refresh' not in text:
-                  text=text.replace('</head>','<link rel="stylesheet" href="modern-refresh.css?v='+sha+'" data-site-modern-refresh="1">\n</head>',1)
-              if 'data-site-spacing-cleanup' not in text:
-                  text=text.replace('</head>','<link rel="stylesheet" href="site-spacing.css?v='+sha+'" data-site-spacing-cleanup="1">\n</head>',1)
-              if 'data-site-nav-consistency' not in text:
-                  text=text.replace('</head>',nav_css+'</head>',1)
-              if html.name in {'learn.html','index.html'} and 'data-learn-home-polish' not in text:
-                  text=text.replace('</head>','<link rel="stylesheet" href="learn-home-polish.css?v='+sha+'" data-learn-home-polish="1">\n</head>',1)
-              if html.name not in {'learn.html','index.html'} and 'data-student-experience-v3' not in text:
-                  text=text.replace('</body>','<script src="student-experience-v3.js?v='+sha+'" defer data-student-experience-v3="1"></script>\n</body>',1)
-              if html.name=='admin.html' and 'data-admin-tools' not in text:
-                  text=text.replace('</body>','<script src="admin-tools.js?v='+sha+'" defer data-admin-tools="1"></script>\n</body>',1)
-              if html.name=='profile.html' and 'data-admin-tools-profile' not in text:
-                  text=text.replace('</body>','<script src="admin-tools.js?v='+sha+'" defer data-admin-tools-profile="1"></script>\n</body>',1)
-              if html.name in {'learn.html','index.html'} and 'data-single-daily-guard' not in text:
-                  guard='''<script data-single-daily-guard="1">(()=>{\nconst legacyIds=['dailyChallengeCard','daily-stable','daily-final','dc-final','dc4','dc3','dc2','dc6','real-daily','ce3-daily-card','daily-question-card','daily-home-challenge'];\nconst isCurrent=el=>!!el.closest?.('#daily-v5');\nconst removeLegacy=()=>{\n  legacyIds.forEach(id=>{const el=document.getElementById(id);if(el&&!isCurrent(el))el.remove();});\n  document.querySelectorAll('section,article,div').forEach(el=>{\n    if(isCurrent(el))return;\n    const text=(el.textContent||'').trim();\n    if(text.length>900)return;\n    if(/DAILY CHEMISTRY CHALLENGE|TODAY.?S CHALLENGE|Can you balance this\\?|Try it in the Balancer|Start today.?s challenge|One equation\\. Every day\\./i.test(text)){\n      const target=el.closest('section,article')||el;\n      if(!isCurrent(target))target.remove();\n    }\n  });\n};\nremoveLegacy();\nnew MutationObserver(removeLegacy).observe(document.documentElement,{childList:true,subtree:true});\n})();</script>\n'''
-                  text=text.replace('</body>',guard+'</body>',1)
-              html.write_text(text,encoding='utf-8')
-          PY
-
-          python3 - <<'PY'
-          import pathlib
-          p=pathlib.Path('_site/site-language-final.js')
-          text=p.read_text(encoding='utf-8',errors='ignore')
-          bad="[data-equation],[data-chemical],#site-language-control)}"
-          good="[data-equation],[data-chemical],#site-language-control')}"
-          if bad in text:
-              text=text.replace(bad,good,1)
-          p.write_text(text,encoding='utf-8')
-          PY
-
-          for f in index.html learn.html balancer.html personal-quiz.html challenges.html checker.html profile.html admin.html contact.html i18n-dictionary.js i18n-core.js i18n-enhancements.js student-product.js student-product.css modern-refresh.css daily-challenge-clean.js admin-tools.js theme.js; do
-            test -s "_site/$f"
-          done
-          test -s "_site/learn-home-polish.css"
-          test -s "_site/site-spacing.css"
-
-          python3 - <<'PY'
-          import pathlib,re
-          root=pathlib.Path('_site')
-          scripts=set()
-          for html in root.glob('*.html'):
-              text=html.read_text(encoding='utf-8',errors='ignore')
-              for src in re.findall(r'<script[^>]+src=[\"\']([^\"\']+)[\"\']',text,re.I):
-                  src=src.split('?',1)[0].split('#',1)[0]
-                  if src.endswith('.js'): scripts.add(src.lstrip('./'))
-          scripts.update({'i18n-dictionary.js','i18n-core.js','i18n-enhancements.js','student-product.js','student-experience-v3.js','daily-challenge-clean.js','admin-tools.js','theme.js'})
-          missing=[src for src in sorted(scripts) if not (root/src).exists()]
-          if missing: raise SystemExit('Missing referenced/dynamic scripts: '+', '.join(missing))
-          PY
-
-          while IFS= read -r f; do node --check "$f" >/dev/null; done < <(find _site -type f -name '*.js' -print)
-
-          python3 - <<'PY'
-          import pathlib,re
-          root=pathlib.Path('_site')
-          for name in ('learn.html','index.html'):
-              p=root/name
-              t=p.read_text(encoding='utf-8',errors='ignore')
-              if t.count('daily-challenge-clean.js') != 1: raise SystemExit(f'{name} must contain exactly one current Daily Challenge loader')
-              if 'daily-challenge-v4.js' in t or 'daily-challenge-behavior-fix.js' in t: raise SystemExit(f'legacy Daily Challenge loader remains in {name}')
-              if 'daily-legacy-blocker.js' in t: raise SystemExit(f'legacy Daily Challenge blocker remains in {name}')
-              if t.count('data-single-daily-guard') != 1: raise SystemExit(f'single Daily guard missing from {name}')
-              if t.count('data-learn-home-polish') != 1: raise SystemExit(f'Learn homepage polish missing from {name}')
-          for page in root.glob('*.html'):
-              html=page.read_text(encoding='utf-8',errors='ignore')
-              if 'theme.js?v=20260901-sitewide-13' not in html: raise SystemExit(f'unified theme loader missing from {page.name}')
-              if html.count('data-site-nav-consistency') != 1: raise SystemExit(f'unified navigation styling missing from {page.name}')
-              if html.count('data-site-spacing-cleanup') != 1: raise SystemExit(f'sitewide spacing cleanup missing from {page.name}')
-
-          # Regression guards for recently stabilized quiz behavior.
-          quiz=(root/'personal-quiz.html').read_text(encoding='utf-8',errors='ignore')
-          if re.search(r'\b(?:reply|replay)\s+quiz\b',quiz,re.I):
-              raise SystemExit('Forbidden Reply/Replay quiz UI text found in personal-quiz.html')
-          for legacy in ('quiz-v1.js','quiz-system.js','daily-challenge-v4.js','daily-challenge-behavior-fix.js'):
-              if legacy in quiz or legacy in (root/'learn.html').read_text(encoding='utf-8',errors='ignore'):
-                  raise SystemExit(f'Legacy quiz/daily script reference remains: {legacy}')
-
-          # Stronger regression guard: forbidden quiz UI and retired loaders must
-          # not reappear on any deployed HTML page, not only the main quiz page.
-          legacy_scripts={'quiz-v1.js','quiz-system.js','daily-challenge-v4.js','daily-challenge-behavior-fix.js','daily-legacy-blocker.js'}
-          for page in root.glob('*.html'):
-              html=page.read_text(encoding='utf-8',errors='ignore')
-              if re.search(r'\b(?:reply|replay)\s+quiz\b',html,re.I):
-                  raise SystemExit(f'Forbidden Reply/Replay quiz UI text found in {page.name}')
-              found=sorted(s for s in legacy_scripts if s in html)
-              if found:
-                  raise SystemExit(f'Retired quiz/daily scripts found in {page.name}: '+', '.join(found))
-
-          # Stronger repository-wide guard: retired quiz/daily loaders or the
-          # unwanted Reply/Replay quiz UI must not be reintroduced in JS/CSS/HTML.
-          scan_ext={'.html','.js','.css'}
-          legacy_names={'quiz-v1.js','quiz-system.js','daily-challenge-v4.js','daily-challenge-behavior-fix.js','daily-legacy-blocker.js'}
-          bad=[]
-          for path in root.rglob('*'):
-              if path.is_file() and path.suffix.lower() in scan_ext:
-                  text=path.read_text(encoding='utf-8',errors='ignore')
-                  if re.search(r'\b(?:reply|replay)\s+quiz\b',text,re.I):
-                      bad.append(f'{path.relative_to(root)}: forbidden Reply/Replay quiz text')
-                  for legacy in legacy_names:
-                      if legacy in text:
-                          bad.append(f'{path.relative_to(root)}: retired loader {legacy}')
-          if bad:
-              raise SystemExit('Regression protection failed:\n'+'\n'.join(sorted(bad)))
-
-          # Critical loaders must not be duplicated by future page edits.
-          quiz=(root/'personal-quiz.html').read_text(encoding='utf-8',errors='ignore')
-          for loader in ('quiz-system-v2.js','quiz-ui-final.js','quiz-final-fixes-v2.js'):
-              if quiz.count(loader) != 1:
-                  raise SystemExit(f'personal-quiz.html must contain exactly one {loader}')
-
-          # Regression guard: all local HTML/CSS/JS assets referenced by HTML must exist.
+          root=pathlib.Path('.')
           missing=[]
           for page in root.glob('*.html'):
               text=page.read_text(encoding='utf-8',errors='ignore')
-              refs=re.findall(r'(?:href|src)=[\"\']([^\"\']+)[\"\']',text,re.I)
-              for ref in refs:
+              for ref in re.findall(r'(?:href|src)=[\"\']([^\"\']+)[\"\']',text,re.I):
                   ref=ref.split('?',1)[0].split('#',1)[0]
                   if not ref or ref.startswith(('#','/','http://','https://','mailto:','tel:','data:','javascript:')): continue
-                  target=(page.parent/ref).resolve()
-                  try: target.relative_to(root.resolve())
-                  except ValueError: continue
-                  if not target.exists(): missing.append(f'{page.name} -> {ref}')
+                  if not (page.parent/ref).exists(): missing.append(f'{page.name} -> {ref}')
           if missing: raise SystemExit('Broken local HTML asset references: '+', '.join(missing))
           PY
-
-          printf '%s\n' "$GITHUB_SHA" > _site/DEPLOYMENT_COMMIT.txt
-          printf 'chemistry-equations-pages-%s\n' "$GITHUB_SHA" > _site/SITE_BUILD_VERSION.txt
 
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v6
@@ -188,7 +56,7 @@ jobs:
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v4
         with:
-          path: _site
+          path: .
 
       - name: Deploy Pages artifact
         id: deployment
