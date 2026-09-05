@@ -1,10 +1,10 @@
 (()=>{
 'use strict';
 const KEY='chemistryTheme';
-const DESIGN=['modern-refresh.css?v=20260905-unified-site-4','site-shell.css?v=20260905-shell-parity-5'];
+const DESIGN=['modern-refresh.css?v=20260905-unified-site-6','site-shell.css?v=20260905-shell-parity-7'];
 const installDesign=()=>DESIGN.forEach((href,i)=>{const key='unified-design-'+i;if(document.querySelector('link[data-'+key+']'))return;const l=document.createElement('link');l.rel='stylesheet';l.href=href;l.dataset[key]='1';(document.head||document.documentElement).appendChild(l)});
 const installShellParity=()=>{if(document.getElementById('siteShellParity'))return;const s=document.createElement('style');s.id='siteShellParity';s.textContent=`
-/* One final shell for every page. Page-specific styles may control content, never the shared geometry. */
+/* Final shared visual system. Page content may differ; page chrome and surfaces do not. */
 :root{--site-content-width:1160px}
 body{margin:0!important;min-width:0!important}
 .topbar{width:100%!important;box-sizing:border-box!important;min-height:72px!important}
@@ -15,11 +15,19 @@ main{box-sizing:border-box!important;width:100%!important;max-width:var(--site-c
 .hero-card .atom{width:90px!important;height:90px!important;flex:0 0 90px!important}
 .hero h1{margin-top:18px!important;margin-bottom:20px!important;font-size:clamp(42px,6vw,70px)!important;line-height:1.02!important}
 .hero p{max-width:650px!important;font-size:18px!important;line-height:1.55!important}
-.section,.home-page .section,.quiz-page .section{box-sizing:border-box!important;width:100%!important;padding-top:84px!important;padding-bottom:84px!important}
+.section,.home-page .section,.quiz-page .section{box-sizing:border-box!important;width:100%!important;padding-top:84px!important;padding-bottom:84px!important;background:transparent!important}
+.section.alt,.home-page .section.alt{background:transparent!important}
 .section-head{box-sizing:border-box!important;width:100%!important}
 .card,.experience-card,.challenge-feature,.quiz-q,.steps article,.hero-card{border-radius:20px!important}
 .primary,.secondary,.chips button{min-height:45px!important;border-radius:12px!important;font-weight:800!important}
 footer{box-sizing:border-box!important;width:100%!important;min-height:64px!important}
+/* Learning-only surfaces now use exactly the same card language as the other pages. */
+.home-value{gap:18px!important;margin-top:26px!important}
+.home-value-card{box-sizing:border-box!important;min-height:120px!important;padding:20px!important;border:1px solid var(--modern-border,#d8e1ed)!important;border-radius:20px!important;background:rgba(255,255,255,.96)!important;box-shadow:var(--modern-shadow,0 12px 32px rgba(25,43,76,.09))!important}
+.home-value-card:hover{transform:translateY(-3px)!important;box-shadow:var(--modern-shadow-lg,0 22px 55px rgba(25,43,76,.14))!important}
+.course-note,.mistakes-card{border-radius:20px!important}
+.home-page .lesson{border-radius:20px!important}
+.home-page .alt .card{box-shadow:var(--modern-shadow,0 12px 32px rgba(25,43,76,.09))!important}
 @media(max-width:1100px){.hero,.home-page .hero,.quiz-page .hero{gap:32px!important}.main-nav{gap:4px!important}.main-nav a{padding:9px 10px!important;font-size:13px!important}}
 @media(max-width:760px){
 html,body{width:100%!important;max-width:100%!important;overflow-x:clip!important}
@@ -37,6 +45,8 @@ main{padding:0 12px!important}
 .hero h1{font-size:clamp(38px,12vw,54px)!important}
 .hero p{font-size:16px!important}
 .section,.home-page .section,.quiz-page .section{width:100%!important;padding-top:34px!important;padding-bottom:34px!important}
+.home-value{grid-template-columns:1fr!important;gap:12px!important;margin-top:20px!important}
+.home-value-card{min-height:0!important;padding:18px!important}
 }
 `;(document.head||document.documentElement).appendChild(s)};
 const read=()=>{try{return localStorage.getItem(KEY)==='dark'?'dark':'light'}catch{return'light'}};
