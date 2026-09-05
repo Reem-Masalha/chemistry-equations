@@ -1,1 +1,98 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Practice & Quiz — Chemistry Equations</title><link rel="stylesheet" href="style.css?v=20260830-37"><link rel="stylesheet" href="mobile-fixes.css?v=20260830-37"><link rel="stylesheet" href="practice-system.css?v=20260830-37"><link rel="stylesheet" href="quiz-fixes.css?v=20260904-quiz-timer-layout-02"><link rel="stylesheet" href="quiz-controls.css?v=20260830-37"><link rel="stylesheet" href="quiz-review.css?v=20260902-05"><link rel="stylesheet" href="student-product.css?v=20260903-quiz-ui"></head><body><header class="topbar"><a class="brand" href="index.html">⚗ Chemistry<span class="accent">Equations</span></a><nav class="main-nav"><a href="index.html">Learn</a><a class="active" href="personal-quiz.html">Quiz</a><a href="challenges.html">Challenges</a><a href="balancer.html">Balancer</a><a href="checker.html">Checker</a></nav><button id="accountTopBtn" class="account-top" type="button">👤 Account</button></header><main><section class="page-title"><div class="eyebrow">02 · PRACTICE & QUIZ</div><h1>Practice to <span>master balancing.</span></h1><p>Choose a difficulty, practice with instant feedback, or take a quiz and see your results at the end.</p></section><section class="section"><div class="quiz-settings grid-2"><div class="card"><span class="eyebrow">DIFFICULTY</span><h2>Choose a level</h2><div class="stage-list"><button class="stage active-stage" data-stage="easy" type="button"><b>🟢 Beginner</b><small>Simple equations and core ideas</small></button><button class="stage" data-stage="medium" type="button"><b>🟡 Intermediate</b><small>Parentheses and more steps</small></button><button class="stage" data-stage="hard" type="button"><b>🔴 Advanced</b><small>Complex and combustion reactions</small></button></div></div><div class="card"><div id="experienceChoice"><span class="eyebrow">EXPERIENCE</span><h2>Practice or Quiz?</h2><div class="experience-options"><label><input type="radio" name="experience" value="practice" checked> Practice — instant feedback</label><label><input type="radio" name="experience" value="quiz"> Quiz — final results only</label></div></div><div id="questionType"><span class="eyebrow">QUESTION TYPE</span><h2>How will you answer?</h2><div class="type-options"><label><input type="radio" name="qtype" value="choice" checked> Multiple choice</label><label><input type="radio" name="qtype" value="coefficients"> Type the coefficients</label><div class="mode-list"></div><button id="newQuiz" class="primary full" type="button">Start practice</button></div></div></div></section><section class="section alt" id="quizPracticeSection"><div class="section-head"><div><span class="eyebrow" id="stageLabel">BEGINNER</span><h2 id="quizTitle">Practice</h2><p id="timerText">Get feedback after every answer and move on when you are ready.</p></div><div class="quiz-actions"><button id="retryMistakes" class="secondary hidden" type="button">Retry mistakes only</button></div></div><div id="timer" class="quiz-timer hidden"></div><div id="quizArea" class="quiz-list"></div><div id="scoreArea"></div></section><section class="section"><div class="card stats-card"><div class="section-head"><div><span class="eyebrow">YOUR PROGRESS</span><h2>Quiz history</h2><p>Best results and accuracy are stored locally.</p></div></div><div id="quizStats" class="progress-grid"></div><div id="mistakeList" class="mistake-list"></div><div id="historyList" class="history-list hidden"></div></div></section></main><footer><div>⚗ Chemistry Equations</div><span>Learn • Quiz • Challenges • Balance • Check</span></footer><script src="account.js?v=20260905-quiz-account-2"></script><script>(()=>{'use strict';const $=id=>document.getElementById(id);const Q={easy:[['H2 + O2 → H2O','2H2 + O2 → 2H2O','Balance H and O.'],['Na + Cl2 → NaCl','2Na + Cl2 → 2NaCl','Cl₂ has two chlorine atoms.'],['Mg + O2 → MgO','2Mg + O2 → 2MgO','O₂ contains two oxygen atoms.'],['N2 + H2 → NH3','N2 + 3H2 → 2NH3','Balance nitrogen, then hydrogen.'],['Cl2 + H2 → HCl','H2 + Cl2 → 2HCl','There are two chlorine atoms.'],['Fe + S → FeS','Fe + S → FeS','Already balanced.']],medium:[['Fe + O2 → Fe2O3','4Fe + 3O2 → 2Fe2O3','Balance oxygen last.'],['Ca + H2O → Ca(OH)2 + H2','Ca + 2H2O → Ca(OH)2 + H2','Use two water molecules.'],['Zn + HCl → ZnCl2 + H2','Zn + 2HCl → ZnCl2 + H2','ZnCl₂ needs two HCl.'],['CH4 + O2 → CO2 + H2O','CH4 + 2O2 → CO2 + 2H2O','Balance C, H, then O.'],['Na2O + H2O → NaOH','Na2O + H2O → 2NaOH','Balance sodium.'],['KClO3 → KCl + O2','2KClO3 → 2KCl + 3O2','Balance oxygen last.']],hard:[['C3H8 + O2 → CO2 + H2O','C3H8 + 5O2 → 3CO2 + 4H2O','Balance C, H, then O.'],['C2H5OH + O2 → CO2 + H2O','C2H5OH + 3O2 → 2CO2 + 3H2O','Balance C and H first.'],['NH3 + O2 → NO + H2O','4NH3 + 5O2 → 4NO + 6H2O','Balance N, H, then O.'],['FeS2 + O2 → Fe2O3 + SO2','4FeS2 + 11O2 → 2Fe2O3 + 8SO2','Balance Fe, S, then O.'],['C4H10 + O2 → CO2 + H2O','2C4H10 + 13O2 → 8CO2 + 10H2O','Balance C and H first.'],['KMnO4 + HCl → KCl + MnCl2 + H2O + Cl2','2KMnO4 + 16HCl → 2KCl + 2MnCl2 + 8H2O + 5Cl2','Balance K and Mn first.']]};const S={difficulty:'easy',experience:'practice',type:'choice',i:0,items:[],score:0,correct:0,answers:[],timer:null,time:300,answered:false,running:false};const sub=n=>String(n).replace(/\d/g,d=>'₀₁₂₃₄₅₆₇₈₉'[d]);const fmt=s=>String(s).replace(/(^|[+→]\s*)(\d+)(?=[A-Z])/g,'$1$2').replace(/(\d+)/g,sub);const coeff=s=>String(s).split('→').flatMap(x=>x.split('+').map(p=>{const m=p.trim().match(/^(\d+)\s*/);return m?+m[1]:1}));const balanced=(eq,c)=>{let i=0;return eq.split('→').map(side=>side.split('+').map(p=>{p=p.trim();const m=p.match(/^(\d+)\s*(.*)$/);const f=m?m[2]:p,n=c[i++]||1;return(n===1?'':n)+f}).join(' + ')).join(' → ')};const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}function choices(sol){const c=coeff(sol),a=[sol],v=[c.map((n,i)=>Math.max(1,n+(i%2?1:-1))),c.map((n,i)=>Math.max(1,n+(i===0?1:0))),c.map((n,i)=>Math.max(1,n-(i%3===0?1:0)))];v.forEach(x=>{const y=balanced(sol,x);if(!a.includes(y))a.push(y)});for(let g=0;a.length<4&&g<8;g++){const y=balanced(sol,c.map((n,i)=>n+g+i+1));if(!a.includes(y))a.push(y)}return shuffle(a).slice(0,4)}function renderConfig(){document.querySelectorAll('[data-stage]').forEach(b=>b.onclick=()=>{if(S.running)return;S.difficulty=b.dataset.stage;update()});document.querySelectorAll('input[name="experience"]').forEach(r=>r.onchange=()=>{if(r.checked&&!S.running){S.experience=r.value;update()}});document.querySelectorAll('input[name="qtype"]').forEach(r=>r.onchange=()=>{if(r.checked&&!S.running){S.type=r.value;update()}})}function update(){document.querySelectorAll('[data-stage]').forEach(b=>b.classList.toggle('active-stage',b.dataset.stage===S.difficulty));$('stageLabel').textContent=S.difficulty==='hard'?'ADVANCED':S.difficulty==='medium'?'INTERMEDIATE':'BEGINNER';$('quizTitle').textContent=S.experience==='quiz'?'Quiz':'Practice';$('timerText').textContent=S.experience==='quiz'?'Answer each question. Use Next question when ready.':'Get feedback after every answer and move on when ready.';$('newQuiz').textContent=S.experience==='quiz'?'Start quiz':'Start practice'}function stats(){try{return JSON.parse(localStorage.getItem('personalQuizStats')||'{"sessions":0,"correct":0,"answered":0,"best":0}')}catch{return{sessions:0,correct:0,answered:0,best:0}}}function save(){try{const x=stats();x.sessions++;x.correct+=S.correct;x.answered+=S.answers.length;x.best=Math.max(x.best,S.score);localStorage.setItem('personalQuizStats',JSON.stringify(x))}catch{}}function live(){const x=stats();$('scoreArea').innerHTML=`<div class="practice-live-stats"><div><b>${S.score}</b><span>Score</span></div><div><b>${S.correct}</b><span>Correct</span></div><div><b>${Math.min(S.i+1,S.items.length||1)}</b><span>Question</span></div><div><b>${x.best||0}</b><span>Best score</span></div></div>`}function stopTimer(){if(S.timer!==null){clearTimeout(S.timer);S.timer=null}}function scheduleTimer(){stopTimer();if(!S.running||S.experience!=='quiz')return;S.timer=setTimeout(()=>{S.timer=null;if(!S.running)return;S.time--;drawTimer();if(S.time<=0)finish(true);else scheduleTimer()},1000)}function start(){stopTimer();S.items=shuffle(Q[S.difficulty].slice()).slice(0,6);S.i=0;S.score=0;S.correct=0;S.answers=[];S.time=300;S.answered=false;S.running=true;renderQuestion();if(S.experience==='quiz'){$('timer').classList.remove('hidden');drawTimer();scheduleTimer()}else $('timer').classList.add('hidden')}function drawTimer(){$('timer').textContent=`⏱ ${Math.floor(S.time/60)}:${String(S.time%60).padStart(2,'0')}`}function next(){S.answered=false;S.i++;renderQuestion()}function renderQuestion(){const q=S.items[S.i];if(!q)return finish(false);const raw=q[0],sol=q[1],hint=q[2],area=$('quizArea');let c;if(S.type==='choice')c=choices(sol).map(x=>`<button type="button" class="practice-choice">${fmt(x)}</button>`).join('');else c=`<div class="coefficient-entry"><div class="coefficient-slots">${coeff(sol).map((_,i)=>`<input inputmode="numeric" data-c="${i}" placeholder="?">`).join('')}</div><button type="button" class="primary practice-submit">Submit answer</button></div>`;area.innerHTML=`<article class="practice-question-card"><div class="practice-question-meta"><span>Question ${S.i+1} / ${S.items.length}</span><span>${S.difficulty.toUpperCase()}</span></div><div class="practice-equation">${fmt(raw)}</div><h3>${S.type==='choice'?'Choose the balanced equation':'Type the coefficients'}</h3><div class="practice-controls">${c}</div><div id="answerFeedback" class="answer-feedback hidden"></div></article>`;if(S.type==='choice')area.querySelectorAll('.practice-choice').forEach(b=>b.onclick=()=>answer(b.textContent,sol,hint,b));else area.querySelector('.practice-submit').onclick=()=>{const vals=[...area.querySelectorAll('[data-c]')].map(x=>Number(x.value));answer(vals.join(','),coeff(sol).join(','),hint,null)};live()}function answer(given,sol,hint,button){if(!S.running||S.answered)return;S.answered=true;const ok=S.type==='choice'?fmt(given)===fmt(sol):given===sol;S.answers.push({given,sol,ok,hint});if(ok){S.correct++;S.score+=10}const f=$('answerFeedback');f.classList.remove('hidden');f.innerHTML=ok?'<strong>✓ Correct!</strong>':'<strong>✗ Not quite.</strong> Correct answer: <b>'+esc(fmt(sol))+'</b><br>'+esc(hint);if(button)button.classList.add(ok?'answer-correct':'answer-wrong');const n=document.createElement('button');n.type='button';n.className='primary';n.textContent=S.i<S.items.length-1?'Next question':(S.experience==='quiz'?'Finish quiz':'Finish practice');n.onclick=()=>S.i<S.items.length-1?next():finish(false);f.appendChild(n);live()}function finish(timeout){if(!S.running&&!S.answers.length)return;stopTimer();S.running=false;$('timer').classList.add('hidden');save();let html='<div class="quiz-review"><h2>Quiz review</h2>';S.answers.forEach((a,i)=>{html+=`<div class="review-item"><b>Question ${i+1}: ${a.ok?'✓ Correct':'✗ Incorrect'}</b><div>Your answer: ${esc(fmt(a.given))}</div><div>Correct answer: ${esc(fmt(a.sol))}</div><p>${esc(a.hint)}</p></div>`});html+=`<div class="review-score"><h3>${timeout?'Time is up — ':''}Score: ${S.score}</h3><p>${S.correct} / ${S.answers.length} correct</p></div><button id="restartQuiz" class="primary">Start another</button></div>`;$('quizArea').innerHTML=html;$('scoreArea').innerHTML='';$('restartQuiz').onclick=start}function setup(){if(S.initialized)return;S.initialized=true;renderConfig();update();$('newQuiz').onclick=start;live();$('quizArea').innerHTML='<div class="quiz-empty-state">Choose your settings and start when ready.</div>'}setup()})();</script></body></html>
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Practice & Quiz — Chemistry Equations</title>
+<link rel="stylesheet" href="style.css?v=20260830-37">
+<link rel="stylesheet" href="mobile-fixes.css?v=20260830-37">
+<link rel="stylesheet" href="practice-system.css?v=20260830-37">
+<link rel="stylesheet" href="quiz-fixes.css?v=20260904-quiz-timer-layout-02">
+<link rel="stylesheet" href="quiz-controls.css?v=20260830-37">
+<link rel="stylesheet" href="quiz-review.css?v=20260902-05">
+<link rel="stylesheet" href="student-product.css?v=20260903-quiz-ui">
+</head>
+<body>
+<header class="topbar">
+<a class="brand" href="index.html">⚗ Chemistry<span class="accent">Equations</span></a>
+<nav class="main-nav">
+<a href="index.html">Learn</a>
+<a class="active" href="personal-quiz.html">Quiz</a>
+<a href="challenges.html">Challenges</a>
+<a href="balancer.html">Balancer</a>
+<a href="checker.html">Checker</a>
+</nav>
+<button id="accountTopBtn" class="account-top" type="button">👤 Account</button>
+</header>
+<main>
+<section class="page-title">
+<div class="eyebrow">02 · PRACTICE & QUIZ</div>
+<h1>Practice to <span>master balancing.</span></h1>
+<p>Choose a difficulty, practice with instant feedback, or take a quiz and see your results at the end.</p>
+</section>
+<section class="section">
+<div class="quiz-settings grid-2">
+<div class="card">
+<span class="eyebrow">DIFFICULTY</span>
+<h2>Choose a level</h2>
+<div class="stage-list">
+<button class="stage active-stage" data-stage="easy" type="button"><b>🟢 Beginner · Easy</b><small>Simple equations and core ideas</small></button>
+<button class="stage" data-stage="medium" type="button"><b>🟡 Intermediate · Medium</b><small>Parentheses and more steps</small></button>
+<button class="stage" data-stage="hard" type="button"><b>🔴 Advanced · Hard</b><small>Complex and combustion reactions</small></button>
+</div>
+</div>
+<div class="card">
+<div id="experienceChoice">
+<span class="eyebrow">EXPERIENCE</span>
+<h2>Practice or Quiz?</h2>
+<div class="experience-options">
+<label><input type="radio" name="experience" value="practice" checked> Practice — instant feedback</label>
+<label><input type="radio" name="experience" value="quiz"> Quiz — final results only</label>
+</div>
+</div>
+<div id="questionType">
+<span class="eyebrow">QUESTION TYPE</span>
+<h2>How will you answer?</h2>
+<div class="type-options">
+<label><input type="radio" name="qtype" value="choice" checked> Multiple choice</label>
+<label><input type="radio" name="qtype" value="coefficients"> Type the coefficients</label>
+</div>
+<div class="mode-list"></div>
+<div id="quizTimerControls" class="quiz-timer-controls" hidden>
+<div class="timer-option">
+<label class="timer-toggle"><input id="timerEnabled" type="checkbox" checked> <span><b>Timed quiz</b><small>Choose the time limit for the quiz</small></span></label>
+<label class="timer-duration" for="timerMinutes">Time limit<select id="timerMinutes"><option value="1">1 minute</option><option value="2">2 minutes</option><option value="3">3 minutes</option><option value="4">4 minutes</option><option value="5" selected>5 minutes</option></select></label>
+</div>
+</div>
+<button id="newQuiz" class="primary full" type="button">Start practice</button>
+</div>
+</div>
+</section>
+<section class="section alt" id="quizPracticeSection">
+<div class="section-head">
+<div>
+<span class="eyebrow" id="stageLabel">BEGINNER · EASY</span>
+<h2 id="quizTitle">Practice</h2>
+<p id="timerText">Get feedback after every answer and move on when you are ready.</p>
+</div>
+<div class="quiz-actions"><button id="retryMistakes" class="secondary hidden" type="button">Retry mistakes only</button></div>
+</div>
+<div id="timer" class="quiz-timer hidden" aria-live="polite"></div>
+<div id="quizArea" class="quiz-list"></div>
+<div id="scoreArea"></div>
+</section>
+<section class="section">
+<div class="card stats-card">
+<div class="section-head"><div><span class="eyebrow">YOUR PROGRESS</span><h2>Quiz history</h2><p>Best results and accuracy are stored locally.</p></div></div>
+<div id="quizStats" class="progress-grid"></div>
+<div id="mistakeList" class="mistake-list"></div>
+<div id="historyList" class="history-list hidden"></div>
+</div>
+</section>
+</main>
+<footer><div>⚗ Chemistry Equations</div><span>Learn • Quiz • Challenges • Balancer • Checker</span></footer>
+<script src="theme.js?v=20260905-quiz-theme"></script>
+<script src="account.js?v=20260905-quiz-account-3"></script>
+<script src="quiz-system-v2.js?v=20260905-quiz-complete-01"></script>
+</body>
+</html>
