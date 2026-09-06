@@ -11,7 +11,7 @@ html,body{margin:0!important;min-width:0!important;width:100%!important;max-widt
 body{background:var(--modern-bg,#f5f7fb)!important;color:var(--modern-ink,#142033)!important}
 .topbar{width:100%!important;min-height:72px!important;box-sizing:border-box!important}
 .brand{margin-right:auto!important;white-space:nowrap!important}
-.main-nav{display:flex!important;align-items:center!important;gap:7px!important;flex:0 0 auto!important}
+.main-nav{display:flex!important;align-items:center!important;gap:7px!important;flex:0 0 auto!important;min-width:0!important}
 .main-nav a{padding:9px 12px!important;border-radius:10px!important;white-space:nowrap!important}
 main{box-sizing:border-box!important;width:100%!important;max-width:var(--site-content-width)!important;margin:0 auto!important;min-width:0!important}
 .hero,.home-page .hero,.quiz-page .hero{box-sizing:border-box!important;width:100%!important;display:grid!important;grid-template-columns:minmax(0,1.2fr) minmax(300px,.8fr)!important;gap:56px!important;align-items:center!important;min-height:390px!important;margin:0!important;padding:68px 0 36px!important;background:transparent!important;position:relative!important}
@@ -36,17 +36,18 @@ body.dark .hero-card{background:linear-gradient(145deg,#171f2d,#1b2435)!importan
 body.dark .card,body.dark .experience-card,body.dark .challenge-feature,body.dark .quiz-q,body.dark .steps article,body.dark .lesson,body.dark .course-map article,body.dark .mistake,body.dark .course-note,body.dark .stats-card,body.dark .home-value-card,body.dark .next-card{background:#171f2d!important}
 @media(max-width:1100px){.hero,.home-page .hero,.quiz-page .hero{gap:32px!important}.main-nav{gap:4px!important}.main-nav a{padding:9px 10px!important;font-size:13px!important}}
 @media(max-width:760px){
-.topbar{display:grid!important;grid-template-columns:minmax(0,1fr) auto auto auto!important;align-items:center!important;gap:7px!important;padding:8px 12px!important}
+.topbar{display:grid!important;grid-template-columns:minmax(0,1fr) 42px auto auto!important;align-items:center!important;gap:7px!important;padding:8px 12px!important}
 .brand{min-width:0!important;overflow:hidden!important;text-overflow:ellipsis!important}.main-nav{display:none!important}
 main{padding:0 12px!important}.hero,.home-page .hero,.quiz-page .hero{display:block!important;grid-template-columns:1fr!important;gap:0!important;min-height:0!important;padding:48px 0 42px!important}.hero h1{font-size:clamp(38px,12vw,54px)!important}.hero p{font-size:16px!important}.hero-card{margin-top:22px!important;min-height:0!important;padding:19px!important}.hero-card .atom{width:58px!important;height:58px!important;flex-basis:58px!important}.section,.home-page .section,.quiz-page .section{padding:34px 0!important}.home-value{grid-template-columns:1fr!important;gap:12px!important;margin-top:20px!important}.home-value-card{min-height:0!important;padding:18px!important}
 }
 `;(document.head||document.documentElement).appendChild(s)};
+const refreshShellParity=()=>{const old=document.getElementById('siteShellParity');if(old)old.remove();installShellParity()};
 const read=()=>{try{return localStorage.getItem(KEY)==='dark'?'dark':'light'}catch{return'light'}};
 const apply=mode=>{const dark=mode==='dark';document.documentElement.classList.toggle('dark',dark);if(document.body)document.body.classList.toggle('dark',dark);const b=document.getElementById('themeToggle');if(b)b.textContent=dark?'☀️ Light':'🌙 Dark'};
 const nav=()=>{const n=document.querySelector('.main-nav');if(!n)return;const routes=[['Learn','index.html'],['Quiz','personal-quiz.html'],['Challenges','challenges.html'],['Balancer','balancer.html'],['Checker','checker.html']];const page=(location.pathname.split('/').pop()||'index.html').toLowerCase();const active=page==='learn.html'||page==='index.html'||page.includes('lesson')?'index.html':routes.some(([,h])=>h===page)?page:'index.html';[...n.querySelectorAll('a')].forEach((a,i)=>{const r=routes[i];if(!r)return;a.href=r[1];a.textContent=r[0];a.classList.toggle('active',r[1]===active)});n.style.direction='ltr';const brand=document.querySelector('.brand');if(brand)brand.href='index.html'};
 const installThemeButton=()=>{const top=document.querySelector('.topbar');if(!top)return;let b=document.getElementById('themeToggle');if(!b){b=document.createElement('button');b.id='themeToggle';b.className='secondary';b.type='button';b.onclick=()=>{const next=read()==='dark'?'light':'dark';try{localStorage.setItem(KEY,next)}catch{}apply(next)};top.appendChild(b)}b.textContent=read()==='dark'?'☀️ Light':'🌙 Dark'};
 const reorderControls=()=>{const top=document.querySelector('.topbar');if(!top)return;['accountTopBtn','logoutTopBtn','site-language-control','themeToggle'].forEach(id=>{const el=document.getElementById(id);if(el)top.appendChild(el)})};
 const ensureLanguageSystem=async()=>{await loadScript('i18n-core.js');setTimeout(reorderControls,80)};
-const init=()=>{installDesign();installShellParity();nav();apply(read());installThemeButton();reorderControls();ensureLanguageSystem();setTimeout(reorderControls,300);setTimeout(reorderControls,1000)};
+const init=()=>{installDesign();installShellParity();nav();apply(read());installThemeButton();reorderControls();ensureLanguageSystem();setTimeout(reorderControls,300);setTimeout(reorderControls,1000);setTimeout(refreshShellParity,0);window.addEventListener('load',refreshShellParity,{once:true})};
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
 })();
