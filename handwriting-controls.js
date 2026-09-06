@@ -9,6 +9,7 @@
   const use = document.getElementById('usePad');
   const status = document.getElementById('recognitionStatus');
   const out = document.getElementById('recognitionResult');
+  const input = document.getElementById('equationInput');
   if (!ctx) return;
 
   let history = [];
