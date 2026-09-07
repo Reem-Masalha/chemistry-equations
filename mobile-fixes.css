@@ -7,15 +7,28 @@
   .main-nav {
     order: 3;
     width: 100%;
-    overflow-x: auto;
+    min-width: 0;
+    overflow: visible !important;
     display: flex;
+    flex-wrap: nowrap;
     gap: 4px;
     padding: 3px 0;
     scrollbar-width: none;
-    -webkit-overflow-scrolling: touch;
   }
   .main-nav::-webkit-scrollbar { display: none; }
-  .main-nav a { flex: 0 0 auto; min-height: 42px; display: inline-flex; align-items: center; justify-content: center; padding: 8px 11px; font-size: 12px; }
+  .main-nav a {
+    flex: 0 0 auto;
+    min-width: 0;
+    min-height: 42px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px 11px;
+    font-size: 12px;
+    white-space: nowrap;
+    overflow: visible !important;
+    text-overflow: clip !important;
+  }
   .account-top { min-height: 42px; padding: 8px 10px; font-size: 12px; }
   main { width: 100%; padding-left: 12px; padding-right: 12px; }
   .hero, .page-title { padding-top: 34px; }
@@ -43,5 +56,6 @@
 }
 @media (max-width: 390px) {
   .chips { grid-template-columns: 1fr; }
-  .main-nav a { padding-left: 9px; padding-right: 9px; }
+  .main-nav { gap: 2px; }
+  .main-nav a { padding-left: 8px; padding-right: 8px; font-size: 11px; }
 }
