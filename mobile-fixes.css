@@ -6,9 +6,9 @@
  .brand{order:1!important;flex:0 0 auto!important;width:auto!important;min-width:0!important;margin-right:auto!important;font-size:12px!important;white-space:nowrap!important}
  .account-top{order:2!important;flex:0 0 auto!important;width:auto!important;min-width:0!important;max-width:none!important;min-height:38px!important;padding:4px 7px!important;font-size:9px!important;white-space:nowrap!important}
  #themeToggle{order:3!important;flex:0 0 auto!important;min-height:38px!important;padding:5px 7px!important;font-size:9px!important;white-space:nowrap!important}
- .main-nav{order:10!important;flex:0 0 100%!important;width:100%!important;min-width:0!important;display:grid!important;grid-template-columns:repeat(5,minmax(0,1fr))!important;flex-direction:initial!important;flex-wrap:initial!important;align-items:stretch!important;justify-content:stretch!important;gap:3px!important;padding:4px 0 0!important;margin:0!important;overflow:visible!important;white-space:normal!important}
+ .main-nav{order:10!important;flex:0 0 100%!important;width:100%!important;min-width:0!important;display:grid!important;grid-template-columns:repeat(5,minmax(0,1fr))!important;flex-direction:initial!important;flex-wrap:initial!important;align-items:stretch!important;justify-content:stretch!important;gap:3px!important;padding:4px 0 0!important;margin:0!important;overflow:visible!important;white-space:nowrap!important}
  .main-nav::-webkit-scrollbar{display:none!important}
- .main-nav a{flex:none!important;min-width:0!important;width:100%!important;min-height:38px!important;display:flex!important;align-items:center!important;justify-content:center!important;padding:4px 3px!important;font-size:9px!important;line-height:1.1!important;text-align:center!important;white-space:normal!important;overflow:visible!important;box-sizing:border-box!important;border-radius:8px!important}
+ .main-nav a{flex:none!important;min-width:0!important;width:100%!important;min-height:38px!important;display:flex!important;align-items:center!important;justify-content:center!important;padding:4px 3px!important;font-size:9px!important;line-height:1.1!important;text-align:center!important;white-space:nowrap!important;overflow:visible!important;box-sizing:border-box!important;border-radius:8px!important}
  main{width:100%;padding-left:12px;padding-right:12px}
  .hero,.page-title{padding-top:34px}
  .hero{display:block;padding-bottom:28px}
@@ -37,7 +37,7 @@
  .topbar{padding-left:5px;padding-right:5px;gap:2px!important}
  .brand{font-size:10px!important}
  .main-nav{grid-template-columns:repeat(5,minmax(0,1fr))!important;gap:2px!important}
- .main-nav a{padding-left:2px!important;padding-right:2px!important;font-size:8px!important}
+ .main-nav a{padding-left:1px!important;padding-right:1px!important;font-size:8px!important}
  .account-top{font-size:7px!important;padding-left:4px!important;padding-right:4px!important}
  #themeToggle{font-size:8px!important;padding-left:5px!important;padding-right:5px!important}
 }
