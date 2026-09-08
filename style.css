@@ -57,3 +57,29 @@
   .path-card .primary{min-height:52px;padding:13px 18px;display:flex!important;align-items:center!important;justify-content:center!important;text-align:center!important;gap:8px!important;line-height:1.25!important;border-radius:14px!important;font-size:15px!important;font-weight:800!important;white-space:nowrap!important}
 }
 @media (max-width:390px){.main-nav a{font-size:11px;padding:7px 8px}.brand{font-size:15px}.account-top{font-size:11px}.chips{grid-template-columns:1fr}.hand-actions{grid-template-columns:1fr 1fr}h1{font-size:34px}.path-card{padding:18px}.path-card .primary{font-size:14px;min-height:50px}}
+
+/* Subtle chemistry identity: restrained scientific motifs, no decorative clutter */
+:root{--chem-line:rgba(49,88,214,.075);--chem-line-strong:rgba(49,88,214,.13)}
+body{background-color:var(--bg);background-image:radial-gradient(circle at 1px 1px,var(--chem-line) 1px,transparent 1.2px);background-size:24px 24px}
+body:after{content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;background:linear-gradient(90deg,transparent 0 49.8%,rgba(49,88,214,.025) 49.8% 50%,transparent 50% 100%);opacity:.55}
+.topbar{box-shadow:0 1px 0 rgba(49,88,214,.035)}
+.main-nav a{position:relative;padding-left:13px}
+.main-nav a:before{display:inline-block;margin-right:6px;font-size:12px;font-weight:800;line-height:1;color:var(--accent);opacity:.75}
+.main-nav a:nth-child(1):before{content:'◌'}
+.main-nav a:nth-child(2):before{content:'◇'}
+.main-nav a:nth-child(3):before{content:'↗'}
+.main-nav a:nth-child(4):before{content:'⚗'}
+.main-nav a:nth-child(5):before{content:'✓'}
+.hero-card,.checker-card,.balancer{position:relative;overflow:hidden}
+.hero-card:after,.checker-card:after,.balancer:after{content:'';position:absolute;width:105px;height:105px;right:-24px;top:-28px;border:1px solid var(--chem-line-strong);border-radius:50%;background:radial-gradient(circle at 28% 30%,transparent 0 13px,var(--chem-line-strong) 13.5px 14.5px,transparent 15px),radial-gradient(circle at 69% 66%,transparent 0 10px,var(--chem-line-strong) 10.5px 11.5px,transparent 12px);opacity:.75;pointer-events:none}
+.hero-card:before,.checker-card:before,.balancer:before{content:'';position:absolute;width:70px;height:1px;right:35px;top:54px;background:var(--chem-line-strong);transform:rotate(31deg);transform-origin:right center;pointer-events:none}
+.lesson,.quiz-q,.stage-list .stage{position:relative;overflow:hidden}
+.lesson:after,.quiz-q:after,.stage-list .stage:after{content:'⌬';position:absolute;right:14px;top:10px;font-size:27px;font-weight:400;color:var(--chem-line-strong);line-height:1;pointer-events:none}
+.section-head{position:relative}
+.section-head:after{content:'→  →  →';position:absolute;right:0;bottom:-12px;font-size:11px;letter-spacing:7px;color:var(--chem-line);pointer-events:none}
+.equation{position:relative}
+.equation:after{content:'→';display:inline-block;margin-left:10px;color:var(--chem-line-strong);font-size:.7em;vertical-align:middle}
+body.dark{--chem-line:rgba(112,142,235,.10);--chem-line-strong:rgba(112,142,235,.18)}
+body.dark{background-image:radial-gradient(circle at 1px 1px,var(--chem-line) 1px,transparent 1.2px)}
+body.dark .main-nav a.active,body.dark .main-nav a:hover{background:#1d2940}
+@media(max-width:760px){.main-nav a{padding-left:9px}.main-nav a:before{margin-right:4px}.section-head:after{display:none}.hero-card:after,.checker-card:after,.balancer:after{right:-38px;opacity:.55}.hero-card:before,.checker-card:before,.balancer:before{right:20px}.lesson:after,.quiz-q:after,.stage-list .stage:after{right:10px;top:8px;font-size:23px}.equation:after{display:none}}
