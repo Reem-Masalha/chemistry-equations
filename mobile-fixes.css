@@ -2,34 +2,67 @@
 @media (max-width: 760px) {
   html, body { max-width: 100%; overflow-x: hidden; }
   body { padding-bottom: 64px; }
-  .topbar { flex-wrap: wrap; padding: 8px 12px; gap: 8px; }
-  .brand { min-width: 0; font-size: 16px; }
-  .main-nav {
-    order: 3;
-    width: 100%;
-    min-width: 0;
+  .topbar {
+    min-height: 56px;
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    align-items: center !important;
+    padding: 7px 8px;
+    gap: 3px !important;
     overflow: visible !important;
-    display: flex;
-    flex-wrap: nowrap;
-    gap: 4px;
-    padding: 3px 0;
-    scrollbar-width: none;
   }
-  .main-nav::-webkit-scrollbar { display: none; }
+  .brand {
+    order: 1 !important;
+    flex: 0 0 auto !important;
+    min-width: 0 !important;
+    margin-right: 0 !important;
+    font-size: 13px !important;
+    gap: 3px;
+    white-space: nowrap !important;
+  }
+  .main-nav {
+    order: 2 !important;
+    flex: 1 1 auto !important;
+    width: auto !important;
+    min-width: 0 !important;
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    align-items: center !important;
+    gap: 0 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    overflow: visible !important;
+    white-space: nowrap !important;
+  }
   .main-nav a {
-    flex: 0 0 auto;
-    min-width: 0;
-    min-height: 42px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    padding: 8px 11px;
-    font-size: 12px;
-    white-space: nowrap;
+    flex: 1 1 0 !important;
+    min-width: 0 !important;
+    min-height: 38px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 6px 1px !important;
+    font-size: 9px !important;
+    line-height: 1.05 !important;
+    text-align: center !important;
+    white-space: nowrap !important;
     overflow: visible !important;
     text-overflow: clip !important;
   }
-  .account-top { min-height: 42px; padding: 8px 10px; font-size: 12px; }
+  .account-top {
+    order: 3 !important;
+    flex: 0 0 auto !important;
+    min-width: 0 !important;
+    min-height: 38px !important;
+    max-width: 60px !important;
+    padding: 6px 3px !important;
+    font-size: 9px !important;
+    line-height: 1.05 !important;
+    white-space: nowrap !important;
+    overflow: visible !important;
+    text-overflow: clip !important;
+  }
   main { width: 100%; padding-left: 12px; padding-right: 12px; }
   .hero, .page-title { padding-top: 34px; }
   .hero { display: block; padding-bottom: 28px; }
@@ -55,7 +88,8 @@
   footer { display: block; text-align: center; padding: 24px 12px; }
 }
 @media (max-width: 390px) {
-  .chips { grid-template-columns: 1fr; }
-  .main-nav { gap: 2px; }
-  .main-nav a { padding-left: 8px; padding-right: 8px; font-size: 11px; }
+  .topbar { padding-left: 5px; padding-right: 5px; gap: 2px !important; }
+  .brand { font-size: 12px !important; }
+  .main-nav a { padding-left: 0 !important; padding-right: 0 !important; font-size: 8px !important; }
+  .account-top { max-width: 54px !important; font-size: 8px !important; padding-left: 2px !important; padding-right: 2px !important; }
 }
