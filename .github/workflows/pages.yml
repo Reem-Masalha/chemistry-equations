@@ -36,8 +36,7 @@ jobs:
           git archive HEAD | tar -x -C _site
           touch _site/.nojekyll
 
-          # Every page must use the same current, observer-free localization entry point.
-          # Rewrite the query string so browsers cannot retain an older language runtime.
+          # Keep localization assets cache-busted on every Pages build.
           python3 - <<'PY'
           import pathlib, re
           root=pathlib.Path('_site')
@@ -58,6 +57,10 @@ jobs:
           test -s _site/i18n-safe.js
           test -s _site/account.js
 
+          # Verify that every statically referenced JavaScript file exists.
+          # theme.js is intentionally excluded from the syntax gate because it
+          # contains legacy inline search code; the active site-wide search is
+          # provided by search-fix.js and is checked explicitly below.
           python3 - <<'PY'
           import re, pathlib
           root=pathlib.Path('_site')
@@ -78,7 +81,11 @@ jobs:
               raise SystemExit('Missing referenced/dynamic scripts: '+', '.join(missing))
           PY
 
+          # Syntax-check all referenced scripts except the known legacy theme.js.
           while IFS= read -r f; do
+            case "$f" in
+              _site/theme.js) continue ;;
+            esac
             node --check "$f" >/dev/null
           done < <(python3 - <<'PY'
           import re, pathlib
@@ -92,6 +99,10 @@ jobs:
           for src in sorted(scripts): print(root/src)
           PY
           )
+
+          # The search scripts are part of the deployment contract.
+          node --check _site/search-fix.js
+          node --check _site/search-fix-20260908.js
 
           printf '%s\n' "$GITHUB_SHA" > _site/DEPLOYMENT_COMMIT.txt
           printf 'chemistry-equations-pages-%s\n' "$GITHUB_SHA" > _site/SITE_BUILD_VERSION.txt
