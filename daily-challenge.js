@@ -1,0 +1,36 @@
+(()=>{
+'use strict';
+const $=id=>document.getElementById(id);
+const SUB={'0':'₀','1':'₁','2':'₂','3':'₃','4':'₄','5':'₅','6':'₆','7':'₇','8':'₈','9':'₉'};
+const REV={'₀':'0','₁':'1','₂':'2','₃':'3','₄':'4','₅':'5','₆':'6','₇':'7','₈':'8','₉':'9'};
+const bank=[
+ ['H2 + O2 → H2O','2H2 + O2 → 2H2O','Balance hydrogen and oxygen.'],
+ ['Na + Cl2 → NaCl','2Na + Cl2 → 2NaCl','Cl₂ has two chlorine atoms, so use 2 NaCl.'],
+ ['Mg + O2 → MgO','2Mg + O2 → 2MgO','O₂ contains two oxygen atoms.'],
+ ['N2 + H2 → NH3','N2 + 3H2 → 2NH3','Balance nitrogen first, then hydrogen.'],
+ ['Fe + S → FeS','Fe + S → FeS','One Fe and one S already match.'],
+ ['Ca + H2O → Ca(OH)2 + H2','Ca + 2H2O → Ca(OH)2 + H2','Use two H₂O molecules to balance oxygen and hydrogen.'],
+ ['Zn + HCl → ZnCl2 + H2','Zn + 2HCl → ZnCl2 + H2','ZnCl₂ requires two chlorine atoms.'],
+ ['CH4 + O2 → CO2 + H2O','CH4 + 2O2 → CO2 + 2H2O','Balance carbon, then hydrogen, then oxygen.'],
+ ['C3H8 + O2 → CO2 + H2O','C3H8 + 5O2 → 3CO2 + 4H2O','For combustion, balance C, then H, then O.'],
+ ['Fe2O3 + CO → Fe + CO2','Fe2O3 + 3CO → 2Fe + 3CO2','Balance Fe first, then carbon and oxygen.'],
+ ['Na2CO3 + HCl → NaCl + H2O + CO2','Na2CO3 + 2HCl → 2NaCl + H2O + CO2','Two sodium and two chlorine atoms require 2 NaCl.'],
+ ['C4H10 + O2 → CO2 + H2O','2C4H10 + 13O2 → 8CO2 + 10H2O','Balance carbon and hydrogen first, then oxygen.']
+];
+const todayKey=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
+const seed=s=>{let n=0;for(let i=0;i<s.length;i++)n=(n*31+s.charCodeAt(i))>>>0;return n};
+const norm=s=>String(s||'').trim().replace(/\s+/g,'').replace(/->|=>|=/g,'→').replace(/[₀₁₂₃₄₅₆₇₈₉]/g,c=>REV[c]);
+const chem=s=>String(s).replace(/([A-Za-z)])(\d+)/g,(m,a,n)=>a+n.split('').map(x=>SUB[x]).join(''));
+const canonical=s=>norm(s).replace(/→/g,'>');
+let items=[],index=0,answers=[],running=false;
+function pick(){const r=[...bank];let x=seed(todayKey());for(let i=r.length-1;i>0;i--){x=(x*1664525+1013904223)>>>0;const j=x%(i+1);[r[i],r[j]]=[r[j],r[i]]}return r.slice(0,5)}
+function setStatus(t){const el=$('dailyStatus');if(el)el.textContent=t}
+function start(){items=pick();index=0;answers=[];running=true;$('dailyStart')?.classList.add('hidden');$('dailyReview')?.classList.add('hidden');$('dailyArea')?.classList.remove('hidden');$('dailyScore')?.classList.add('hidden');render()}
+function render(){if(!running)return;const q=items[index];if(!q){finish();return}const area=$('dailyArea');area.innerHTML=`<div class="daily-meta"><span>Question ${index+1} / ${items.length}</span><span>DAILY CHALLENGE</span></div><div class="daily-equation">${chem(q[0])}</div><label class="daily-answer-label" for="dailyAnswer">Your balanced equation</label><input id="dailyAnswer" autocomplete="off" spellcheck="false" placeholder="Type your balanced equation"><div id="dailyFeedback" class="daily-feedback hidden"></div><div class="daily-actions"><button id="dailySubmit" class="primary" type="button">Submit answer</button><button id="dailyNext" class="secondary" type="button">Next question</button></div>`;$('dailySubmit').onclick=submit;$('dailyNext').onclick=next;setStatus(`Today's challenge · ${todayKey()}`);$('dailyAnswer').focus()}
+function submit(){const q=items[index],input=$('dailyAnswer');if(!q||!input)return;const user=norm(input.value),correct=canonical(user)===canonical(q[1]);answers[index]={question:q[0],expected:q[1],user,correct};const fb=$('dailyFeedback');fb.classList.remove('hidden');fb.innerHTML=correct?'<b>✓ Correct!</b>':`<b>✕ Not correct.</b> <span>${q[2]}</span><div class="daily-solution">Correct answer: <b>${chem(q[1])}</b></div>`;$('dailySubmit').disabled=true;$('dailyAnswer').disabled=true;setTimeout(()=>next(),650)}
+function next(){if(!answers[index]){answers[index]={question:items[index][0],expected:items[index][1],user:'',correct:false,skipped:true}}index++;render()}
+function finish(){running=false;const score=answers.filter(a=>a.correct).length;const record={date:todayKey(),score,total:items.length,answers};localStorage.setItem('chemistryDailyChallenge:'+todayKey(),JSON.stringify(record));$('dailyArea')?.classList.add('hidden');$('dailyScore')?.classList.remove('hidden');$('dailyScore').innerHTML=`<div class="daily-result"><div class="big-score">${score}/${items.length}</div><h3>${score===items.length?'🏆 Perfect daily challenge!':score>=3?'🌟 Great work!':'💪 Keep practicing!'}</h3><p>You completed today's Daily Challenge.</p><button id="dailyReview" class="primary" type="button">Review Daily Quiz Answers</button></div>`;$('dailyReview').onclick=review;$('dailyStart')?.classList.add('hidden');setStatus(`Completed · ${todayKey()}`)}
+function review(){const record=JSON.parse(localStorage.getItem('chemistryDailyChallenge:'+todayKey())||'null');if(!record)return;const area=$('dailyScore');area.innerHTML=`<div class="daily-review"><h3>Daily Quiz Answers</h3>${record.answers.map((a,i)=>`<article class="daily-review-item ${a.correct?'correct':'incorrect'}"><b>${i+1}. ${chem(a.question)}</b><p>Your answer: ${a.user?chem(a.user):'<i>No answer</i>'}</p><p>Correct answer: <b>${chem(a.expected)}</b></p></article>`).join('')}<button id="dailyBack" class="secondary" type="button">Back to Daily Challenge</button></div>`;$('dailyBack').onclick=()=>{area.classList.add('hidden');$('dailyStart')?.classList.remove('hidden');setStatus(`Completed · ${todayKey()}`)}}
+function init(){if(!$('dailyChallenge'))return;const saved=localStorage.getItem('chemistryDailyChallenge:'+todayKey());if(saved){const r=JSON.parse(saved);$('dailyStart')?.classList.add('hidden');$('dailyScore')?.classList.remove('hidden');$('dailyScore').innerHTML=`<div class="daily-result"><div class="big-score">${r.score}/${r.total}</div><h3>Today's Daily Challenge is complete.</h3><p>You can review your answers below.</p><button id="dailyReview" class="primary" type="button">Review Daily Quiz Answers</button></div>`;$('dailyReview').onclick=review;setStatus(`Completed · ${todayKey()}`)}else setStatus(`Today's challenge · ${todayKey()}`)}
+$('dailyStart')?.addEventListener('click',start);document.addEventListener('DOMContentLoaded',init);init();
+})();
