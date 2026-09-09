@@ -18,4 +18,19 @@
     heartbeat();
     setInterval(heartbeat,60000);
   }
+  // Global UI guard: search results must stay closed until the user interacts with search,
+  // and the compact navigation must remain one horizontal row on desktop.
+  const fixUI=()=>{
+    const r=document.getElementById('siteSearchResults');
+    if(r)r.classList.remove('open');
+    const n=document.querySelector('.main-nav');
+    const t=document.querySelector('.topbar');
+    if(!n)return;
+    const s=document.getElementById('globalUiGuardStyle')||document.createElement('style');
+    s.id='globalUiGuardStyle';
+    s.textContent='.topbar{flex-wrap:nowrap!important;min-width:0!important}.topbar .main-nav{display:flex!important;flex-wrap:nowrap!important;white-space:nowrap!important;min-width:0!important;overflow-x:auto!important;overflow-y:visible!important;scrollbar-width:none!important}.topbar .main-nav::-webkit-scrollbar{display:none}.topbar .main-nav>a,.topbar .main-nav>.nav-group{flex:0 0 auto!important}.topbar .main-nav>.nav-group{white-space:nowrap!important}.topbar .main-nav>.nav-group-button{white-space:nowrap!important}#siteSearchResults:not(.open){display:none!important}';
+    if(!s.parentNode)document.head.appendChild(s);
+  };
+  fixUI();
+  setTimeout(fixUI,0);
 })();
