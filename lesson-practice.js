@@ -25,6 +25,11 @@ const sets={
     ['Systematic balancing',['Assign an unknown coefficient to each formula.','Write one conservation equation per element.','Scale to the smallest positive whole-number solution.'],0,'What do you assign to each formula in an algebraic balancing method?']
   ]
 };
+const course={
+  beginner:{label:'Beginner',lessons:sets.beginner.map(x=>x[0]),next:'intermediate-lessons.html'},
+  intermediate:{label:'Intermediate',lessons:sets.intermediate.map(x=>x[0]),next:'advanced-lessons.html'},
+  advanced:{label:'Advanced',lessons:sets.advanced.map(x=>x[0]),next:'personal-quiz.html?stage=hard'}
+};
 function build(title,options,correct,prompt){
   const card=document.createElement('div');card.className='lesson-practice-card';
   card.innerHTML=`<div class="lesson-practice-eyebrow">Practice</div><h3>Check your understanding</h3><p class="lesson-practice-prompt"></p><div class="lesson-practice-options"></div><div class="lesson-practice-feedback" aria-live="polite"></div>`;
@@ -34,6 +39,39 @@ function build(title,options,correct,prompt){
   return card;
 }
 function lessonKey(text){const t=normalize(text);if(t.includes('chemicalequation'))return'What is a chemical equation?';if(t.includes('readingchemicalformulas'))return'Reading chemical formulas';if(t.includes('conservationofmass'))return'Conservation of mass';if(t.includes('howtobalanceachemicalequation'))return'How to balance a chemical equation';if(t.includes('diatomicelements'))return'Diatomic elements';if(t.includes('puttingitalltogether'))return'Putting it all together';if(t.includes('polyatomicions'))return'Polyatomic ions';if(t.includes('parentheses'))return'Parentheses';if(t.includes('fractionalcoefficients'))return'Fractional coefficients';if(t.includes('complicatedreactions'))return'Complicated reactions';if(t.includes('combustion'))return'Combustion';if(t.includes('redox'))return'Redox';if(t.includes('complexionicequations'))return'Complex ionic equations';if(t.includes('systematicbalancing'))return'Systematic balancing';return null}
-function init(){const page=location.pathname.toLowerCase();const level=page.includes('beginner-lessons')?'beginner':page.includes('intermediate-lessons')?'intermediate':page.includes('advanced-lessons')?'advanced':null;if(!level)return;const pool=new Map(sets[level].map(x=>[normalize(x[0]),x]));qa('article.card').forEach(article=>{const e=qa('.eyebrow',article).find(x=>x.textContent.includes('·'));if(!e)return;const key=lessonKey(e.textContent);const data=key&&pool.get(normalize(key));if(!data||q('.lesson-practice-card',article))return;article.appendChild(build(...data))})}
+function injectCourseUI(level){
+  if(q('#courseProgress'))return;
+  const cfg=course[level], articles=qa('main section.section article.card');
+  if(!cfg||!articles.length)return;
+  const key='chemistryCourseProgress';
+  let saved={};try{saved=JSON.parse(localStorage.getItem(key)||'{}')||{}}catch{}
+  const done=Array.isArray(saved[level])?saved[level]:[];
+  const progress=document.createElement('aside');progress.id='courseProgress';progress.className='course-progress';progress.innerHTML=`<div class="course-progress-title">Your Learning Path</div><div class="course-progress-levels"></div>`;
+  const levels=[['beginner','Beginner'],['intermediate','Intermediate'],['advanced','Advanced']];
+  const levelsBox=q('.course-progress-levels',progress);
+  levels.forEach(([id,label])=>{
+    const row=document.createElement('div');row.className='course-path-level';
+    const active=id===level, completedLevel=id==='beginner'&&level!=='beginner';
+    row.innerHTML=`<div class="course-level-heading"><span class="course-level-marker">${completedLevel?'✓':active?'→':'○'}</span><strong>${label}</strong></div>`;
+    if(id===level){const list=document.createElement('div');list.className='course-lesson-list';cfg.lessons.forEach((name,i)=>{const item=document.createElement('div');item.className='course-lesson-item '+(done.includes(i)?'completed':'')+(i===0?' current':'');item.dataset.lessonIndex=i;item.innerHTML=`<span class="course-lesson-dot">${done.includes(i)?'✓':'○'}</span><span>Lesson ${i+1}</span><span class="course-lesson-name">${name}</span>`;list.appendChild(item)});row.appendChild(list)}
+    levelsBox.appendChild(row);
+  });
+  document.querySelector('main').insertAdjacentElement('afterbegin',progress);
+  const title=q('.page-title');if(title)title.classList.add('course-page-title');
+  articles.forEach((article,i)=>{
+    const heading=q('h2',article);if(!heading)return;
+    const eyebrow=q('.eyebrow',article);
+    const meta=document.createElement('div');meta.className='lesson-course-meta';meta.innerHTML=`<span>${cfg.label} · Lesson ${i+1} of ${cfg.lessons.length}</span><span class="lesson-course-percent">${Math.round(((i+1)/cfg.lessons.length)*100)}%</span>`;
+    const bar=document.createElement('div');bar.className='lesson-course-bar';bar.innerHTML=`<span style="width:${((i+1)/cfg.lessons.length)*100}%"></span>`;
+    heading.parentNode.insertBefore(meta,heading);heading.parentNode.insertBefore(bar,heading);
+    article.dataset.courseLesson=i;
+    if(i<articles.length-1){const next=document.createElement('a');next.href='#';next.className='secondary course-next-lesson';next.textContent=`Next Lesson →`;next.addEventListener('click',e=>{e.preventDefault();markDone(level,i);articles[i+1].scrollIntoView({behavior:'smooth',block:'start'})});article.appendChild(next)}else{const next=document.createElement('a');next.href=cfg.next;next.className='primary course-next-lesson';next.textContent=level==='advanced'?'Take the Advanced Quiz →':`Continue to ${level==='beginner'?'Intermediate':'Advanced'} →`;article.appendChild(next)}
+  });
+  const markVisible=()=>{articles.forEach((article,i)=>{const r=article.getBoundingClientRect();if(r.bottom<=innerHeight*.78){markDone(level,i)}})};
+  addEventListener('scroll',markVisible,{passive:true});
+  markVisible();
+}
+function markDone(level,i){let saved={};try{saved=JSON.parse(localStorage.getItem('chemistryCourseProgress')||'{}')||{}}catch{};saved[level]=Array.isArray(saved[level])?saved[level]:[];if(!saved[level].includes(i)){saved[level].push(i);saved[level].sort((a,b)=>a-b);try{localStorage.setItem('chemistryCourseProgress',JSON.stringify(saved))}catch{};const item=q(`#courseProgress .course-lesson-item[data-lesson-index="${i}"]`);if(item){item.classList.add('completed');q('.course-lesson-dot',item).textContent='✓'}}}
+function init(){const page=location.pathname.toLowerCase();const level=page.includes('beginner-lessons')?'beginner':page.includes('intermediate-lessons')?'intermediate':page.includes('advanced-lessons')?'advanced':null;if(!level)return;const pool=new Map(sets[level].map(x=>[normalize(x[0]),x]));const articles=qa('article.card');articles.forEach(article=>{const e=qa('.eyebrow',article).find(x=>x.textContent.includes('·'));if(!e)return;const key=lessonKey(e.textContent);const data=key&&pool.get(normalize(key));if(!data||q('.lesson-practice-card',article))return;article.appendChild(build(...data))});injectCourseUI(level)}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 })();
