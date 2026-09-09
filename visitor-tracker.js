@@ -18,17 +18,32 @@
     heartbeat();
     setInterval(heartbeat,60000);
   }
-  // Global UI guard: search results must stay closed until the user interacts with search,
-  // and the compact navigation must remain one horizontal row on desktop.
+  // Keep search closed on load and keep the redesigned navigation visible in one row.
   const fixUI=()=>{
     const r=document.getElementById('siteSearchResults');
     if(r)r.classList.remove('open');
     const n=document.querySelector('.main-nav');
-    const t=document.querySelector('.topbar');
     if(!n)return;
     const s=document.getElementById('globalUiGuardStyle')||document.createElement('style');
     s.id='globalUiGuardStyle';
-    s.textContent='.topbar{flex-wrap:nowrap!important;min-width:0!important}.topbar .main-nav{display:flex!important;flex-wrap:nowrap!important;white-space:nowrap!important;min-width:0!important;overflow-x:auto!important;overflow-y:visible!important;scrollbar-width:none!important}.topbar .main-nav::-webkit-scrollbar{display:none}.topbar .main-nav>a,.topbar .main-nav>.nav-group{flex:0 0 auto!important}.topbar .main-nav>.nav-group{white-space:nowrap!important}.topbar .main-nav>.nav-group-button{white-space:nowrap!important}#siteSearchResults:not(.open){display:none!important}';
+    s.textContent=`
+      #siteSearchResults:not(.open){display:none!important}
+      .topbar{min-width:0!important;flex-wrap:nowrap!important}
+      .topbar .brand{flex:0 1 auto!important;min-width:0!important;margin-right:0!important;white-space:nowrap!important}
+      .topbar .main-nav{display:flex!important;align-items:center!important;flex:0 1 auto!important;flex-wrap:nowrap!important;white-space:nowrap!important;min-width:0!important;width:auto!important;gap:1px!important;overflow:visible!important}
+      .topbar .main-nav>a,.topbar .main-nav>.nav-group{flex:0 1 auto!important;min-width:0!important;white-space:nowrap!important}
+      .topbar .main-nav>a{font-size:12px!important;padding:6px 6px!important}
+      .topbar .main-nav>.nav-group-button{font-size:12px!important;padding:6px 6px!important;white-space:nowrap!important}
+      .topbar .account-top{flex:0 0 auto!important;font-size:12px!important;padding:7px 9px!important;white-space:nowrap!important}
+      @media(max-width:760px){
+        .topbar{gap:6px!important}
+        .topbar .brand{font-size:15px!important}
+        .topbar .main-nav{flex:1 1 auto!important;min-width:0!important;overflow-x:auto!important;overflow-y:visible!important;scrollbar-width:none!important;-webkit-overflow-scrolling:touch!important}
+        .topbar .main-nav::-webkit-scrollbar{display:none}
+        .topbar .main-nav>a,.topbar .main-nav>.nav-group{flex:0 0 auto!important}
+        .topbar .main-nav>a,.topbar .main-nav>.nav-group-button{font-size:10px!important;padding:6px 6px!important}
+      }
+    `;
     if(!s.parentNode)document.head.appendChild(s);
   };
   fixUI();
