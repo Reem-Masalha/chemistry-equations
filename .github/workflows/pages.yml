@@ -36,14 +36,22 @@ jobs:
           git archive HEAD | tar -x -C _site
           touch _site/.nojekyll
 
-          # Keep localization assets cache-busted on every Pages build.
+          # Cache-bust shared site scripts on every Pages build so every HTML
+          # page uses the same current navigation/search implementation.
           python3 - <<'PY'
           import pathlib, re
           root=pathlib.Path('_site')
           sha='${GITHUB_SHA}'
+          replacements={
+              'language-clean.js': 'language-clean.js?v='+sha,
+              'theme.js': 'theme.js?v='+sha,
+              'search-fix.js': 'search-fix.js?v='+sha,
+              'visitor-tracker.js': 'visitor-tracker.js?v='+sha,
+          }
           for html in root.glob('*.html'):
               text=html.read_text(encoding='utf-8', errors='ignore')
-              text=re.sub(r'language-clean\.js(?:\?[^\"\']*)?', 'language-clean.js?v='+sha, text)
+              for name,new in replacements.items():
+                  text=re.sub(re.escape(name)+r'(?:\?[^\"\']*)?', new, text)
               html.write_text(text, encoding='utf-8')
           PY
 
@@ -58,9 +66,6 @@ jobs:
           test -s _site/account.js
 
           # Verify that every statically referenced JavaScript file exists.
-          # theme.js is intentionally excluded from the syntax gate because it
-          # contains legacy inline search code; the active site-wide search is
-          # provided by search-fix.js and is checked explicitly below.
           python3 - <<'PY'
           import re, pathlib
           root=pathlib.Path('_site')
@@ -100,7 +105,6 @@ jobs:
           PY
           )
 
-          # The search scripts are part of the deployment contract.
           node --check _site/search-fix.js
           node --check _site/search-fix-20260908.js
 
