@@ -15,7 +15,8 @@ function stabilizeNavigation(){
   st.id=styleId;
   st.textContent=`
     .topbar{min-width:0!important;gap:18px!important;flex-wrap:nowrap!important}
-    .main-nav{display:flex!important;align-items:center!important;justify-content:center!important;gap:7px!important;white-space:nowrap!important;flex-wrap:nowrap!important;direction:ltr!important;min-width:0!important}
+    .main-nav{display:flex!important;align-items:center!important;justify-content:center!important;gap:7px!important;white-space:nowrap!important;flex-wrap:nowrap!important;direction:ltr!important;min-width:0!important;flex:1 1 auto!important;width:auto!important;max-width:none!important;overflow-x:auto!important;overflow-y:hidden!important;scrollbar-width:none!important}
+    .main-nav::-webkit-scrollbar{display:none}
     .main-nav a{display:inline-flex!important;align-items:center!important;justify-content:center!important;flex:0 0 auto!important;width:auto!important;min-width:max-content!important;padding:9px 12px!important;white-space:nowrap!important;border-radius:10px!important}
     .main-nav .nav-group{display:contents!important}
     .main-nav .nav-group-button{display:none!important}
@@ -26,10 +27,10 @@ function stabilizeNavigation(){
     .topbar-controls .site-language-control{display:inline-flex!important;align-items:center!important;justify-content:center!important;gap:7px!important;margin:0!important;flex:0 0 auto!important;white-space:nowrap!important}
     .topbar-controls .site-language-control select{font:inherit;min-height:36px;max-width:110px}
     @media(min-width:761px){
-      .topbar{display:grid!important;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr)!important;align-items:center!important}
-      .topbar .brand{margin-right:0!important;justify-self:start!important;min-width:0!important}
-      .topbar .main-nav{grid-column:2!important;justify-self:center!important;min-width:max-content!important}
-      .topbar .topbar-controls{grid-column:3!important;justify-self:end!important}
+      .topbar{display:flex!important;align-items:center!important}
+      .topbar .brand{margin-right:0!important;flex:0 0 auto!important;min-width:0!important}
+      .topbar .main-nav{order:2!important;flex:1 1 auto!important;min-width:0!important;max-width:none!important}
+      .topbar .topbar-controls{order:3!important;flex:0 0 auto!important}
     }
     @media(max-width:760px){
       .topbar{display:flex!important;flex-wrap:nowrap!important;gap:6px!important;padding-left:10px!important;padding-right:10px!important}
