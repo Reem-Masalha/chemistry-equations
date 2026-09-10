@@ -57,6 +57,22 @@ jobs:
               html.write_text(text, encoding='utf-8')
           PY
 
+          # Load the global dark-mode overrides on every HTML page, including
+          # legacy pages that do not use the main style.css/theme.js combination.
+          python3 - <<'PY'
+          import pathlib, re
+          root=pathlib.Path('_site')
+          tag='<link rel="stylesheet" href="dark-global.css?v=${GITHUB_SHA}">'
+          for html in root.glob('*.html'):
+              text=html.read_text(encoding='utf-8', errors='ignore')
+              if 'dark-global.css' not in text:
+                  if re.search(r'</head>', text, re.I):
+                      text=re.sub(r'</head>', tag+'\n</head>', text, count=1, flags=re.I)
+                  else:
+                      text=tag+'\n'+text
+                  html.write_text(text, encoding='utf-8')
+          PY
+
           test -s _site/index.html
           test -s _site/learn.html
           test -s _site/personal-quiz.html
@@ -66,6 +82,7 @@ jobs:
           test -s _site/language-clean.js
           test -s _site/i18n-safe.js
           test -s _site/account.js
+          test -s _site/dark-global.css
 
           # Verify that every statically referenced JavaScript file exists.
           python3 - <<'PY'
