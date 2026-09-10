@@ -72,17 +72,17 @@
     s.id='globalUiGuardStyle';
     s.textContent=`
       #siteSearchResults:not(.open){display:none!important}
-      .topbar{min-width:0!important;flex-wrap:nowrap!important;gap:12px!important}
-      .topbar .brand{flex:0 0 auto!important;min-width:0!important;margin-right:auto!important;white-space:nowrap!important}
-      .topbar .main-nav{display:flex!important;align-items:center!important;flex:0 1 auto!important;flex-wrap:nowrap!important;white-space:nowrap!important;min-width:0!important;width:auto!important;gap:2px!important;overflow-x:auto!important;overflow-y:hidden!important;scrollbar-width:none!important;-webkit-overflow-scrolling:touch!important}
+      .topbar{position:relative!important;min-width:0!important;flex-wrap:nowrap!important;gap:12px!important}
+      .topbar .brand{flex:0 0 auto!important;min-width:0!important;margin-right:0!important;white-space:nowrap!important}
+      .topbar .main-nav{display:flex!important;align-items:center!important;flex-wrap:nowrap!important;white-space:nowrap!important;min-width:0!important;width:max-content!important;max-width:calc(100% - 360px)!important;gap:2px!important;overflow-x:auto!important;overflow-y:hidden!important;scrollbar-width:none!important;-webkit-overflow-scrolling:touch!important;position:absolute!important;left:50%!important;transform:translateX(-50%)!important}
       .topbar .main-nav::-webkit-scrollbar{display:none}
       .topbar .main-nav>a{flex:0 0 auto!important;min-width:0!important;white-space:nowrap!important;font-size:13px!important;padding:7px 8px!important}
-      .topbar .account-top{flex:0 0 auto!important;font-size:13px!important;padding:7px 10px!important;white-space:nowrap!important}
+      .topbar .account-top{flex:0 0 auto!important;font-size:13px!important;padding:7px 10px!important;white-space:nowrap!important;margin-left:auto!important}
       .topbar .main-nav>.nav-group{display:none!important}
       @media(max-width:760px){
         .topbar{gap:6px!important}
         .topbar .brand{font-size:15px!important;margin-right:0!important}
-        .topbar .main-nav{flex:1 1 auto!important;min-width:0!important;overflow-x:auto!important;overflow-y:hidden!important}
+        .topbar .main-nav{position:static!important;left:auto!important;transform:none!important;width:auto!important;max-width:none!important;flex:1 1 auto!important;min-width:0!important;overflow-x:auto!important;overflow-y:hidden!important}
         .topbar .main-nav>a{font-size:10px!important;padding:6px 6px!important}
         .topbar .account-top{font-size:10px!important;padding:6px 7px!important}
       }
