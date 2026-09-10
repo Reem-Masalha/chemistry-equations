@@ -62,7 +62,7 @@ jobs:
           python3 - <<'PY'
           import pathlib, re
           root=pathlib.Path('_site')
-          tag='<link rel="stylesheet" href="dark-global.css?v=${GITHUB_SHA}">'
+          tag='<link rel="stylesheet" href="dark-global.css">'
           for html in root.glob('*.html'):
               text=html.read_text(encoding='utf-8', errors='ignore')
               if 'dark-global.css' not in text:
