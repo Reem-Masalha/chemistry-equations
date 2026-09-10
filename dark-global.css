@@ -1,0 +1,29 @@
+/* Global dark-mode enforcement for every page. Loaded by the Pages build. */
+html body.dark{background:var(--bg)!important;color:var(--text)!important}
+html body.dark .topbar{background:rgba(16,22,34,.94)!important;color:var(--text)!important;border-color:var(--line)!important}
+html body.dark main,html body.dark section,html body.dark article,html body.dark footer,html body.dark .page-title,html body.dark .hero{color:var(--text)}
+html body.dark .card,html body.dark .hero-card,html body.dark .quiz-q,html body.dark .steps article,html body.dark .achievement,html body.dark .score-animation,html body.dark .progress-grid>div,html body.dark .certificate-actions,html body.dark .tool-card,html body.dark .lesson,html body.dark .mode-list label,html body.dark .stage-list .stage{background:var(--surface)!important;color:var(--text)!important;border-color:var(--line)!important}
+html body.dark .alt{background:#0c121d!important;color:var(--text)!important}
+html body.dark .muted,html body.dark .preview-note,html body.dark .lesson p,html body.dark .page-title p,html body.dark .hero p,html body.dark .section-head p,html body.dark footer,html body.dark .achievement p,html body.dark .hand-head p{color:var(--muted)!important}
+html body.dark input,html body.dark textarea,html body.dark select{background:#111927!important;color:var(--text)!important;border-color:var(--line)!important}
+html body.dark input::placeholder,html body.dark textarea::placeholder{color:var(--muted)!important}
+html body.dark button.secondary,html body.dark .secondary,html body.dark .chips button{background:var(--surface)!important;color:var(--text)!important;border-color:var(--line)!important}
+html body.dark table,html body.dark th,html body.dark td{color:var(--text)!important;border-color:var(--line)!important}
+html body.dark .main-nav a{color:var(--muted)}
+html body.dark .main-nav a:hover{color:var(--accent);background:rgba(49,88,214,.14)}
+html body.dark .account-top{background:var(--surface)!important;color:var(--text)!important;border-color:var(--line)!important}
+html body.dark .stage-list .active-stage{background:rgba(49,88,214,.18)!important;color:#9eb4ff!important;border-color:var(--accent)!important}
+html body.dark .quiz-timer{background:#3a3018!important;color:#f5d98a!important}
+html body.dark .certificate{background:linear-gradient(135deg,#24231e,#171f2d)!important;color:var(--text)!important}
+html body.dark .certificate .cert-title{color:#f1eee2!important}
+html body.dark .certificate .cert-subtitle{color:#c8c3b5!important}
+html body.dark .certificate .cert-brand{color:#d8b96a!important}
+html body.dark #pad{background:#111927!important;border-color:var(--line)!important}
+html body.dark .site-search-inner input{background:var(--surface)!important;color:var(--text)!important}
+html body.dark #siteSearchResults{background:var(--surface)!important;color:var(--text)!important;border-color:var(--line)!important}
+html body.dark .site-result,html body.dark .site-quick-item{color:var(--text)!important;border-color:var(--line)!important}
+html body.dark .nav-group-menu{background:var(--surface)!important;border-color:var(--line)!important}
+html body.dark .nav-group-menu a{color:var(--text)!important}
+html body.dark .nav-group-menu a:hover{background:rgba(49,88,214,.14)!important}
+html body.dark .note{background:var(--surface)!important;color:var(--text)!important;border-color:var(--line)!important}
+html body.dark .privacy{color:var(--muted)!important}
