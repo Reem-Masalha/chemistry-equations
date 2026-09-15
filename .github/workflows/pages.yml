@@ -36,9 +36,6 @@ jobs:
           git archive HEAD | tar -x -C _site
           touch _site/.nojekyll
 
-          # Cache-bust shared site scripts on every Pages build. Match complete
-          # filenames so search-fix-20260908.js is never accidentally rewritten
-          # as if it were search-fix.js.
           python3 - <<'PY'
           import pathlib, re
           root=pathlib.Path('_site')
@@ -57,8 +54,6 @@ jobs:
               html.write_text(text, encoding='utf-8')
           PY
 
-          # Load the global dark-mode overrides on every HTML page, including
-          # legacy pages that do not use the main style.css/theme.js combination.
           python3 - <<'PY'
           import pathlib, re
           root=pathlib.Path('_site')
@@ -73,13 +68,15 @@ jobs:
                   html.write_text(text, encoding='utf-8')
           PY
 
-          # Load one final, shared navigation layout after page scripts so
-          # page-specific navigation rules cannot make the header differ by page.
+          # Checker is deliberately excluded from the global navigation injector
+          # while its runtime freeze is being isolated.
           python3 - <<'PY'
           import pathlib, re
           root=pathlib.Path('_site')
           tag='<script src="nav-global.js?v=${GITHUB_SHA}"></script>'
           for html in root.glob('*.html'):
+              if html.name == 'checker.html':
+                  continue
               text=html.read_text(encoding='utf-8', errors='ignore')
               if 'nav-global.js' not in text:
                   if re.search(r'</body>', text, re.I):
@@ -101,7 +98,6 @@ jobs:
           test -s _site/dark-global.css
           test -s _site/nav-global.js
 
-          # Verify that every statically referenced JavaScript file exists.
           python3 - <<'PY'
           import re, pathlib
           root=pathlib.Path('_site')
@@ -110,8 +106,7 @@ jobs:
               text=html.read_text(encoding='utf-8', errors='ignore')
               for src in re.findall(r'<script[^>]+src=["\']([^"\']+)["\']', text, re.I):
                   src=src.split('?',1)[0].split('#',1)[0]
-                  if src.endswith('.js'):
-                      scripts.add(src.lstrip('./'))
+                  if src.endswith('.js'): scripts.add(src.lstrip('./'))
           scripts.update({'site-language-v2.js','learn-full-i18n.js','learn-extra-i18n.js'})
           missing=[]
           for src in sorted(scripts):
@@ -122,7 +117,6 @@ jobs:
               raise SystemExit('Missing referenced/dynamic scripts: '+', '.join(missing))
           PY
 
-          # Syntax-check all referenced scripts except the known legacy theme.js.
           while IFS= read -r f; do
             case "$f" in
               _site/theme.js) continue ;;
