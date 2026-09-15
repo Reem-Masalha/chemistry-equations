@@ -1,2 +1,2 @@
-Fresh Pages deployment trigger 2026-08-29-v36.
-Deploy current main with coefficient/subscript guard, optional custom quiz timer, and persistent practice feedback.
+Fresh Pages deployment trigger 2026-09-15-freeze-fix.
+Deploy the current main branch, including the visitor-tracker freeze fix and the latest navigation isolation changes.
