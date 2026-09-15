@@ -12,11 +12,13 @@
 </style>
 </head>
 <body>
-<header class="topbar"><a class="brand" href="learn.html">⚗ Chemistry<span class="accent">Equations</span></a><nav class="main-nav"><a href="learn.html">Learn</a><a href="personal-quiz.html">Quiz</a><a href="challenges.html">Challenges</a><a href="index.html">Balancer</a><a class="active" href="checker.html">Checker</a></nav></header>
+<header class="topbar"><a class="brand" href="learn.html">⚗ Chemistry<span class="accent">Equations</span></a><nav class="main-nav"><a href="learn.html">Learn</a><a href="personal-quiz.html">Quiz</a><a href="challenges.html">Challenges</a><a href="index.html">Balancer</a><a class="active" href="checker.html">Checker</a></nav><button id="accountTopBtn" class="account-top" type="button">👤 Account</button></header>
 <main><section class="page-title"><div class="eyebrow">04 · CHECKER</div><h1>Check your <span>equation.</span></h1><p>Enter a chemical equation and check whether it is balanced. The Checker compares the atom count of every element on both sides and explains any imbalance.</p></section>
 <section class="section"><div class="grid-2"><div class="card checker-card"><label for="checkInput">Your equation</label><input id="checkInput" placeholder="2H2 + O2 → 2H2O"><button id="checkBtn" class="primary full" type="button">Check equation balance</button><div id="checkResult"></div></div><div class="card tips"><b>What gets checked?</b><div>✓ Same elements on both sides</div><div>✓ Same number of atoms for every element</div><div>✓ Valid chemical formulas</div><div>✓ Simplest whole-number coefficients</div></div></div>
 <div class="card checker-examples"><b>Try an example</b><p>Choose an equation to place it in the checking box.</p><div class="checker-example-list"><button class="checker-example" type="button" data-equation="2H2 + O2 → 2H2O">2H₂ + O₂ → 2H₂O</button><button class="checker-example" type="button" data-equation="4Fe + 3O2 → 2Fe2O3">4Fe + 3O₂ → 2Fe₂O₃</button><button class="checker-example" type="button" data-equation="CH4 + 2O2 → CO2 + 2H2O">CH₄ + 2O₂ → CO₂ + 2H₂O</button></div></div>
 <div class="card next-card"><b>Need help?</b><p>Open the Balancer to calculate the correct coefficients, or use the learning guide.</p><a href="index.html" class="secondary">← Balance an equation</a> <a href="learn.html" class="primary inline">Learn how →</a></div></section></main>
 <footer><div>⚗ Chemistry Equations</div><span>⚗ Chemistry Equations</span></footer>
 <script>document.querySelectorAll('.checker-example').forEach(button=>button.addEventListener('click',()=>{const input=document.getElementById('checkInput');input.value=button.dataset.equation||'';input.focus()}));</script>
+<script src="account.js?v=20260915-checker-static" defer></script>
+<script src="language-clean.js?v=20260915-checker-static" defer></script>
 </body></html>
