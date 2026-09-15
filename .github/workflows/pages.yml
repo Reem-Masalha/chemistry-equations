@@ -40,11 +40,13 @@ jobs:
           import pathlib, re
           root=pathlib.Path('_site')
           sha='${GITHUB_SHA}'
-          # Bust every local JS/CSS asset so a normal browser cannot reuse an
-          # older runtime while Incognito receives the current one.
           asset_re=re.compile(r'((?:src|href)\s*=\s*)(["\'])([^"\']+)(\2)', re.I)
           for html in root.glob('*.html'):
               text=html.read_text(encoding='utf-8', errors='ignore')
+              # navigation-fix.js installs a document-wide MutationObserver that
+              # repeatedly schedules navigation rewrites. nav-global.js is now
+              # the single navigation layout runtime, so do not ship the old fixer.
+              text=re.sub(r'<script[^>]+src=["\'][^"\']*navigation-fix\.js(?:\?[^"\']*)?["\'][^>]*></script>\s*', '', text, flags=re.I)
               def repl(m):
                   url=m.group(3)
                   if re.match(r'^(?:[a-z][a-z0-9+.-]*:|//|data:|#)', url, re.I):
@@ -55,8 +57,6 @@ jobs:
                       return m.group(0)
                   return m.group(1)+m.group(2)+path+'?v='+sha+(('#'+frag) if frag else '')+m.group(4)
               text=asset_re.sub(repl, text)
-
-              # Run the deployment cache guard before deferred application scripts.
               if 'cache-bust.js?v='+sha not in text:
                   tag='<script src="cache-bust.js?v='+sha+'"></script>'
                   if re.search(r'</head>', text, re.I):
