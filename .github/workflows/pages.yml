@@ -85,8 +85,6 @@ jobs:
           root=pathlib.Path('_site')
           tag='<script src="nav-global.js?v=${GITHUB_SHA}"></script>'
           for html in root.glob('*.html'):
-              if html.name == 'checker.html':
-                  continue
               text=html.read_text(encoding='utf-8', errors='ignore')
               if 'nav-global.js' not in text:
                   if re.search(r'</body>', text, re.I):
