@@ -40,25 +40,21 @@ jobs:
           import pathlib, re
           root=pathlib.Path('_site')
           sha='${GITHUB_SHA}'
-          # Give every local JS/CSS asset a deployment-specific URL. This is
-          # important because GitHub Pages/browser caches can otherwise keep an
-          # older runtime even after the HTML itself has been redeployed.
+          # Bust every local JS/CSS asset so a normal browser cannot reuse an
+          # older runtime while Incognito receives the current one.
+          asset_re=re.compile(r'((?:src|href)\s*=\s*)(["\'])([^"\']+)(\2)', re.I)
           for html in root.glob('*.html'):
               text=html.read_text(encoding='utf-8', errors='ignore')
-
-              def bust(match):
-                  attr, quote, url = match.group(1), match.group(2), match.group(3)
+              def repl(m):
+                  url=m.group(3)
                   if re.match(r'^(?:[a-z][a-z0-9+.-]*:|//|data:|#)', url, re.I):
-                      return match.group(0)
-                  path, _, frag = url.partition('#')
-                  path, _, _oldq = path.partition('?')
+                      return m.group(0)
+                  path, _, frag=url.partition('#')
+                  path, _, _oldq=path.partition('?')
                   if not re.search(r'\.(?:js|css)$', path, re.I):
-                      return match.group(0)
-                  return f'{attr}={quote}{path}?v={sha}' + (('#'+frag) if frag else '') + quote
-
-              text=re.sub(r'(?:src|href)\s*(=)\s*(["\'])([^"\']+)(?:\2)',
-                          lambda m: bust(type('M',(),{'group':lambda self,n: {1:'src' if 'src' in m.group(0).lower() else 'href',2:m.group(2),3:m.group(3)}[n]})()),
-                          text, flags=re.I)
+                      return m.group(0)
+                  return m.group(1)+m.group(2)+path+'?v='+sha+(('#'+frag) if frag else '')+m.group(4)
+              text=asset_re.sub(repl, text)
 
               # Run the deployment cache guard before deferred application scripts.
               if 'cache-bust.js?v='+sha not in text:
