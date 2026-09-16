@@ -69,6 +69,21 @@ jobs:
           python3 - <<'PY'
           import pathlib, re
           root=pathlib.Path('_site')
+          theme=root/'theme.js'
+          if theme.exists():
+              text=theme.read_text(encoding='utf-8', errors='ignore')
+              # theme.js previously rebuilt Practice/Tools nav groups. Keep its
+              # theme, account and search functionality, but leave navigation
+              # structure exclusively to nav-global.js.
+              patched=re.sub(r'(if\(document\.querySelector\([\'\"]\.topbar[\'\"]\)\)\{)applyNav\(\);', r'\1', text, count=1)
+              if patched == text:
+                  patched=text.replace('applyNav();','',1)
+              theme.write_text(patched, encoding='utf-8')
+          PY
+
+          python3 - <<'PY'
+          import pathlib, re
+          root=pathlib.Path('_site')
           tag='<link rel="stylesheet" href="dark-global.css?v=${GITHUB_SHA}">'
           for html in root.glob('*.html'):
               text=html.read_text(encoding='utf-8', errors='ignore')
