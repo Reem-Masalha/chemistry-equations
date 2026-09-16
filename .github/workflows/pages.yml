@@ -98,20 +98,6 @@ jobs:
           python3 - <<'PY'
           import pathlib, re
           root=pathlib.Path('_site')
-          tag='<link rel="stylesheet" href="chemistry-identity.css?v=${GITHUB_SHA}">'
-          for html in root.glob('*.html'):
-              text=html.read_text(encoding='utf-8', errors='ignore')
-              if 'chemistry-identity.css' not in text:
-                  if re.search(r'</head>', text, re.I):
-                      text=re.sub(r'</head>', tag+'\n</head>', text, count=1, flags=re.I)
-                  else:
-                      text=tag+'\n'+text
-                  html.write_text(text, encoding='utf-8')
-          PY
-
-          python3 - <<'PY'
-          import pathlib, re
-          root=pathlib.Path('_site')
           tag='<script src="nav-global.js?v=${GITHUB_SHA}"></script>'
           for html in root.glob('*.html'):
               text=html.read_text(encoding='utf-8', errors='ignore')
@@ -133,7 +119,6 @@ jobs:
           test -s _site/i18n-safe.js
           test -s _site/account.js
           test -s _site/dark-global.css
-          test -s _site/chemistry-identity.css
           test -s _site/nav-global.js
           test -s _site/cache-bust.js
 
