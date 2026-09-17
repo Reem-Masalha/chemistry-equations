@@ -48,6 +48,7 @@ function stabilizeNavigation(){
   document.head.appendChild(st);
  }
  const flatten=()=>{
+  if(window.__CHEM_NAV_FINAL__)return;
   const nav=document.querySelector('.main-nav');
   if(!nav)return;
   nav.querySelectorAll('.nav-group').forEach(group=>{
@@ -79,7 +80,7 @@ function stabilizeNavigation(){
  const nav=document.querySelector('.main-nav');
  if(nav&&!nav.dataset.stableNavObserver){
   nav.dataset.stableNavObserver='1';
-  new MutationObserver(()=>{if(nav.querySelector('.nav-group'))flatten()}).observe(nav,{childList:true,subtree:true});
+  new MutationObserver(()=>{if(!window.__CHEM_NAV_FINAL__&&nav.querySelector('.nav-group'))flatten()}).observe(nav,{childList:true,subtree:true});
  }
 };
 const init=()=>{load();stabilizeNavigation()};
