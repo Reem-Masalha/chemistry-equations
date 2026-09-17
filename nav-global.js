@@ -1,5 +1,7 @@
 (()=>{
 'use strict';
+const page=(location.pathname.split('/').pop()||'index.html').toLowerCase();
+if(page==='challenges.html')return;
 if(window.__CHEM_NAV_FINAL__)return;
 window.__CHEM_NAV_FINAL__=true;
 const style=document.createElement('style');
