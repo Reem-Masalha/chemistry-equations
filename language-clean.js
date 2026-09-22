@@ -86,3 +86,129 @@ function stabilizeNavigation(){
 const init=()=>{load();stabilizeNavigation()};
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
 })();
+
+/* Final shared header layout repair.
+   Keep the three header regions independent so the nav can never clip its
+   first/last link into the brand or account controls. */
+(()=>{
+ 'use strict';
+ const STYLE_ID='chemistry-final-header-layout';
+ function install(){
+   if(!document.getElementById(STYLE_ID)){
+     const s=document.createElement('style');
+     s.id=STYLE_ID;
+     s.textContent=`
+@media(min-width:761px){
+  .topbar.topbar{
+    display:grid!important;
+    grid-template-columns:max-content minmax(0,1fr) max-content!important;
+    align-items:center!important;
+    gap:12px!important;
+    width:100%!important;
+    min-width:0!important;
+    box-sizing:border-box!important;
+    padding:10px max(18px,calc((100% - 1280px)/2))!important;
+    overflow:visible!important;
+  }
+  .topbar.topbar>.brand{
+    grid-column:1!important;
+    order:unset!important;
+    margin:0!important;
+    min-width:0!important;
+    flex:none!important;
+    white-space:nowrap!important;
+  }
+  .topbar.topbar>.main-nav.main-nav{
+    grid-column:2!important;
+    order:unset!important;
+    display:flex!important;
+    align-items:center!important;
+    justify-content:flex-start!important;
+    width:100%!important;
+    min-width:0!important;
+    max-width:none!important;
+    flex:none!important;
+    flex-wrap:nowrap!important;
+    gap:3px!important;
+    overflow-x:auto!important;
+    overflow-y:hidden!important;
+    scrollbar-width:none!important;
+    -webkit-overflow-scrolling:touch!important;
+    white-space:nowrap!important;
+  }
+  .topbar.topbar>.main-nav.main-nav::-webkit-scrollbar{display:none!important}
+  .topbar.topbar>.main-nav.main-nav>a{
+    display:inline-flex!important;
+    align-items:center!important;
+    justify-content:center!important;
+    flex:0 0 auto!important;
+    min-width:max-content!important;
+    width:auto!important;
+    font-size:13px!important;
+    line-height:1.2!important;
+    padding:7px 8px!important;
+    white-space:nowrap!important;
+    box-sizing:border-box!important;
+  }
+  .topbar.topbar>.topbar-controls{
+    grid-column:3!important;
+    order:unset!important;
+    display:flex!important;
+    align-items:center!important;
+    justify-content:flex-end!important;
+    gap:6px!important;
+    min-width:max-content!important;
+    width:auto!important;
+    flex:none!important;
+    white-space:nowrap!important;
+  }
+  .topbar.topbar>.topbar-controls>*{
+    flex:0 0 auto!important;
+    min-width:0!important;
+    margin:0!important;
+  }
+  .topbar.topbar>.topbar-controls #themeToggle{
+    display:inline-flex!important;
+    align-items:center!important;
+    justify-content:center!important;
+    min-height:36px!important;
+    padding:7px 9px!important;
+    white-space:nowrap!important;
+  }
+}
+@media(max-width:1100px) and (min-width:761px){
+  .topbar.topbar{gap:8px!important;padding-left:12px!important;padding-right:12px!important}
+  .topbar.topbar>.main-nav.main-nav{gap:2px!important}
+  .topbar.topbar>.main-nav.main-nav>a{font-size:12px!important;padding:6px 6px!important}
+  .topbar.topbar>.topbar-controls{gap:3px!important}
+  .topbar.topbar>.topbar-controls #themeToggle{font-size:11px!important;padding:6px!important}
+}
+@media(max-width:760px){
+  .topbar.topbar{width:100%!important;max-width:100%!important;box-sizing:border-box!important;overflow:visible!important}
+  .topbar.topbar>.topbar-controls{display:flex!important;align-items:center!important;min-width:max-content!important;flex:0 0 auto!important}
+  .topbar.topbar>.topbar-controls>*{flex:0 0 auto!important}
+  .topbar.topbar>.main-nav.main-nav>a{flex:0 0 auto!important;min-width:max-content!important}
+}
+`;
+     document.head.appendChild(s);
+   }
+ }
+ function organize(){
+   const top=document.querySelector('.topbar');
+   const controls=document.getElementById('topbarControls');
+   if(!top||!controls)return;
+   const theme=document.getElementById('themeToggle');
+   if(theme&&theme.parentElement!==controls)controls.appendChild(theme);
+ }
+ function start(){
+   install();
+   organize();
+   const top=document.querySelector('.topbar');
+   if(top&&!top.dataset.finalHeaderObserver){
+     top.dataset.finalHeaderObserver='1';
+     new MutationObserver(organize).observe(top,{childList:true});
+   }
+ }
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});
+ else start();
+})();
