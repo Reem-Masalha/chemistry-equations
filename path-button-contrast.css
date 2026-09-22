@@ -1,6 +1,6 @@
-/* Learning path buttons — course-style controls */
-.path-grid{align-items:stretch!important;}
-.path-card{display:flex!important;flex-direction:column!important;}
+/* Course CTA buttons: one consistent visual language across the learning pages */
+.path-grid{align-items:stretch!important}
+.path-card{display:flex!important;flex-direction:column!important}
 .path-card > .path-button,
 .path-card > a.primary,
 #beginner .section-head > .path-button,
@@ -9,25 +9,25 @@
   display:inline-flex!important;
   flex-direction:row!important;
   align-items:center!important;
-  justify-content:space-between!important;
-  gap:14px!important;
+  justify-content:center!important;
+  gap:10px!important;
   box-sizing:border-box!important;
   width:100%!important;
   min-height:48px!important;
   margin-top:auto!important;
-  padding:9px 12px 9px 16px!important;
-  border:1px solid rgba(49,88,214,.34)!important;
-  border-radius:12px!important;
-  background:var(--surface)!important;
-  color:var(--text)!important;
-  -webkit-text-fill-color:var(--text)!important;
-  box-shadow:0 3px 10px rgba(31,48,82,.05)!important;
+  padding:11px 16px!important;
+  border:1px solid var(--accent)!important;
+  border-radius:10px!important;
+  background:var(--accent)!important;
+  color:#fff!important;
+  -webkit-text-fill-color:#fff!important;
+  box-shadow:0 4px 12px rgba(49,88,214,.16)!important;
   font-size:14px!important;
   font-weight:800!important;
   line-height:1.2!important;
   text-decoration:none!important;
   white-space:nowrap!important;
-  transition:border-color .16s ease,background .16s ease,box-shadow .16s ease,transform .16s ease,color .16s ease!important;
+  transition:background .16s ease,border-color .16s ease,box-shadow .16s ease,transform .16s ease!important;
 }
 #beginner .section-head > .path-button,
 #intermediate .section-head > .path-button,
@@ -41,37 +41,51 @@
 #beginner .section-head > .path-button:hover,
 #intermediate .section-head > .path-button:hover,
 #advanced .section-head > .path-button:hover{
-  border-color:var(--accent)!important;
-  background:#f7f9ff!important;
-  color:var(--accent)!important;
-  -webkit-text-fill-color:var(--accent)!important;
-  box-shadow:0 6px 14px rgba(31,48,82,.08)!important;
+  background:#2749b5!important;
+  border-color:#2749b5!important;
+  color:#fff!important;
+  -webkit-text-fill-color:#fff!important;
+  box-shadow:0 6px 16px rgba(49,88,214,.22)!important;
   transform:translateY(-1px)!important;
   filter:none!important;
 }
-.path-button-label{min-width:0!important;}
+.path-button-label{min-width:0!important}
 .path-button-arrow{
-  display:grid!important;
-  place-items:center!important;
-  width:28px!important;
-  height:28px!important;
-  flex:0 0 28px!important;
-  border-radius:8px!important;
-  background:#edf1ff!important;
-  color:var(--accent)!important;
-  -webkit-text-fill-color:var(--accent)!important;
+  display:inline-flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  width:auto!important;
+  height:auto!important;
+  flex:0 0 auto!important;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  color:inherit!important;
+  -webkit-text-fill-color:inherit!important;
   font-size:16px!important;
   line-height:1!important;
 }
-.path-card > .path-button:hover .path-button-arrow,
-#beginner .section-head > .path-button:hover .path-button-arrow,
-#intermediate .section-head > .path-button:hover .path-button-arrow,
-#advanced .section-head > .path-button:hover .path-button-arrow{background:#e3e9ff!important;}
 .path-card > .path-button:focus-visible,
 #beginner .section-head > .path-button:focus-visible,
 #intermediate .section-head > .path-button:focus-visible,
-#advanced .section-head > .path-button:focus-visible{outline:3px solid rgba(49,88,214,.25)!important;outline-offset:3px!important;}
+#advanced .section-head > .path-button:focus-visible{
+  outline:3px solid rgba(49,88,214,.25)!important;
+  outline-offset:3px!important;
+}
 @media(max-width:760px){
- .path-card > .path-button,.path-card > a.primary{min-height:50px!important;padding:10px 12px 10px 15px!important;font-size:14px!important;}
- #beginner .section-head > .path-button,#intermediate .section-head > .path-button,#advanced .section-head > .path-button{width:auto!important;min-width:0!important;max-width:100%!important;min-height:44px!important;padding:9px 12px 9px 14px!important;font-size:14px!important;}
+  .path-card > .path-button,.path-card > a.primary{
+    min-height:48px!important;
+    padding:11px 15px!important;
+    font-size:14px!important;
+  }
+  #beginner .section-head > .path-button,
+  #intermediate .section-head > .path-button,
+  #advanced .section-head > .path-button{
+    width:auto!important;
+    min-width:0!important;
+    max-width:100%!important;
+    min-height:44px!important;
+    padding:10px 13px!important;
+    font-size:14px!important;
+  }
 }
