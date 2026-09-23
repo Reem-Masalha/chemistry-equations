@@ -83,3 +83,83 @@ body.dark{--chem-line:rgba(112,142,235,.10);--chem-line-strong:rgba(112,142,235,
 body.dark{background-image:radial-gradient(circle at 1px 1px,var(--chem-line) 1px,transparent 1.2px)}
 body.dark .main-nav a.active,body.dark .main-nav a:hover{background:#1d2940}
 @media(max-width:760px){.main-nav a{padding-left:9px}.main-nav a:before{margin-right:4px}.section-head:after{display:none}.hero-card:after,.checker-card:after,.balancer:after{right:-38px;opacity:.55}.hero-card:before,.checker-card:before,.balancer:before{right:20px}.lesson:after,.quiz-q:after,.stage-list .stage:after{right:10px;top:8px;font-size:23px}.equation:after{display:none}}
+
+
+/* Unified learning CTA buttons — intentionally one color and one visual language */
+.path-card .path-button,
+.section-head .path-button,
+.resume-learning-card .path-button,
+.path-button-polished,
+.quiz-actions a.primary{
+  appearance:none;
+  display:inline-flex!important;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
+  min-height:52px;
+  padding:13px 18px;
+  box-sizing:border-box;
+  border:1px solid var(--accent)!important;
+  border-radius:14px!important;
+  background:var(--accent)!important;
+  color:#fff!important;
+  box-shadow:0 6px 16px rgba(49,88,214,.16)!important;
+  font:inherit;
+  font-size:15px;
+  font-weight:800;
+  line-height:1.2;
+  text-decoration:none;
+  text-align:center;
+  white-space:nowrap;
+  transform:none;
+}
+.path-card .path-button:hover,
+.section-head .path-button:hover,
+.resume-learning-card .path-button:hover,
+.path-button-polished:hover,
+.quiz-actions a.primary:hover{
+  background:#294bc0!important;
+  border-color:#294bc0!important;
+  color:#fff!important;
+  box-shadow:0 8px 20px rgba(49,88,214,.22)!important;
+  transform:translateY(-1px);
+}
+.path-card .path-button:active,
+.section-head .path-button:active,
+.resume-learning-card .path-button:active,
+.path-button-polished:active,
+.quiz-actions a.primary:active{transform:translateY(0)}
+.path-button .path-button-label{display:inline}
+.path-button .path-button-arrow,
+.path-button-polished .path-button-arrow{
+  display:grid;
+  place-items:center;
+  width:24px;
+  height:24px;
+  flex:0 0 24px;
+  border:1px solid rgba(255,255,255,.34);
+  border-radius:50%;
+  background:rgba(255,255,255,.12);
+  font-size:15px;
+  line-height:1;
+}
+.quiz-actions a.primary::after{
+  content:'→';
+  display:grid;
+  place-items:center;
+  width:24px;
+  height:24px;
+  flex:0 0 24px;
+  border:1px solid rgba(255,255,255,.34);
+  border-radius:50%;
+  background:rgba(255,255,255,.12);
+  font-size:15px;
+  line-height:1;
+}
+@media(max-width:760px){
+  .path-card .path-button,
+  .section-head .path-button,
+  .resume-learning-card .path-button,
+  .path-button-polished,
+  .quiz-actions a.primary{min-height:52px;width:100%;padding:13px 16px;font-size:15px}
+}
