@@ -46,17 +46,18 @@
 }
 .course-lesson-nav + .quiz-actions a.secondary,
 .quiz-actions a.secondary{
-  border:1px solid var(--line);
-  background:var(--surface);
-  color:var(--text);
-  box-shadow:none;
+  border:1px solid var(--accent)!important;
+  background:var(--accent)!important;
+  color:#fff!important;
+  box-shadow:0 6px 16px rgba(49,88,214,.16)!important;
 }
 .course-lesson-nav + .quiz-actions a.secondary:hover,
 .quiz-actions a.secondary:hover{
-  border-color:var(--accent);
-  color:var(--accent);
-  background:var(--surface);
-  box-shadow:none;
+  border-color:#294bc0!important;
+  color:#fff!important;
+  background:#294bc0!important;
+  box-shadow:0 8px 20px rgba(49,88,214,.22)!important;
+  transform:translateY(-1px);
   filter:none;
 }
 @media(max-width:760px){
