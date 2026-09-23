@@ -16,13 +16,13 @@
   min-height:48px!important;
   margin-top:auto!important;
   padding:9px 10px 9px 15px!important;
-  border:1px solid var(--line)!important;
-  border-left:4px solid var(--accent)!important;
-  border-radius:12px!important;
-  background:var(--surface)!important;
-  color:var(--text)!important;
-  -webkit-text-fill-color:var(--text)!important;
-  box-shadow:0 2px 7px rgba(15,23,42,.05)!important;
+  border:1px solid var(--accent)!important;
+  border-left:1px solid var(--accent)!important;
+  border-radius:14px!important;
+  background:var(--accent)!important;
+  color:#fff!important;
+  -webkit-text-fill-color:#fff!important;
+  box-shadow:0 6px 16px rgba(49,88,214,.16)!important;
   font-size:14px!important;
   font-weight:800!important;
   line-height:1.2!important;
@@ -43,11 +43,11 @@
 #intermediate .section-head > .path-button:hover,
 #advanced .section-head > .path-button:hover{
   transform:translateY(-1px)!important;
-  border-color:var(--accent)!important;
-  background:color-mix(in srgb,var(--accent) 5%,var(--surface))!important;
-  color:var(--text)!important;
-  -webkit-text-fill-color:var(--text)!important;
-  box-shadow:0 5px 14px rgba(15,23,42,.09)!important;
+  border-color:#294bc0!important;
+  background:#294bc0!important;
+  color:#fff!important;
+  -webkit-text-fill-color:#fff!important;
+  box-shadow:0 8px 20px rgba(49,88,214,.22)!important;
 }
 .path-button-label{min-width:0!important}
 .path-button-arrow{
@@ -57,11 +57,11 @@
   width:30px!important;
   height:30px!important;
   flex:0 0 30px!important;
-  border:1px solid color-mix(in srgb,var(--accent) 30%,var(--line))!important;
+  border:1px solid rgba(255,255,255,.34)!important;
   border-radius:50%!important;
-  background:color-mix(in srgb,var(--accent) 8%,var(--surface))!important;
-  color:var(--accent)!important;
-  -webkit-text-fill-color:var(--accent)!important;
+  background:rgba(255,255,255,.12)!important;
+  color:#fff!important;
+  -webkit-text-fill-color:#fff!important;
   font-size:15px!important;
   line-height:1!important;
   transition:transform .16s ease,background .16s ease!important;
