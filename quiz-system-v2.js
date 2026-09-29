@@ -192,11 +192,11 @@ function renderQuestion(){
  }
  const title=state.type==='choice'?ui('Choose the balanced equation','اختر المعادلة الموزونة','בחר את המשוואה המאוזנת'):ui('Type the coefficients','اكتب المعاملات','הקלד את המקדמים');
  area.innerHTML=`<article class="practice-question-card"><div class="practice-question-meta"><span>${ui('Question','السؤال','שאלה')} ${state.index+1} / ${state.items.length}</span><span>${state.difficulty.toUpperCase()} · ${escapeHtml(category)}</span></div>${state.type==='choice'?`<div class="practice-equation">${chem(raw)}</div>`:''}<h3>${title}</h3><div class="practice-controls">${controls}</div><div id="answerFeedback" class="answer-feedback hidden"></div></article>`;
- area.querySelectorAll('.practice-choice').forEach(b=>b.addEventListener('click',()=>answerQuestion(decodeURIComponent(b.dataset.answer),solution,hint,b)));
- area.querySelector('.practice-submit')?.addEventListener('click',()=>{const vals=[...area.querySelectorAll('[data-coef]')].map(x=>Number(x.value||0));const wanted=coefficients(solution);answerQuestion(vals.map(String).join(','),wanted.map(String).join(','),hint,null,vals,wanted,solution)});
+ area.querySelectorAll('.practice-choice').forEach(b=>b.addEventListener('click',()=>answerQuestion(decodeURIComponent(b.dataset.answer),solution,hint,b,null,null,solution,category)));
+ area.querySelector('.practice-submit')?.addEventListener('click',()=>{const vals=[...area.querySelectorAll('[data-coef]')].map(x=>Number(x.value||0));const wanted=coefficients(solution);answerQuestion(vals.map(String).join(','),wanted.map(String).join(','),hint,null,vals,wanted,solution,category)});
  renderStats();
 }
-function answerQuestion(answer,solution,hint,button,typed,wanted,solutionText){
+function answerQuestion(answer,solution,hint,button,typed,wanted,solutionText,category){
  if(!state.running)return;const ok=typed?typed.length===wanted.length&&typed.every((x,i)=>x===wanted[i]):normalize(answer)===normalize(solution);
  state.answers.push({ok,category});if(ok){state.correct++;state.score+=10;}
  if(state.experience==='practice'){showFeedback(ok,hint,solutionText||solution,answer,typed);document.querySelectorAll('.practice-choice').forEach(b=>b.disabled=true);const submit=document.querySelector('.practice-submit');if(submit)submit.disabled=true;setTimeout(()=>{state.index++;if(state.index<state.items.length)renderQuestion();else finishSession(false)},1800)}
