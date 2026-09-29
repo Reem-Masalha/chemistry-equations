@@ -106,7 +106,7 @@ function renderQuestion(){
 function answerQuestion(answer,solution,hint,button,typed,wanted,solutionText){
  if(!state.running)return;const ok=typed?typed.length===wanted.length&&typed.every((x,i)=>x===wanted[i]):normalize(answer)===normalize(solution);
  state.answers.push({ok});if(ok){state.correct++;state.score+=10;}
- if(state.experience==='practice'){showFeedback(ok,hint,solutionText||solution,answer,typed);document.querySelectorAll('.practice-choice').forEach(b=>b.disabled=true);const submit=document.querySelector('.practice-submit');if(submit)submit.disabled=true;setTimeout(()=>{state.index++;if(state.index<state.items.length)renderQuestion();else finishSession(false)},650)}
+ if(state.experience==='practice'){showFeedback(ok,hint,solutionText||solution,answer,typed);document.querySelectorAll('.practice-choice').forEach(b=>b.disabled=true);const submit=document.querySelector('.practice-submit');if(submit)submit.disabled=true;setTimeout(()=>{state.index++;if(state.index<state.items.length)renderQuestion();else finishSession(false)},1800)}
  else {document.querySelectorAll('.practice-choice').forEach(b=>b.disabled=true);const submit=document.querySelector('.practice-submit');if(submit)submit.disabled=true;state.index++;setTimeout(()=>{if(state.index<state.items.length)renderQuestion();else finishSession(false)},250)}
  renderStats();
 }
