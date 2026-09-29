@@ -58,9 +58,10 @@ function renderConfig(){
  if(start)start.textContent=state.experience==='quiz'?ui('Start quiz','ابدأ الاختبار','התחל חידון'):ui('Start practice','ابدأ التدريب','התחל תרגול');
  document.querySelectorAll('input[name="experience"]').forEach(r=>r.checked=r.value===state.experience);
  document.querySelectorAll('input[name="qtype"]').forEach(r=>r.checked=r.value===state.type);
- document.querySelectorAll('input[name="mode"]').forEach(r=>r.checked=r.value==='timed');
  const modeWrap=document.querySelector('.mode-list');
- if(modeWrap)modeWrap.innerHTML=`<label><input type="radio" name="mode" value="timed" checked> ${ui('Timed · 5 minutes','مؤقت · 5 دقائق','مؤقت · 5 دقائق')}</label>`;
+ if(modeWrap)modeWrap.innerHTML=state.experience==='quiz'
+   ? `<label><input type="radio" name="mode" value="timed" checked> ${ui('Timed · 5 minutes','مؤقت · 5 دقائق','מؤقت · 5 דקות')}</label>`
+   : '';
  const badge=$('practiceBadge');if(badge)badge.textContent=state.experience==='quiz'?ui('QUIZ','اختبار','חידון'):ui('PRACTICE','تدريب','תרגול');
 }
 function bindConfig(){
