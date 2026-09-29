@@ -38,10 +38,17 @@ async function trackVisit(request,env){
   const ua=String(request.headers.get('user-agent')||'');
   if(/bot|crawler|spider|slurp|headless|lighthouse|pagespeed|facebookexternalhit|bingpreview|prefetch/i.test(ua))return json({ok:true,ignored:true,reason:'automated-client'},corsHeaders());
   const created=now();
+  const eventType=body.eventType==='heartbeat'?'heartbeat':'page_view';
   const recent=await env.DB.prepare("SELECT id FROM visits WHERE visitor_id=? AND path=? AND created_at>=datetime('now','-30 minutes') LIMIT 1").bind(visitorId,path).first();
-  if(!recent)await env.DB.prepare('INSERT INTO visits (visitor_id,path,created_at) VALUES (?,?,?)').bind(visitorId,path,created).run();
+  if(recent){
+    if(eventType==='heartbeat' && userId) {
+      await env.DB.prepare('UPDATE visits SET created_at=? WHERE id=?').bind(created,recent.id).run();
+    }
+  }else{
+    await env.DB.prepare('INSERT INTO visits (visitor_id,path,created_at) VALUES (?,?,?)').bind(visitorId,path,created).run();
+  }
   const loc=locationFromRequest(request);
-  await event(env,{visitorId,userId:userId||null,eventType:'page_view',feature:null,metadata:{path,location:loc}});
+  await event(env,{visitorId,userId:userId||null,eventType,feature:null,metadata:{path,location:loc}});
   return json({ok:true,deduplicated:Boolean(recent),identity:userId?'authenticated':'anonymous',locationAvailable:Boolean(loc.country||loc.city)},corsHeaders());
 }
 export default { async fetch(request,env){
@@ -93,7 +100,7 @@ export default { async fetch(request,env){
    const features=await env.DB.prepare("SELECT feature,COUNT(*) AS uses FROM analytics_events WHERE feature IS NOT NULL GROUP BY feature ORDER BY uses DESC").all();
    const missed=await env.DB.prepare("SELECT question,COUNT(*) AS misses FROM analytics_events WHERE event_type='question_result' AND correct=0 AND question IS NOT NULL GROUP BY question ORDER BY misses DESC LIMIT 15").all();
    const featurePeriod=await env.DB.prepare("SELECT feature,COUNT(*) AS uses FROM analytics_events WHERE feature IS NOT NULL AND created_at>=datetime('now','-30 day') GROUP BY feature ORDER BY uses DESC").all();
-   const locationRows=await env.DB.prepare("SELECT visitor_id,metadata,created_at FROM analytics_events WHERE event_type='page_view' AND visitor_id LIKE 'account:%' AND metadata IS NOT NULL ORDER BY created_at DESC LIMIT 5000").all();
+   const locationRows=await env.DB.prepare("SELECT visitor_id,metadata,created_at FROM analytics_events WHERE event_type IN ('page_view','heartbeat') AND visitor_id LIKE 'account:%' AND metadata IS NOT NULL ORDER BY created_at DESC LIMIT 5000").all();
    const latestByVisitor=new Map();
    for(const row of locationRows.results||[]){if(!latestByVisitor.has(row.visitor_id))latestByVisitor.set(row.visitor_id,row);}
    const currentLocations=[];
