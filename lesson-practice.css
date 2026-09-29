@@ -245,3 +245,19 @@
   .chem-equation{font-size:clamp(24px,8vw,32px)!important}
   .atom-count-table{font-size:13px}
 }
+
+
+/* Embedded lesson balancing exercises */
+.lesson-interactive-practice{margin-top:20px;padding:18px;border:1px solid color-mix(in srgb,var(--accent) 28%,var(--line));border-radius:14px;background:var(--surface);box-shadow:0 6px 18px rgba(15,23,42,.05)}
+.lesson-interactive-practice h3{margin:0 0 12px;font-size:18px}
+.interactive-equation{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:7px 5px;margin:4px 0 14px;font-size:clamp(20px,3.5vw,30px);font-weight:850;line-height:1.5;direction:ltr}
+.interactive-coef{width:44px;height:40px;box-sizing:border-box;padding:5px 4px;border:1px solid var(--line);border-radius:9px;background:var(--surface);color:var(--text);font:inherit;font-size:18px;font-weight:800;text-align:center}
+.interactive-coef:focus{outline:3px solid rgba(49,88,214,.2);outline-offset:1px;border-color:var(--accent)}
+.interactive-formula{white-space:nowrap}
+.interactive-operator{color:var(--muted);white-space:pre}
+.interactive-check{display:block;margin:0 auto;padding:10px 22px;min-height:44px;border:1px solid var(--accent);border-radius:10px;background:var(--accent);color:#fff;font:inherit;font-weight:800;cursor:pointer}
+.interactive-check:hover{filter:brightness(.94)}
+.interactive-feedback{min-height:22px;margin-top:11px;text-align:center;font-size:14px;font-weight:800}
+.interactive-feedback.practice-correct{color:#17683f}
+.interactive-feedback.practice-wrong{color:#a9323b}
+@media(max-width:760px){.lesson-interactive-practice{padding:15px 12px}.interactive-equation{font-size:22px;gap:5px 3px}.interactive-coef{width:40px;height:38px;font-size:17px}.interactive-check{width:100%}}
