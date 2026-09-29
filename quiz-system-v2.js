@@ -11,30 +11,76 @@ function formatMolecule(part){const p=String(part||'').trim();const m=p.match(/^
 function chem(eq){return normalize(eq).split('→').map(side=>side.split('+').map(formatMolecule).join(' + ')).join(' → ')}
 const questions={
  easy:[
-  ['H2 + O2 → H2O','2H2 + O2 → 2H2O','Hydrogen and oxygen must both be equal.'],
-  ['Na + Cl2 → NaCl','2Na + Cl2 → 2NaCl','Cl₂ has two chlorine atoms, so use 2 NaCl.'],
-  ['Mg + O2 → MgO','2Mg + O2 → 2MgO','O₂ contains two oxygen atoms.'],
-  ['N2 + H2 → NH3','N2 + 3H2 → 2NH3','Balance nitrogen first, then hydrogen.'],
-  ['Cl2 + H2 → HCl','H2 + Cl2 → 2HCl','Two chlorine atoms require two HCl molecules.'],
-  ['Fe + S → FeS','Fe + S → FeS','One Fe and one S already match.']
+  {category:'basic balancing',raw:'H2 + O2 → H2O',solution:'2H2 + O2 → 2H2O',hint:'Balance oxygen first, then hydrogen.'},
+  {category:'basic balancing',raw:'Mg + O2 → MgO',solution:'2Mg + O2 → 2MgO',hint:'O₂ contains two oxygen atoms.'},
+  {category:'basic balancing',raw:'Al + O2 → Al2O3',solution:'4Al + 3O2 → 2Al2O3',hint:'Use six oxygen atoms on each side.'},
+  {category:'coefficients',raw:'Na + Cl2 → NaCl',solution:'2Na + Cl2 → 2NaCl',hint:'Cl₂ requires two NaCl molecules.'},
+  {category:'coefficients',raw:'N2 + H2 → NH3',solution:'N2 + 3H2 → 2NH3',hint:'Balance nitrogen, then hydrogen.'},
+  {category:'coefficients',raw:'Cl2 + H2 → HCl',solution:'H2 + Cl2 → 2HCl',hint:'Two chlorine atoms require two HCl molecules.'},
+  {category:'diatomic elements',raw:'O2 + H2 → H2O',solution:'O2 + 2H2 → 2H2O',hint:'Elemental oxygen and hydrogen are diatomic.'},
+  {category:'diatomic elements',raw:'Br2 + Na → NaBr',solution:'Br2 + 2Na → 2NaBr',hint:'Br₂ contains two bromine atoms.'},
+  {category:'already-balanced equations',raw:'Fe + S → FeS',solution:'Fe + S → FeS',hint:'One Fe and one S already match.'},
+  {category:'already-balanced equations',raw:'CaCO3 → CaO + CO2',solution:'CaCO3 → CaO + CO2',hint:'Every element already has equal counts.'},
+  {category:'tricky formulas',raw:'Na2O + H2O → NaOH',solution:'Na2O + H2O → 2NaOH',hint:'The subscript 2 belongs to Na.'},
+  {category:'tricky formulas',raw:'CaCl2 + AgNO3 → Ca(NO3)2 + AgCl',solution:'CaCl2 + 2AgNO3 → Ca(NO3)2 + 2AgCl',hint:'Keep NO₃ together while balancing Ag and Cl.'}
  ],
  medium:[
-  ['Fe + O2 → Fe2O3','4Fe + 3O2 → 2Fe2O3','Use six oxygen atoms on each side.'],
-  ['Ca + H2O → Ca(OH)2 + H2','Ca + 2H2O → Ca(OH)2 + H2','Two H₂O molecules provide two oxygen atoms.'],
-  ['Zn + HCl → ZnCl2 + H2','Zn + 2HCl → ZnCl2 + H2','ZnCl₂ requires two chlorine atoms.'],
-  ['CH4 + O2 → CO2 + H2O','CH4 + 2O2 → CO2 + 2H2O','Balance carbon, then hydrogen, then oxygen.'],
-  ['Na2O + H2O → NaOH','Na2O + H2O → 2NaOH','Two sodium atoms require two NaOH.'],
-  ['KClO3 → KCl + O2','2KClO3 → 2KCl + 3O2','Use six oxygen atoms on both sides.']
+  {category:'basic balancing',raw:'Fe + O2 → Fe2O3',solution:'4Fe + 3O2 → 2Fe2O3',hint:'Make six oxygen atoms on each side.'},
+  {category:'basic balancing',raw:'KClO3 → KCl + O2',solution:'2KClO3 → 2KCl + 3O2',hint:'Six oxygen atoms become 3 O₂.'},
+  {category:'coefficients',raw:'Zn + HCl → ZnCl2 + H2',solution:'Zn + 2HCl → ZnCl2 + H2',hint:'ZnCl₂ needs two chlorine atoms.'},
+  {category:'coefficients',raw:'Na2O + H2O → NaOH',solution:'Na2O + H2O → 2NaOH',hint:'Two sodium atoms require two NaOH units.'},
+  {category:'diatomic elements',raw:'Al + Cl2 → AlCl3',solution:'2Al + 3Cl2 → 2AlCl3',hint:'Match six chlorine atoms on both sides.'},
+  {category:'parentheses',raw:'Ca + H2O → Ca(OH)2 + H2',solution:'Ca + 2H2O → Ca(OH)2 + H2',hint:'The subscript 2 applies to the entire OH group.'},
+  {category:'parentheses',raw:'Al(OH)3 + HCl → AlCl3 + H2O',solution:'Al(OH)3 + 3HCl → AlCl3 + 3H2O',hint:'Balance the three OH groups with three water molecules.'},
+  {category:'polyatomic ions',raw:'Na2SO4 + BaCl2 → BaSO4 + NaCl',solution:'Na2SO4 + BaCl2 → BaSO4 + 2NaCl',hint:'SO₄ stays together; balance Na and Cl.'},
+  {category:'polyatomic ions',raw:'Ca(OH)2 + H3PO4 → Ca3(PO4)2 + H2O',solution:'3Ca(OH)2 + 2H3PO4 → Ca3(PO4)2 + 6H2O',hint:'Treat PO₄ as a unit, then balance H and O.'},
+  {category:'combustion',raw:'CH4 + O2 → CO2 + H2O',solution:'CH4 + 2O2 → CO2 + 2H2O',hint:'Balance C, then H, then O.'},
+  {category:'combustion',raw:'C2H6 + O2 → CO2 + H2O',solution:'2C2H6 + 7O2 → 4CO2 + 6H2O',hint:'Balance carbon and hydrogen before oxygen.'},
+  {category:'redox',raw:'Zn + CuSO4 → ZnSO4 + Cu',solution:'Zn + CuSO4 → ZnSO4 + Cu',hint:'The redox equation is already balanced.'},
+  {category:'redox',raw:'Fe + CuSO4 → FeSO4 + Cu',solution:'Fe + CuSO4 → FeSO4 + Cu',hint:'The atom counts already match.'},
+  {category:'ionic equations',raw:'AgNO3 + NaCl → AgCl + NaNO3',solution:'AgNO3 + NaCl → AgCl + NaNO3',hint:'The precipitation equation is already balanced.'},
+  {category:'ionic equations',raw:'HCl + NaOH → NaCl + H2O',solution:'HCl + NaOH → NaCl + H2O',hint:'One acid and one base give one salt and one water.'},
+  {category:'tricky formulas',raw:'Fe2O3 + CO → Fe + CO2',solution:'Fe2O3 + 3CO → 2Fe + 3CO2',hint:'The subscript 2 belongs only to Fe.'},
+  {category:'tricky formulas',raw:'NH4NO3 → N2O + H2O',solution:'NH4NO3 → N2O + 2H2O',hint:'There are four hydrogen atoms in NH₄NO₃.'},
+  {category:'already-balanced equations',raw:'CaCO3 → CaO + CO2',solution:'CaCO3 → CaO + CO2',hint:'No coefficient changes are needed.'}
  ],
  hard:[
-  ['C3H8 + O2 → CO2 + H2O','C3H8 + 5O2 → 3CO2 + 4H2O','For combustion, balance C, then H, then O.'],
-  ['C2H5OH + O2 → CO2 + H2O','C2H5OH + 3O2 → 2CO2 + 3H2O','Balance carbon and hydrogen before oxygen.'],
-  ['NH3 + O2 → NO + H2O','4NH3 + 5O2 → 4NO + 6H2O','Balance nitrogen, hydrogen, then oxygen.'],
-  ['FeS2 + O2 → Fe2O3 + SO2','4FeS2 + 11O2 → 2Fe2O3 + 8SO2','Balance Fe, then S, then O.'],
-  ['C4H10 + O2 → CO2 + H2O','2C4H10 + 13O2 → 8CO2 + 10H2O','Balance C and H, then use oxygen to finish.'],
-  ['KMnO4 + HCl → KCl + MnCl2 + H2O + Cl2','2KMnO4 + 16HCl → 2KCl + 2MnCl2 + 8H2O + 5Cl2','Balance K and Mn first, then H, Cl, and O.']
+  {category:'basic balancing',raw:'FeS2 + O2 → Fe2O3 + SO2',solution:'4FeS2 + 11O2 → 2Fe2O3 + 8SO2',hint:'Balance Fe, then S, then O.'},
+  {category:'basic balancing',raw:'KMnO4 + HCl → KCl + MnCl2 + H2O + Cl2',solution:'2KMnO4 + 16HCl → 2KCl + 2MnCl2 + 8H2O + 5Cl2',hint:'Balance K and Mn, then O, H, and Cl.'},
+  {category:'coefficients',raw:'P4 + O2 → P2O5',solution:'P4 + 5O2 → 2P2O5',hint:'Match four phosphorus and ten oxygen atoms.'},
+  {category:'diatomic elements',raw:'Na + Cl2 → NaCl',solution:'2Na + Cl2 → 2NaCl',hint:'Elemental chlorine is Cl₂.'},
+  {category:'parentheses',raw:'Fe2(SO4)3 + KOH → Fe(OH)3 + K2SO4',solution:'Fe2(SO4)3 + 6KOH → 2Fe(OH)3 + 3K2SO4',hint:'Treat SO₄ and OH as groups.'},
+  {category:'parentheses',raw:'Al2(SO4)3 + Ca(OH)2 → Al(OH)3 + CaSO4',solution:'Al2(SO4)3 + 3Ca(OH)2 → 2Al(OH)3 + 3CaSO4',hint:'Balance the repeated sulfate and hydroxide groups.'},
+  {category:'polyatomic ions',raw:'Na3PO4 + MgCl2 → Mg3(PO4)2 + NaCl',solution:'2Na3PO4 + 3MgCl2 → Mg3(PO4)2 + 6NaCl',hint:'Keep PO₄ intact while balancing Mg and NaCl.'},
+  {category:'polyatomic ions',raw:'Al2(SO4)3 + BaCl2 → BaSO4 + AlCl3',solution:'Al2(SO4)3 + 3BaCl2 → 3BaSO4 + 2AlCl3',hint:'Three sulfate groups require three BaSO₄ units.'},
+  {category:'combustion',raw:'C3H8 + O2 → CO2 + H2O',solution:'C3H8 + 5O2 → 3CO2 + 4H2O',hint:'Balance C, then H, then O.'},
+  {category:'combustion',raw:'C4H10 + O2 → CO2 + H2O',solution:'2C4H10 + 13O2 → 8CO2 + 10H2O',hint:'Use the smallest whole-number coefficients.'},
+  {category:'combustion',raw:'C2H5OH + O2 → CO2 + H2O',solution:'C2H5OH + 3O2 → 2CO2 + 3H2O',hint:'Account for the oxygen already present in ethanol.'},
+  {category:'redox',raw:'MnO2 + HCl → MnCl2 + H2O + Cl2',solution:'MnO2 + 4HCl → MnCl2 + 2H2O + Cl2',hint:'Four HCl molecules are needed.'},
+  {category:'redox',raw:'Cr2O3 + Al → Al2O3 + Cr',solution:'Cr2O3 + 2Al → Al2O3 + 2Cr',hint:'Match oxygen, then Al and Cr.'},
+  {category:'ionic equations',raw:'BaCl2 + Na2SO4 → BaSO4 + NaCl',solution:'BaCl2 + Na2SO4 → BaSO4 + 2NaCl',hint:'Balance the two Na and two Cl atoms.'},
+  {category:'ionic equations',raw:'H2SO4 + NaOH → Na2SO4 + H2O',solution:'H2SO4 + 2NaOH → Na2SO4 + 2H2O',hint:'Two NaOH molecules supply two Na atoms.'},
+  {category:'tricky formulas',raw:'Al2(SO4)3 + KOH → K2SO4 + Al(OH)3',solution:'Al2(SO4)3 + 6KOH → 3K2SO4 + 2Al(OH)3',hint:'Do not change subscripts; balance groups with coefficients.'},
+  {category:'tricky formulas',raw:'(NH4)2CO3 → NH3 + CO2 + H2O',solution:'(NH4)2CO3 → 2NH3 + CO2 + H2O',hint:'The 2 outside parentheses applies to the whole NH₄ group.'},
+  {category:'already-balanced equations',raw:'2H2 + O2 → 2H2O',solution:'2H2 + O2 → 2H2O',hint:'It is already balanced; keep the smallest coefficients.'},
+  {category:'already-balanced equations',raw:'Fe2O3 + 3CO → 2Fe + 3CO2',solution:'Fe2O3 + 3CO → 2Fe + 3CO2',hint:'Every element already has equal counts.'}
  ]
-};
+}function selectQuestionMix(bank,count=8){
+ const byCategory={};
+ bank.forEach(q=>(byCategory[q.category]||(byCategory[q.category]=[])).push(q));
+ Object.values(byCategory).forEach(list=>list.sort(()=>Math.random()-.5));
+ const categories=Object.keys(byCategory).sort(()=>Math.random()-.5);
+ const selected=[];
+ for(let round=0;selected.length<count;round++){
+   let added=false;
+   for(const category of categories){
+     const q=byCategory[category][round];
+     if(q){selected.push(q);added=true;if(selected.length>=count)break}
+   }
+   if(!added)break;
+ }
+ return selected.sort(()=>Math.random()-.5);
+}
 const state={difficulty:'easy',experience:'practice',type:'choice',timed:false,time:300,index:0,score:0,correct:0,answers:[],items:[],timer:null,running:false};
 function currentUser(){try{return JSON.parse(localStorage.getItem('chemistryCurrentUser')||'null')}catch{return null}}
 function statKey(){return 'chemistryQuizStats:'+(currentUser()?.id||currentUser()?.username||'guest')}
@@ -77,7 +123,7 @@ function updateHeader(){
  const timerText=$('timerText');if(timerText)timerText.textContent=state.experience==='quiz'?ui('Answer each question. Your results appear when you finish.','أجب عن كل سؤال. ستظهر نتيجتك عند الانتهاء.','ענה על כל שאלה. התוצאה תופיע בסיום.'):ui('Get feedback after each answer and learn from mistakes.','احصل على ملاحظات بعد كل إجابة وتعلم من أخطائك.','קבל משוב לאחר כל תשובה ולמד מהטעויות.');
 }
 function startSession(){
- stopTimer();state.running=true;state.index=0;state.score=0;state.correct=0;state.answers=[];state.items=[...questions[state.difficulty]].sort(()=>Math.random()-.5).slice(0,Math.min(8,questions[state.difficulty].length));
+ stopTimer();state.running=true;state.index=0;state.score=0;state.correct=0;state.answers=[];state.items=selectQuestionMix(questions[state.difficulty],Math.min(8,questions[state.difficulty].length));
  $('quizArea').innerHTML='';$('scoreArea').innerHTML='';$('retryMistakes')?.classList.add('hidden');
  updateHeader();renderStats();renderQuestion();showCancel(true);
  if(state.experience==='quiz'){
@@ -96,7 +142,7 @@ function drawTimer(){const m=Math.floor(state.time/60),s=String(state.time%60).p
 function renderStats(){const box=$('scoreArea');if(!box)return;const s=readStats();box.innerHTML=`<div class="practice-live-stats"><div><b>${state.score}</b><span>${ui('Score','النقاط','ניקוד')}</span></div><div><b>${state.correct}</b><span>${ui('Correct','صحيح','נכון')}</span></div><div><b>${state.running?state.index+1:0}</b><span>${ui('Question','السؤال','שאלה')}</span></div><div><b>${s.best||0}</b><span>${ui('Best score','أفضل نتيجة','שיא')}</span></div></div>`}
 function renderQuestion(){
  const item=state.items[state.index];if(!item)return finishSession(false);
- const [raw,solution,hint]=item;const area=$('quizArea');if(!area)return;
+ const {raw,solution,hint,category}=item;const area=$('quizArea');if(!area)return;
  let controls='';
  if(state.type==='choice')controls=makeChoices(solution).map((x,i)=>`<button type="button" class="practice-choice" data-answer="${encodeURIComponent(x)}">${String.fromCharCode(65+i)}. ${chem(x)}</button>`).join('');
  else{
