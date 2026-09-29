@@ -9,10 +9,7 @@ function update(){
   const eq=c.querySelector('.checker-equation');
   if(!eq){old?.remove();return;}
   const plain=eq.textContent.replace(/\s+/g,' ').trim();
-  if(old){
-    old.innerHTML='<div class="checker-balance-cta-copy"><b>Need the balanced equation?</b><small>Open the Balancer to calculate the correct coefficients and see the solution.</small></div><a class="primary checker-balance-button" href="index.html?equation='+encodeURIComponent(plain)+'">Open Balancer →</a>';
-    return;
-  }
+  if(old){ return; }
   const wrap=document.createElement('div');
   wrap.className='checker-balance-cta';
   wrap.innerHTML='<div class="checker-balance-cta-copy"><b>Need the balanced equation?</b><small>Open the Balancer to calculate the correct coefficients and see the solution.</small></div><a class="primary checker-balance-button" href="index.html?equation='+encodeURIComponent(plain)+'">Open Balancer →</a>';
