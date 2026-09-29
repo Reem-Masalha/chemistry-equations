@@ -6,7 +6,7 @@ if(!input||!editor)return;
 const subMap={'₀':'0','₁':'1','₂':'2','₃':'3','₄':'4','₅':'5','₆':'6','₇':'7','₈':'8','₉':'9'};
 const normalize=s=>String(s||'').replace(/[₀₁₂₃₄₅₆₇₈₉]/g,c=>subMap[c]).replace(/⟶|⇒|➜|⟹|⟾|=>|->/g,'→').replace(/\s+/g,' ').trim();
 function syncInput(){input.value=normalize(editor.textContent||'');input.dispatchEvent(new Event('input',{bubbles:true}));}
-function setValue(value){editor.textContent=String(value||'').replace(/[0-9]+/g,m=>m.split('').map(d=>'₀₁₂₃₄₅₆₇₈₉'[+d]).join(''));syncInput();}
+function setValue(value){const raw=String(value||'').replace(/[₀₁₂₃₄₅₆₇₈₉]/g,c=>subMap[c]);editor.textContent=raw.replace(/([A-Za-z\)])(\d+)/g,(m,p,n)=>p+n.split('').map(d=>'₀₁₂₃₄₅₆₇₈₉'[+d]).join(''));syncInput();}
 function insertText(text){editor.focus();const sel=window.getSelection();if(!sel||!sel.rangeCount){editor.append(document.createTextNode(text));syncInput();return}const range=sel.getRangeAt(0);if(!editor.contains(range.commonAncestorContainer)){editor.focus();return insertText(text)}range.deleteContents();const node=document.createTextNode(text);range.insertNode(node);range.setStartAfter(node);range.collapse(true);sel.removeAllRanges();sel.addRange(range);syncInput()}
 function placeCaretEnd(){editor.focus();const r=document.createRange();r.selectNodeContents(editor);r.collapse(false);const s=window.getSelection();s.removeAllRanges();s.addRange(r)}
 editor.addEventListener('input',syncInput);
