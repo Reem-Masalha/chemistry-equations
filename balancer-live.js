@@ -20,6 +20,22 @@ function changedMarkup(item,newCoef){const changed=item.originalCoef!==newCoef,c
 function renderBalanced(eq,co){let i=0;const side=a=>a.map(item=>changedMarkup(item,co[i++])).join(' + ');return `${side(eq.left)} <span class="reaction-arrow">→</span> ${side(eq.right)}`}
 function setStatus(kind,text){return `<div class="balance-status balance-status-${kind}"><b>${kind==='good'?'✓':kind==='bad'?'✗':'⚠'} ${text}</b></div>`}
 function showError(e){out.classList.remove('hidden');input.setAttribute('aria-invalid','true');const problem=e.problem?`<p><b>Problem found:</b> <mark>${prettyFormula(e.problem)}</mark></p>`:'';out.innerHTML=`${setStatus('bad','Invalid equation')}<div class="validation-error"><p>${esc(e.message)}</p>${problem}<p class="muted">Please check the formulas and reaction arrow.</p></div>`}
-function balance(){out.classList.add('hidden');input.removeAttribute('aria-invalid');try{const raw=String(input.value||'').trim();if(!raw)throw new Error('Please enter an equation first.');const eq=parseStage(raw),originalBalanced=balancedByInput(eq),co=solve(eq);if(!co)throw new Error('This equation could not be solved.');if(originalBalanced){out.innerHTML=`${setStatus('good','Balanced')}<div class="equation">${renderBalanced(eq,co)}</div><div class="steps-result"><b>✓ This equation is already balanced.</b><br><span class="muted">Every element count is conserved.</span></div>`}else{out.innerHTML=`${setStatus('bad','Not balanced')}<div class="balance-correction"><div class="balance-status balance-status-good"><b>✓ Balanced result</b></div><div class="equation">${renderBalanced(eq,co)}</div><div class="steps-result"><span class="muted">The highlighted coefficients were changed.</span></div></div>`}out.classList.remove('hidden')}catch(e){showError(e)}}
+
+function addCopyResultButton(){
+ const out=document.getElementById('balanceResult');
+ if(!out||out.classList.contains('hidden'))return;
+ const oldBtn=out.querySelector('#copyBalanceResult'); if(oldBtn)oldBtn.remove();
+ const actions=document.createElement('div'); actions.className='balancer-actions';
+ const copy=document.createElement('button'); copy.id='copyBalanceResult'; copy.type='button'; copy.className='secondary'; copy.textContent='Copy full result';
+ copy.addEventListener('click',async()=>{
+   const clone=out.cloneNode(true); clone.querySelector('#copyBalanceResult')?.remove();
+   const text=String(clone.innerText||clone.textContent||'').replace(/\n{3,}/g,'\n\n').trim();
+   try{await navigator.clipboard.writeText(text);copy.textContent='Copied ✓';setTimeout(()=>copy.textContent='Copy full result',1400);}
+   catch{copy.textContent='Select and copy';setTimeout(()=>copy.textContent='Copy full result',1800);}
+ });
+ actions.appendChild(copy); out.appendChild(actions);
+}
+
+function balance(){out.classList.add('hidden');input.removeAttribute('aria-invalid');try{const raw=String(input.value||'').trim();if(!raw)throw new Error('Please enter an equation first.');const eq=parseStage(raw),originalBalanced=balancedByInput(eq),co=solve(eq);if(!co)throw new Error('This equation could not be solved.');if(originalBalanced){out.innerHTML=`${setStatus('good','Balanced')}<div class="equation">${renderBalanced(eq,co)}</div><div class="steps-result"><b>✓ This equation is already balanced.</b><br><span class="muted">Every element count is conserved.</span></div>`}else{out.innerHTML=`${setStatus('bad','Not balanced')}<div class="balance-correction"><div class="balance-status balance-status-good"><b>✓ Balanced result</b></div><div class="equation">${renderBalanced(eq,co)}</div><div class="steps-result"><span class="muted">The highlighted coefficients were changed.</span></div></div>`}out.classList.remove('hidden');addCopyResultButton()}catch(e){showError(e)}}
 btn.addEventListener('click',balance);input.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();balance()}});document.querySelectorAll('[data-eq]').forEach(b=>b.addEventListener('click',()=>{input.value=normalize(b.dataset.eq);balance()}));document.getElementById('exampleBtn')?.addEventListener('click',()=>{const a=['H2 + O2 → H2O','Fe + O2 → Fe2O3','C3H8 + O2 → CO2 + H2O','Ca(OH)2 + HCl → CaCl2 + H2O'];input.value=a[Math.floor(Math.random()*a.length)];balance()});document.getElementById('resetBtn')?.addEventListener('click',()=>{input.value='H2 + O2 → H2O';out.classList.add('hidden');input.removeAttribute('aria-invalid');input.focus()});document.getElementById('clearBtn')?.addEventListener('click',()=>{input.value='';out.classList.add('hidden');input.removeAttribute('aria-invalid');input.focus()});
 })();
