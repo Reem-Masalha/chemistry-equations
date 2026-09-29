@@ -84,8 +84,24 @@ const questions={
 const state={difficulty:'easy',experience:'practice',type:'choice',timed:false,time:300,index:0,score:0,correct:0,answers:[],items:[],timer:null,running:false};
 function currentUser(){try{return JSON.parse(localStorage.getItem('chemistryCurrentUser')||'null')}catch{return null}}
 function statKey(){return 'chemistryQuizStats:'+(currentUser()?.id||currentUser()?.username||'guest')}
-function readStats(){try{return JSON.parse(localStorage.getItem(statKey())||'{"sessions":0,"correct":0,"answered":0,"best":0}')}catch{return{sessions:0,correct:0,answered:0,best:0}}}
-function saveStats(score,correct,answered){const s=readStats();s.sessions=(s.sessions||0)+(answered?1:0);s.correct=(s.correct||0)+correct;s.answered=(s.answered||0)+answered;s.best=Math.max(s.best||0,score);localStorage.setItem(statKey(),JSON.stringify(s));return s}
+function readStats(){try{return JSON.parse(localStorage.getItem(statKey())||'{"sessions":0,"correct":0,"answered":0,"best":0,"history":[]}')}catch{return{sessions:0,correct:0,answered:0,best:0,history:[]}}}
+function saveStats(score,correct,answered){
+ const s=readStats();s.sessions=(s.sessions||0)+(answered?1:0);s.correct=(s.correct||0)+correct;s.answered=(s.answered||0)+answered;s.best=Math.max(s.best||0,score);
+ s.history=Array.isArray(s.history)?s.history:[];
+ if(answered)s.history.unshift({date:new Date().toISOString(),difficulty:state.difficulty,experience:state.experience,type:state.type,score,correct,answered,accuracy:Math.round(correct/answered*100),time:state.time});
+ s.history=s.history.slice(0,20);
+ localStorage.setItem(statKey(),JSON.stringify(s));return s
+}
+function renderHistory(){
+ const s=readStats(),statsBox=$('quizStats'),historyBox=$('historyList'),mistakes=$('mistakeList');
+ if(statsBox)statsBox.innerHTML=`<div><b>${s.sessions||0}</b><span>${ui('Sessions','الجلسات','סשנים')}</span></div><div><b>${s.answered||0}</b><span>${ui('Questions answered','الأسئلة','שאלות שנענו')}</span></div><div><b>${s.answered?Math.round((s.correct||0)/s.answered*100):0}%</b><span>${ui('Overall accuracy','الدقة الإجمالية','דיוק כולל')}</span></div><div><b>${s.best||0}</b><span>${ui('Best score','أفضل نتيجة','שיא')}</span></div>`;
+ if(historyBox){
+   const rows=Array.isArray(s.history)?s.history:[];
+   historyBox.classList.toggle('hidden',rows.length===0);
+   historyBox.innerHTML=rows.length?rows.map((h,i)=>`<div class="history-row"><span><b>#${rows.length-i}</b> ${escapeHtml(h.experience==='quiz'?ui('Quiz','اختبار','חידון'):ui('Practice','تدريب','תרגול'))} · ${escapeHtml(h.difficulty)}</span><span>${h.correct}/${h.answered} · ${h.accuracy}% · ${h.score} pts</span><small>${new Date(h.date).toLocaleString()}</small></div>`).join(''):``;
+ }
+ if(mistakes)mistakes.classList.add('hidden');
+}
 const masterySkills=[
  {name:'Counting atoms',categories:['basic balancing','tricky formulas']},
  {name:'Coefficients',categories:['coefficients']},
@@ -179,7 +195,7 @@ function cancelSession(){stopTimer();state.running=false;state.items=[];state.an
 function startTimer(){const t=$('timer');if(!t)return;t.classList.remove('hidden');drawTimer();state.timer=setInterval(()=>{state.time--;drawTimer();if(state.time<=0){stopTimer();finishSession(true)}},1000)}
 function stopTimer(){if(state.timer){clearInterval(state.timer);state.timer=null}}
 function drawTimer(){const m=Math.floor(state.time/60),s=String(state.time%60).padStart(2,'0');const t=$('timer');if(t)t.textContent=`⏱ ${m}:${s}`}
-function renderStats(){const box=$('scoreArea');if(!box)return;const s=readStats();box.innerHTML=`<div class="practice-live-stats"><div><b>${state.score}</b><span>${ui('Score','النقاط','ניקוד')}</span></div><div><b>${state.correct}</b><span>${ui('Correct','صحيح','נכון')}</span></div><div><b>${state.running?state.index+1:0}</b><span>${ui('Question','السؤال','שאלה')}</span></div><div><b>${s.best||0}</b><span>${ui('Best score','أفضل نتيجة','שיא')}</span></div></div>`}
+function renderStats(){const box=$('scoreArea');if(!box)return;const s=readStats();box.innerHTML=`<div class="practice-live-stats"><div><b>${state.score}</b><span>${ui('Score','النقاط','ניקוד')}</span></div><div><b>${state.correct}</b><span>${ui('Correct','صحيح','נכון')}</span></div><div><b>${state.running?state.index+1:0}</b><span>${ui('Question','السؤال','שאלה')}</span></div><div><b>${s.best||0}</b><span>${ui('Best score','أفضل نتيجة','שיא')}</span></div></div>${renderMastery()}`}
 function renderQuestion(){
  const item=state.items[state.index];if(!item)return finishSession(false);
  const {raw,solution,hint,category}=item;const area=$('quizArea');if(!area)return;
@@ -205,7 +221,7 @@ function answerQuestion(answer,solution,hint,button,typed,wanted,solutionText,ca
 }
 function showFeedback(ok,hint,correct,answer,typed){const f=$('answerFeedback');if(!f)return;f.className=`answer-feedback ${ok?'feedback-correct':'feedback-wrong'}`;f.innerHTML=ok?`<b>✓ ${ui('Correct','صحيحة','صحيحة')}</b><div>${ui('Great work!','أحسنت!','عمل رائع!')}</div>`:`<b>✗ ${ui('Not quite','ليست صحيحة','ليست صحيحة')}</b><div><strong>${ui('Correct answer:','الإجابة الصحيحة:','התשובה הנכונה:')}</strong> ${chem(correct)}</div><div class="muted">${escapeHtml(hint||'')}</div>`}
 function finishSession(timeUp){
- if(!state.running)return;stopTimer();state.running=false;state.timed=false;const answered=state.answers.length;const stats=saveStats(state.score,state.correct,answered);saveMastery(state.answers);
+ if(!state.running)return;stopTimer();state.running=false;state.timed=false;const answered=state.answers.length;const stats=saveStats(state.score,state.correct,answered);saveMastery(state.answers);renderHistory();
  const pct=answered?Math.round(state.correct/answered*100):0;
  showCancel(false);$('timer')?.classList.add('hidden');
  $('quizArea').innerHTML=`<article class="quiz-finish-card"><div class="finish-icon">${timeUp?'⏱':'✓'}</div><h2>${timeUp?ui('Time is up','انتهى الوقت','انتهى الوقت'):ui('Quiz complete','اكتمل الاختبار','החידון הסתיים')}</h2><p>${ui('You answered','أجبت عن','ענית על')} <b>${answered}</b> ${ui('questions','أسئلة','שאלות')}.</p><div class="finish-score"><b>${state.score}</b><span>${ui('points','نقطة','נקודות')} · ${pct}% ${ui('correct','correct','נכון')}</span></div><div class="finish-actions"><button id="restartQuiz" class="primary" type="button">${ui('Try again','حاول مرة أخرى','נסה שוב')}</button><button id="backToSettings" class="secondary" type="button">${ui('Change settings','تغيير الإعدادات','שנה הגדרות')}</button></div></article>`;
@@ -216,7 +232,7 @@ function setup(){
  if(!$('quizArea'))return;
  const retry=$('retryMistakes');if(retry)retry.classList.add('hidden');
  const badge=$('practiceBadge');if(badge)badge.textContent=ui('PRACTICE','تدريب','תרגול');
- renderConfig();bindConfig();updateHeader();showCancel(false);
+ renderConfig();bindConfig();updateHeader();renderHistory();showCancel(false);
  $('quizArea').innerHTML=`<div class="quiz-empty-state">${ui('Choose your settings, then press Start.','اختر إعداداتك ثم اضغط ابدأ.','בחר את ההגדרות שלך ולחץ על התחל.')}</div>`;
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',setup);else setup();
