@@ -10,16 +10,23 @@
     visitorId=crypto.randomUUID?crypto.randomUUID():(Date.now().toString(36)+'-'+Math.random().toString(36).slice(2));
     set(KEY,visitorId);
   }
-  const user=(()=>{try{return JSON.parse(get('chemistryCurrentUser')||sessionStorage.getItem('chemistryCurrentUser')||'null')}catch{return null}})();
-  const identity=user?.id?'account:'+String(user.id):'anonymous:'+visitorId;
+  const currentUser=()=>{try{return JSON.parse(get('chemistryCurrentUser')||sessionStorage.getItem('chemistryCurrentUser')||'null')}catch{return null}};
+  const identityOf=u=>u?.id?'account:'+String(u.id):'anonymous:'+visitorId;
   const post=(url,body)=>{try{fetch(API+url,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(body),keepalive:true}).catch(()=>{})}catch{}};
-  const sendVisit=()=>post('/api/track-visit',{visitorId:identity,path,userId:user?.id||null});
+  const sendVisit=(eventType='page_view')=>{const u=currentUser(),identity=identityOf(u);post('/api/track-visit',{visitorId:identity,path,userId:u?.id||null,eventType})};
+  let lastIdentity=identityOf(currentUser());
   let first=false;
   try{first=sessionStorage.getItem('chemistryTracked:'+location.pathname)!=='1';if(first)sessionStorage.setItem('chemistryTracked:'+location.pathname,'1')}catch{first=true}
-  if(first)sendVisit();
-  if(user?.id){
-    const heartbeat=()=>{sendVisit();post('/api/track-event',{visitorId:identity,userId:String(user.id),eventType:'heartbeat',feature:null,metadata:{path}})};
-    heartbeat();
-    setInterval(heartbeat,60000);
-  }
+  if(first)sendVisit('page_view');
+  let heartbeatTimer=null;
+  const sync=()=>{
+    const u=currentUser(),identity=identityOf(u);
+    if(identity!==lastIdentity){lastIdentity=identity;sendVisit('page_view');}
+    if(u?.id && !heartbeatTimer){
+      heartbeatTimer=setInterval(()=>sendVisit('heartbeat'),60000);
+      sendVisit('heartbeat');
+    }else if(!u?.id && heartbeatTimer){clearInterval(heartbeatTimer);heartbeatTimer=null;}
+  };
+  sync();
+  setInterval(sync,5000);
 })();
