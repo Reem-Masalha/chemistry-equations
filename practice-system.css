@@ -39,3 +39,12 @@
 @media(max-width:700px){
   .experience-options label,.type-options label{min-height:50px!important}
 }
+
+
+/* Inline coefficient inputs: keep the number beside each molecule, matching the former Build layout. */
+.coefficient-equation{display:flex;justify-content:center;align-items:center;gap:9px;flex-wrap:wrap;padding:20px 14px;border:1px solid var(--line);border-radius:14px;background:var(--surface);direction:ltr}
+.coefficient-molecule{display:inline-flex;align-items:center;gap:4px;direction:ltr;font-size:25px;font-weight:800;white-space:nowrap}
+.coefficient-molecule input{width:48px;height:44px;box-sizing:border-box;border:1px solid var(--line);border-radius:9px;text-align:center;font-size:19px;font-weight:800;background:#fff}
+.coefficient-molecule input:focus{outline:2px solid color-mix(in srgb,var(--accent) 30%,transparent);border-color:var(--accent)}
+.coefficient-plus{font-size:25px;font-weight:700;color:var(--muted)}
+@media(max-width:700px){.coefficient-equation{padding:16px 10px;gap:7px}.coefficient-molecule{font-size:23px}.coefficient-molecule input{width:44px;height:42px}.coefficient-plus{font-size:23px}}
