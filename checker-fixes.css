@@ -7,3 +7,16 @@ html,body{width:100%;max-width:100%;overflow-x:hidden!important}main{width:100%!
 html body.dark .checker-section,html body.dark .checker-equation{background:var(--surface)!important;color:var(--text)!important;border-color:var(--line)!important}.dark .checker-status-good{background:#173525!important;color:#bce8cd!important;border-color:#2b6846!important}.dark .checker-status-bad{background:#3a2024!important;color:#ffc1c6!important;border-color:#71343b!important}.dark .checker-status-error{background:#3b301c!important;color:#f4d28b!important;border-color:#6d5726!important}.dark .checker-section-title>span,.dark .checker-status small,.dark .checker-explain-row span{color:var(--muted)!important}.dark .atom-grid,.dark .atom-row{border-color:var(--line)!important;color:var(--muted)!important}.dark .atom-row-bad{background:#2d1b20!important}.dark .problem-chips span{background:#321d22!important;border-color:#6b343c!important;color:#ffb9c0!important}.dark .checker-correct{background:var(--surface)!important;border-color:#2d6042!important}.dark .checker-balance-cta{background:#18263a!important;border-color:#304764!important}.dark .checker-balance-cta>div:first-child::before{color:var(--text)!important}.dark .checker-balance-cta>div:first-child::after{color:var(--muted)!important}.dark .checker-example{background:var(--surface)!important;color:var(--text)!important;border-color:var(--line)!important}
 @media(min-width:761px){main{padding-left:24px;padding-right:24px}.checker-card #checkInput{min-width:0}.checker-card #checkBtn{max-width:100%!important}}
 @media(max-width:760px){main{padding-left:12px;padding-right:12px}.checker-card,.tips{width:100%}.checker-card #checkInput{width:100%!important;max-width:100%!important}.checker-status{min-width:0}.checker-status>div{min-width:0;overflow-wrap:anywhere}.checker-status small{overflow-wrap:anywhere}.checker-section-title{min-width:0}.checker-section-title>span{white-space:normal;text-align:right}.atom-grid,.atom-row{grid-template-columns:minmax(38px,1fr) minmax(0,1fr) minmax(0,1fr) 28px}.checker-example-list{width:100%;min-width:0}.checker-example{max-width:100%;overflow-wrap:anywhere;white-space:normal}.next-card{width:100%}}
+
+/* Checker flow: keep the guidance above the input/result so the generated result uses the full card width. */
+@media(min-width:761px){
+  .section > .grid-2{grid-template-columns:1fr!important;}
+  .section > .grid-2 > .tips{display:grid;grid-template-columns:auto repeat(4,minmax(0,1fr));align-items:center;gap:10px 18px;padding:14px 18px!important;}
+  .section > .grid-2 > .tips>b{margin:0!important;white-space:nowrap;}
+  .section > .grid-2 > .tips div{margin:0!important;}
+  .section > .grid-2 > .checker-card{width:100%;}
+}
+@media(max-width:760px){
+  .section > .grid-2{grid-template-columns:1fr!important;}
+  .section > .grid-2 > .tips{margin-bottom:0;}
+}
