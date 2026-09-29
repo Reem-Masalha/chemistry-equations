@@ -6,7 +6,6 @@ CREATE TABLE IF NOT EXISTS users (
   password_salt TEXT,
   created_at TEXT NOT NULL
 );
-
 CREATE TABLE IF NOT EXISTS scores (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   user_id TEXT NOT NULL,
@@ -18,7 +17,6 @@ CREATE TABLE IF NOT EXISTS scores (
 );
 CREATE INDEX IF NOT EXISTS idx_scores_user ON scores(user_id);
 CREATE INDEX IF NOT EXISTS idx_scores_created ON scores(created_at);
-
 CREATE TABLE IF NOT EXISTS visits (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   visitor_id TEXT NOT NULL,
@@ -27,7 +25,6 @@ CREATE TABLE IF NOT EXISTS visits (
 );
 CREATE INDEX IF NOT EXISTS idx_visits_created ON visits(created_at);
 CREATE INDEX IF NOT EXISTS idx_visits_visitor ON visits(visitor_id);
-
 CREATE TABLE IF NOT EXISTS analytics_events (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   visitor_id TEXT,
