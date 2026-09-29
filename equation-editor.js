@@ -42,6 +42,23 @@ function setValue(value){const raw=normalizeCoefficientZeros(String(value||'').r
 function placeCaretEnd(){editor.focus();const r=document.createRange();r.selectNodeContents(editor);r.collapse(false);const s=window.getSelection();s.removeAllRanges();s.addRange(r)}
 function insertText(text){editor.focus();let inserted=false;try{inserted=document.execCommand('insertText',false,text)}catch{}if(!inserted){const sel=window.getSelection();if(!sel||!sel.rangeCount)return;const range=sel.getRangeAt(0);if(!editor.contains(range.commonAncestorContainer)){placeCaretEnd();return insertText(text)}range.deleteContents();const node=document.createTextNode(text);range.insertNode(node);range.setStartAfter(node);range.collapse(true);sel.removeAllRanges();sel.addRange(range);recordHistory()}syncInput()}
 function undo(){if(historyIndex<=0){try{document.execCommand('undo')}catch{}syncInput();return}restoring=true;historyIndex--;editor.textContent=history[historyIndex];restoring=false;placeCaretEnd();syncInput()}
+editor.addEventListener('beforeinput',e=>{
+ if(e.inputType!=='insertText'||!/^\d$/.test(e.data||''))return;
+ const sel=window.getSelection();
+ if(!sel||!sel.rangeCount||!sel.isCollapsed||!editor.contains(sel.anchorNode))return;
+ const range=sel.getRangeAt(0),before=range.cloneRange();
+ before.selectNodeContents(editor);before.setEnd(range.startContainer,range.startOffset);
+ const text=before.toString(),m=text.match(/(?:^|[+→])\s*0$/);
+ if(!m)return;
+ e.preventDefault();
+ const replace=range.cloneRange();
+ replace.setStart(range.startContainer,Math.max(0,range.startOffset-1));
+ replace.deleteContents();
+ replace.insertNode(document.createTextNode(e.data));
+ replace.collapse(false);
+ sel.removeAllRanges();sel.addRange(replace);
+ normalizeEditorCoefficients();recordHistory();syncInput();
+});
 editor.addEventListener('input',()=>{normalizeEditorCoefficients();recordHistory();syncInput()});
 editor.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();document.getElementById('balanceBtn')?.click()}if(e.key==='Escape'){editor.blur();coeffPanel?.classList.remove('is-open')}});
 editor.addEventListener('paste',e=>{e.preventDefault();insertText((e.clipboardData||window.clipboardData).getData('text/plain'))});
