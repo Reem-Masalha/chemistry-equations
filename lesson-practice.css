@@ -131,3 +131,117 @@
     font-size:14px!important;
   }
 }
+
+
+/* Chemistry examples: make equations the visual focus. */
+.chem-example{
+  margin:20px 0;
+  padding:20px;
+  border:1px solid color-mix(in srgb,var(--accent) 24%,var(--line));
+  border-radius:16px;
+  background:color-mix(in srgb,var(--accent) 4%,var(--surface));
+  box-shadow:0 8px 22px rgba(15,23,42,.06);
+}
+.chem-example.compact{margin:16px 0;padding:17px 18px}
+.chem-example-label{
+  margin-bottom:8px;
+  color:var(--accent);
+  font-size:12px;
+  font-weight:900;
+  letter-spacing:.1em;
+  text-transform:uppercase;
+}
+.chem-equation{
+  margin:0!important;
+  padding:10px 4px 12px;
+  font-size:clamp(28px,4vw,40px)!important;
+  line-height:1.2;
+  font-weight:850;
+  text-align:center;
+  letter-spacing:.01em;
+}
+.chem-example-note{
+  margin:8px 0 0!important;
+  text-align:center;
+  color:var(--muted);
+  font-size:14px;
+}
+.atom-count-table{
+  margin:14px auto 0;
+  max-width:430px;
+  overflow:hidden;
+  border:1px solid var(--line);
+  border-radius:10px;
+  background:var(--surface);
+}
+.atom-count-table table{
+  width:100%;
+  border-collapse:collapse;
+  font-size:14px;
+  text-align:center;
+}
+.atom-count-table th,
+.atom-count-table td{
+  padding:8px 12px;
+  border-bottom:1px solid var(--line);
+}
+.atom-count-table th{
+  font-size:12px;
+  font-weight:850;
+  color:var(--muted);
+  text-transform:uppercase;
+  letter-spacing:.06em;
+  background:color-mix(in srgb,var(--accent) 5%,var(--surface));
+}
+.atom-count-table tbody tr:last-child td{border-bottom:0}
+.atom-count-table td:first-child{font-weight:850}
+.balanced-badge{
+  width:max-content;
+  margin:13px auto 0;
+  padding:6px 11px;
+  border:1px solid #63b47f;
+  border-radius:999px;
+  background:#eefaf2;
+  color:#17683f;
+  font-size:13px;
+  font-weight:850;
+}
+.why-box{
+  margin:18px 0;
+  border:1px solid var(--line);
+  border-radius:12px;
+  background:var(--surface);
+  overflow:hidden;
+}
+.why-box summary{
+  cursor:pointer;
+  padding:12px 14px;
+  color:var(--text);
+  font-weight:800;
+  list-style:none;
+}
+.why-box summary::-webkit-details-marker{display:none}
+.why-box summary::before{
+  content:'💡';
+  margin-right:8px;
+}
+.why-box summary::after{
+  content:'＋';
+  float:right;
+  color:var(--muted);
+  font-size:17px;
+  line-height:1;
+}
+.why-box[open] summary::after{content:'−'}
+.why-box p{
+  margin:0;
+  padding:0 14px 14px;
+  color:var(--muted);
+  font-size:14px;
+  line-height:1.6;
+}
+@media(max-width:760px){
+  .chem-example{padding:16px 12px}
+  .chem-equation{font-size:clamp(24px,8vw,32px)!important}
+  .atom-count-table{font-size:13px}
+}
