@@ -1,5 +1,4 @@
-name: Deploy Chemistry Equations Cloudflare API
-
+name: Deploy Chemistry Equations Analytics API
 on:
   workflow_dispatch:
   push:
@@ -7,10 +6,8 @@ on:
     paths:
       - 'cloudflare/**'
       - '.github/workflows/deploy-cloudflare.yml'
-
 permissions:
   contents: read
-
 jobs:
   deploy:
     runs-on: ubuntu-latest
