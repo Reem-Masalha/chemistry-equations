@@ -1,6 +1,6 @@
 name = "chemistry-equations-api"
 main = "src/index.js"
-compatibility_date = "2026-08-24"
+compatibility_date = "2026-09-29"
 
 [[d1_databases]]
 binding = "DB"
