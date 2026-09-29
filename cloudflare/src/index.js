@@ -1,49 +1,109 @@
 const encoder = new TextEncoder();
 
-const CORS = {
-  "Content-Type": "application/json; charset=UTF-8",
-  "Access-Control-Allow-Origin": "https://reem-masalha.github.io",
-  "Access-Control-Allow-Methods": "GET,POST,OPTIONS",
-  "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Admin-Key",
-  "Access-Control-Max-Age": "86400",
-};
-
-const PBKDF2_ITERATIONS = 100000;
-const json = (data, status = 200) => new Response(JSON.stringify(data), { status, headers: CORS });
-const now = () => new Date().toISOString();
-function clean(value, max = 200) { return value == null ? null : String(value).trim().slice(0, max); }
-function newToken() { return crypto.randomUUID() + "." + crypto.randomUUID(); }
-function safeEqual(a, b) { a=String(a??""); b=String(b??""); if(a.length!==b.length)return false; let d=0; for(let i=0;i<a.length;i++)d|=a.charCodeAt(i)^b.charCodeAt(i); return d===0; }
-function hex(bytes) { return Array.from(new Uint8Array(bytes), b => b.toString(16).padStart(2,"0")).join(""); }
-async function pbkdf2Hex(password, salt, iterations = PBKDF2_ITERATIONS) { const key = await crypto.subtle.importKey("raw", encoder.encode(String(password)), {name:"PBKDF2"}, false, ["deriveBits"]); const bits = await crypto.subtle.deriveBits({name:"PBKDF2", salt:encoder.encode(String(salt)), iterations, hash:"SHA-256"}, key, 256); return hex(bits); }
-async function sha256Hex(value) { return hex(await crypto.subtle.digest("SHA-256", encoder.encode(String(value)))); }
-async function hashPassword(password) { const salt = crypto.randomUUID(); const hash = await pbkdf2Hex(password, salt, PBKDF2_ITERATIONS); return {salt, hash, stored:`pbkdf2_sha256$${PBKDF2_ITERATIONS}$${salt}$${hash}`}; }
-async function verifyPassword(password, user) { if (!user?.password_hash) return false; const stored = String(user.password_hash).trim(); if (stored.startsWith("pbkdf2_sha256$")) { const parts=stored.split("$"); if(parts.length===4){ const iterations=Number(parts[1]), salt=parts[2], expected=parts[3]; if(Number.isInteger(iterations)&&iterations>=10000&&iterations<=PBKDF2_ITERATIONS&&/^[a-f0-9]{64}$/i.test(expected)) return safeEqual(await pbkdf2Hex(password,salt,iterations),expected); } return false; } if(stored.toLowerCase().startsWith("sha256$")&&!user.password_salt){ const parts=stored.split("$"); if(parts.length===3){ const salt=parts[1], expected=parts[2].toLowerCase(); if(/^[a-f0-9]{64}$/.test(expected)){ const candidates=[await sha256Hex(salt+String(password)),await sha256Hex(String(password)+salt),await sha256Hex(salt+":"+String(password)),await sha256Hex(String(password)+":"+salt),await sha256Hex(salt+"$"+String(password)),await sha256Hex(String(password)+"$"+salt),await sha256Hex(salt+"|"+String(password)),await sha256Hex(String(password)+"|"+salt)]; if(candidates.some(x=>safeEqual(x,expected)))return true; const key=await crypto.subtle.importKey("raw",encoder.encode(salt),{name:"HMAC",hash:"SHA-256"},false,["sign"]); if(safeEqual(hex(await crypto.subtle.sign("HMAC",key,encoder.encode(String(password)))),expected))return true; } } } if(user.password_salt){ const salt=String(user.password_salt); const candidates=[await sha256Hex(salt+String(password)),await sha256Hex(String(password)+salt),await sha256Hex(salt+":"+String(password)),await sha256Hex(String(password)+":"+salt)]; if(candidates.some(x=>safeEqual(x,stored)))return true; } return safeEqual(await sha256Hex(password),stored); }
-async function getUser(env, username){return env.DB.prepare(`SELECT id,name,username,password_hash,password_salt,recovery_code_hash,recovery_code_expires_at,recovery_email FROM users WHERE username=? LIMIT 1`).bind(String(username).trim().toLowerCase()).first();}
-async function signIn(env, body){ const username=clean(body?.username,120)?.toLowerCase(), password=String(body?.password??""); if(!username||!password)return json({error:"Username and password are required."},400); const user=await getUser(env,username); if(!user||!(await verifyPassword(password,user)))return json({error:"Incorrect username or password."},401); if(!String(user.password_hash).startsWith("pbkdf2_sha256$")){const p=await hashPassword(password);await env.DB.prepare(`UPDATE users SET password_hash=?,password_salt=? WHERE id=?`).bind(p.stored,p.salt,user.id).run();} const token=newToken(); return json({ok:true,token,user:{id:user.id,name:user.name,username:user.username,token}}); }
-async function createAccount(env,body){ const name=clean(body?.name,120), username=clean(body?.username,120)?.toLowerCase(), password=String(body?.password??""); if(!name||!username||!password)return json({error:"Name, username and password are required."},400); if(password.length<8)return json({error:"Password must be at least 8 characters."},400); if(await getUser(env,username))return json({error:"Username already exists."},409); const id=crypto.randomUUID(), p=await hashPassword(password); await env.DB.prepare(`INSERT INTO users (id,name,username,password_hash,password_salt,created_at) VALUES (?,?,?,?,?,?)`).bind(id,name,username,p.stored,p.salt,now()).run(); const token=newToken(); return json({ok:true,token,user:{id,name,username,token}}); }
-async function setPassword(env,body){ const username=clean(body?.username,120)?.toLowerCase(), password=String(body?.password??""), confirm=String(body?.confirmPassword??""); if(!username)return json({error:"Username is required."},400); if(password.length<8)return json({error:"Password must be at least 8 characters."},400); if(password!==confirm)return json({error:"Passwords do not match."},400); const user=await getUser(env,username); if(!user)return json({error:"No existing account was found with that username."},404); if(user.password_hash&&user.password_salt)return json({error:"This account already has a password. Please use Sign in or password recovery."},409); const p=await hashPassword(password); await env.DB.prepare(`UPDATE users SET password_hash=?,password_salt=? WHERE id=?`).bind(p.stored,p.salt,user.id).run(); const token=newToken(); return json({ok:true,token,user:{id:user.id,name:user.name,username:user.username,token}}); }
-async function changePassword(env,request,body){ const auth=String(request.headers.get("Authorization")||""), current=auth.startsWith("Bearer ")?auth.slice(7):""; const username=clean(body?.username,120)?.toLowerCase(), oldPassword=String(body?.currentPassword??""), newPassword=String(body?.newPassword??""), confirm=String(body?.confirmPassword??""); if(!current||!username||!oldPassword||!newPassword)return json({error:"Missing required account information."},400); if(newPassword.length<8)return json({error:"Password must be at least 8 characters."},400); if(newPassword!==confirm)return json({error:"Passwords do not match."},400); const user=await getUser(env,username); if(!user||!(await verifyPassword(oldPassword,user)))return json({error:"Current password is incorrect."},401); const p=await hashPassword(newPassword); await env.DB.prepare(`UPDATE users SET password_hash=?,password_salt=? WHERE id=?`).bind(p.stored,p.salt,user.id).run(); return json({ok:true,token:current,user:{id:user.id,name:user.name,username:user.username,token:current}}); }
-async function adminResetPassword(env,request,body){ const supplied=String(request.headers.get("X-Admin-Key")||""), configured=String(env.ADMIN_KEY||""); if(!configured||!safeEqual(supplied,configured))return json({error:"Unauthorized."},401); const username=clean(body?.username,120)?.toLowerCase(), password=String(body?.newPassword??""); if(!username||password.length<8)return json({error:"Username and a password of at least 8 characters are required."},400); const user=await getUser(env,username); if(!user)return json({error:"Account not found."},404); const p=await hashPassword(password); await env.DB.prepare(`UPDATE users SET password_hash=?,password_salt=? WHERE id=?`).bind(p.stored,p.salt,user.id).run(); return json({ok:true,message:"Password repaired successfully. The account and scores were preserved."}); }
-function geo(request){const cf=request.cf||{};return{country:clean(cf.country,10),region:clean(cf.region,120),city:clean(cf.city,120),timezone:clean(cf.timezone,120),continent:clean(cf.continent,10)};}
-async function ensureLocationTable(env){await env.DB.prepare(`CREATE TABLE IF NOT EXISTS visitor_locations (id INTEGER PRIMARY KEY AUTOINCREMENT,visitor_id TEXT NOT NULL,path TEXT NOT NULL,country TEXT,region TEXT,city TEXT,timezone TEXT,continent TEXT,created_at TEXT NOT NULL)`).run();}
-async function trackVisit(request,env){ const body=await request.json().catch(()=>({})), visitorId=clean(body?.visitorId,200), path=clean(body?.path,200); if(!visitorId||!path)return json({error:"visitorId and path are required."},400); const existing=await env.DB.prepare(`SELECT id FROM visits WHERE visitor_id=? AND path=? AND created_at>=datetime('now','-30 minutes') LIMIT 1`).bind(visitorId,path).first(); if(existing)return json({ok:true,counted:false}); const created=now(); await env.DB.prepare(`INSERT INTO visits (visitor_id,path,created_at) VALUES (?,?,?)`).bind(visitorId,path,created).run(); await ensureLocationTable(env); const g=geo(request); await env.DB.prepare(`INSERT INTO visitor_locations (visitor_id,path,country,region,city,timezone,continent,created_at) VALUES (?,?,?,?,?,?,?,?)`).bind(visitorId,path,g.country,g.region,g.city,g.timezone,g.continent,created).run(); return json({ok:true,counted:true}); }
-async function trackEvent(request,env){ const p=await request.json().catch(()=>({})); if(!p?.eventType)return json({error:"eventType is required."},400); await env.DB.prepare(`INSERT INTO analytics_events (visitor_id,user_id,event_type,feature,difficulty,question,correct,score,total,metadata,created_at) VALUES (?,?,?,?,?,?,?,?,?,?,?)`).bind(clean(p.visitorId,200),clean(p.userId,200),clean(p.eventType,120),clean(p.feature,120),clean(p.difficulty,120),clean(p.question,500),p.correct==null?null:(p.correct?1:0),p.score==null?null:Number(p.score),p.total==null?null:Number(p.total),p.metadata==null?null:JSON.stringify(p.metadata),now()).run(); return json({ok:true}); }
-async function stats(env,request){ const key=String(request.headers.get("X-Admin-Key")||""); if(!env.ADMIN_KEY||!safeEqual(key,env.ADMIN_KEY))return json({error:"Unauthorized."},401); await ensureLocationTable(env); const [users,totals,periods,activeUsers,pages,days,scores,countries,cities,features,difficulty,missed,quizTotals,dailyTotals,recentEvents]=await Promise.all([
- env.DB.prepare(`SELECT id,name,username,created_at FROM users ORDER BY created_at DESC`).all(),
- env.DB.prepare(`SELECT COUNT(*) AS visits,COUNT(DISTINCT visitor_id) AS unique_visitors FROM visits`).first(),
- env.DB.prepare(`SELECT COUNT(DISTINCT CASE WHEN created_at>=datetime('now','-1 day') THEN visitor_id END) AS daily,COUNT(DISTINCT CASE WHEN created_at>=datetime('now','-7 day') THEN visitor_id END) AS weekly,COUNT(DISTINCT CASE WHEN created_at>=datetime('now','-30 day') THEN visitor_id END) AS monthly FROM visits`).first(),
- env.DB.prepare(`SELECT COUNT(DISTINCT visitor_id) AS active_users FROM visits WHERE visitor_id LIKE 'account:%' AND created_at>=datetime('now','-30 minutes')`).first(),
- env.DB.prepare(`SELECT path,COUNT(*) AS views,COUNT(DISTINCT visitor_id) AS visitors FROM visits GROUP BY path ORDER BY views DESC`).all(),
- env.DB.prepare(`SELECT date(created_at) AS day,COUNT(*) AS views,COUNT(DISTINCT visitor_id) AS visitors FROM visits WHERE created_at>=datetime('now','-30 day') GROUP BY date(created_at) ORDER BY day`).all(),
- env.DB.prepare(`SELECT u.username,u.name,s.stage,s.score,s.total,s.created_at FROM scores s JOIN users u ON u.id=s.user_id ORDER BY s.created_at DESC LIMIT 500`).all(),
- env.DB.prepare(`SELECT COALESCE(NULLIF(country,''),'Unknown') AS country,COUNT(DISTINCT visitor_id) AS visitors,COUNT(*) AS views FROM visitor_locations GROUP BY COALESCE(NULLIF(country,''),'Unknown') ORDER BY visitors DESC,views DESC`).all(),
- env.DB.prepare(`SELECT COALESCE(NULLIF(city,''),'Unknown') AS city,COALESCE(NULLIF(country,''),'Unknown') AS country,COUNT(DISTINCT visitor_id) AS visitors,COUNT(*) AS views FROM visitor_locations GROUP BY COALESCE(NULLIF(city,''),'Unknown'),COALESCE(NULLIF(country,''),'Unknown') ORDER BY visitors DESC,views DESC`).all(),
- env.DB.prepare(`SELECT COALESCE(NULLIF(feature,''),'Other') AS feature,COUNT(*) AS uses FROM analytics_events WHERE created_at>=datetime('now','-30 day') AND event_type IN ('feature_visit','feature_use','quiz_completed','daily_challenge_started','daily_challenge_completed') GROUP BY COALESCE(NULLIF(feature,''),'Other') ORDER BY uses DESC`).all(),
- env.DB.prepare(`SELECT COALESCE(NULLIF(difficulty,''),'Unknown') AS difficulty,COUNT(*) AS uses FROM analytics_events WHERE created_at>=datetime('now','-30 day') AND event_type='quiz_completed' GROUP BY COALESCE(NULLIF(difficulty,''),'Unknown') ORDER BY uses DESC`).all(),
- env.DB.prepare(`SELECT question,COUNT(*) AS misses FROM analytics_events WHERE event_type IN ('question_result','daily_question_result') AND correct=0 AND question IS NOT NULL AND question!='' GROUP BY question ORDER BY misses DESC LIMIT 50`).all(),
- env.DB.prepare(`SELECT COUNT(*) AS quizzes,COALESCE(AVG(CASE WHEN total>0 THEN score*100.0/total END),0) AS average_score FROM analytics_events WHERE event_type='quiz_completed'`).first(),
- env.DB.prepare(`SELECT COUNT(*) AS completed,COALESCE(AVG(CASE WHEN total>0 THEN score*100.0/total END),0) AS average_score,SUM(CASE WHEN json_extract(metadata,'$.replay')=1 THEN 1 ELSE 0 END) AS replays FROM analytics_events WHERE event_type='daily_challenge_completed'`).first(),
- env.DB.prepare(`SELECT event_type,feature,score,total,correct,question,created_at,metadata FROM analytics_events ORDER BY created_at DESC LIMIT 100`).all()
- ]); return json({users:users.results,totals,periods,active_users:Number(activeUsers?.active_users||0),pages:pages.results,visitorsByDay:days.results,scores:scores.results,countries:countries.results,cities:cities.results,featurePeriod:features.results,features:features.results,difficulty:difficulty.results,missed:missed.results,quiz_totals:{quizzes:Number(quizTotals?.quizzes||0),average_score:Number(quizTotals?.average_score||0)},daily_challenge:{completed:Number(dailyTotals?.completed||0),average_score:Number(dailyTotals?.average_score||0),replays:Number(dailyTotals?.replays||0)},recent_events:recentEvents.results}); }
-export default { async fetch(request,env){ if(request.method==="OPTIONS")return new Response(null,{status:204,headers:CORS}); const url=new URL(request.url); try{ if(url.pathname==="/health"&&request.method==="GET")return json({ok:true}); if(url.pathname==="/api/track-visit"&&request.method==="POST")return await trackVisit(request,env); if(url.pathname==="/api/track-event"&&request.method==="POST")return await trackEvent(request,env); if(url.pathname==="/api/create-account"&&request.method==="POST")return await createAccount(env,await request.json()); if(url.pathname==="/api/sign-in"&&request.method==="POST")return await signIn(env,await request.json()); if(url.pathname==="/api/set-password"&&request.method==="POST")return await setPassword(env,await request.json()); if(url.pathname==="/api/change-password"&&request.method==="POST")return await changePassword(env,request,await request.json()); if(url.pathname==="/api/admin/reset-password"&&request.method==="POST")return await adminResetPassword(env,request,await request.json()); if(url.pathname==="/api/admin/stats"&&request.method==="POST")return await stats(env,request); if(url.pathname==="/api/sign-out"&&request.method==="POST")return json({ok:true}); if(url.pathname==="/api/sign-out-all"&&request.method==="POST")return json({ok:true}); if(url.pathname==="/api/reset-password"&&request.method==="POST")return json({error:"Use the recovery code or password repair endpoint."},400); if(url.pathname==="/api/scores"&&request.method==="GET"){const userId=url.searchParams.get("userId");if(!userId)return json({scores:[]});const rows=await env.DB.prepare(`SELECT stage,score,total,created_at FROM scores WHERE user_id=? ORDER BY created_at DESC`).bind(userId).all();return json({scores:rows.results});} if(url.pathname==="/api/scores"&&request.method==="POST"){const p=await request.json().catch(()=>({}));await env.DB.prepare(`INSERT INTO scores (user_id,stage,score,total,created_at) VALUES (?,?,?,?,?)`).bind(clean(p.userId,200),clean(p.stage,120),Number(p.score),Number(p.total),now()).run();return json({ok:true});} return json({error:"Not found"},404); }catch(e){console.error("Worker error:",e);return json({error:e?.message||"Server error"},500);} } };
+function corsHeaders() {
+  return {
+    'content-type': 'application/json; charset=UTF-8',
+    'access-control-allow-origin': '*',
+    'access-control-allow-methods': 'GET,POST,OPTIONS',
+    'access-control-allow-headers': 'content-type,x-admin-key',
+    'access-control-max-age': '86400',
+  };
+}
+const now=()=>new Date().toISOString();
+async function event(env,p){
+  const u=p.userId?String(p.userId).slice(0,200):null;
+  const v=u?'account:'+u:(p.visitorId?String(p.visitorId).slice(0,200):null);
+  await env.DB.prepare('INSERT INTO analytics_events (visitor_id,user_id,event_type,feature,difficulty,question,correct,score,total,metadata,created_at) VALUES (?,?,?,?,?,?,?,?,?,?,?)')
+    .bind(v,u,String(p.eventType||'event'),p.feature?String(p.feature):null,p.difficulty?String(p.difficulty):null,p.question?String(p.question).slice(0,500):null,p.correct==null?null:(p.correct?1:0),p.score==null?null:Number(p.score),p.total==null?null:Number(p.total),p.metadata?JSON.stringify(p.metadata):null,now()).run();
+}
+function cleanLocation(value){return value?String(value).trim().slice(0,120):null;}
+function locationFromRequest(request){
+  const cf=request.cf||{};
+  return {
+    country:cleanLocation(cf.country),
+    region:cleanLocation(cf.region),
+    city:cleanLocation(cf.city),
+    timezone:cleanLocation(cf.timezone),
+    continent:cleanLocation(cf.continent)
+  };
+}
+async function trackVisit(request,env){
+  const body=await request.json().catch(()=>({}));
+  const userId=body.userId?String(body.userId).slice(0,200):'';
+  const visitorId=userId?'account:'+userId:(body.visitorId?String(body.visitorId).slice(0,200):'');
+  const rawPath=body.path?String(body.path):'';
+  const path=rawPath.split('?')[0].split('#')[0].slice(0,200)||'/';
+  if(!visitorId||!path)return json({error:'visitorId and path are required.'},corsHeaders(),400);
+  if(path==='/admin.html'||path==='/admin-tools.html')return json({ok:true,ignored:true,reason:'admin'},corsHeaders());
+  const ua=String(request.headers.get('user-agent')||'');
+  if(/bot|crawler|spider|slurp|headless|lighthouse|pagespeed|facebookexternalhit|bingpreview|prefetch/i.test(ua))return json({ok:true,ignored:true,reason:'automated-client'},corsHeaders());
+  const created=now();
+  const recent=await env.DB.prepare("SELECT id FROM visits WHERE visitor_id=? AND path=? AND created_at>=datetime('now','-30 minutes') LIMIT 1").bind(visitorId,path).first();
+  if(!recent)await env.DB.prepare('INSERT INTO visits (visitor_id,path,created_at) VALUES (?,?,?)').bind(visitorId,path,created).run();
+  const loc=locationFromRequest(request);
+  await event(env,{visitorId,userId:userId||null,eventType:'page_view',feature:null,metadata:{path,location:loc}});
+  return json({ok:true,deduplicated:Boolean(recent),identity:userId?'authenticated':'anonymous',locationAvailable:Boolean(loc.country||loc.city)},corsHeaders());
+}
+export default { async fetch(request,env){
+ const url=new URL(request.url),headers=corsHeaders();
+ if(request.method==='OPTIONS')return new Response(null,{status:204,headers});
+ try{
+  if(url.pathname==='/health')return json({ok:true},headers);
+  if(url.pathname==='/api/track-visit'&&request.method==='POST')return trackVisit(request,env);
+  if(url.pathname==='/api/track-event'&&request.method==='POST'){
+   const p=await request.json();if(!p.eventType)return json({error:'eventType is required.'},headers,400);await event(env,p);return json({ok:true},headers);
+  }
+  if(url.pathname==='/api/create-account'&&request.method==='POST'){
+   const {name,username,password}=await request.json();if(!name||!username||!password)return json({error:'Name, username and password are required.'},headers,400);if(String(password).length<8)return json({error:'Password must be at least 8 characters.'},headers,400);const u=String(username).trim().toLowerCase();const exists=await env.DB.prepare('SELECT id FROM users WHERE username = ?').bind(u).first();if(exists)return json({error:'Username already exists.'},headers,409);const salt=crypto.randomUUID(),hash=await hashPassword(String(password),salt),id=crypto.randomUUID();await env.DB.prepare('INSERT INTO users (id,name,username,password_hash,password_salt,created_at) VALUES (?,?,?,?,?,?)').bind(id,String(name).trim(),u,hash,salt,now()).run();return json({ok:true,user:{id,name:String(name).trim(),username:u}},headers);
+  }
+  if(url.pathname==='/api/set-password'&&request.method==='POST'){
+   const {username,password,confirmPassword}=await request.json(),u=String(username||'').trim().toLowerCase();if(!u)return json({error:'Username is required.'},headers,400);if(!password)return json({error:'Password is required.'},headers,400);if(String(password).length<8)return json({error:'Password must be at least 8 characters.'},headers,400);if(password!==confirmPassword)return json({error:'Passwords do not match.'},headers,400);const user=await env.DB.prepare('SELECT id,name,username,password_hash,password_salt FROM users WHERE username = ?').bind(u).first();if(!user)return json({error:'No existing account was found with that username.'},headers,404);if(user.password_hash&&user.password_salt)return json({error:'This account already has a password. Please use Sign in.'},headers,409);const salt=crypto.randomUUID(),hash=await hashPassword(String(password),salt);await env.DB.prepare('UPDATE users SET password_hash = ?, password_salt = ? WHERE id = ?').bind(hash,salt,user.id).run();return json({ok:true,user:{id:user.id,name:user.name,username:user.username}},headers);
+  }
+  if(url.pathname==='/api/sign-in'&&request.method==='POST'){
+   const {username,password}=await request.json();if(!username||!password)return json({error:'Username and password are required.'},headers,400);const user=await env.DB.prepare('SELECT id,name,username,password_hash,password_salt FROM users WHERE username = ?').bind(String(username).trim().toLowerCase()).first();if(!user||!user.password_hash||!user.password_salt)return json({error:'Incorrect username or password.'},headers,401);const hash=await hashPassword(String(password),user.password_salt);if(!timingSafeEqual(hash,user.password_hash))return json({error:'Incorrect username or password.'},headers,401);return json({ok:true,user:{id:user.id,name:user.name,username:user.username}},headers);
+  }
+  if(url.pathname==='/api/scores'&&request.method==='GET'){const userId=url.searchParams.get('userId');const rows=await env.DB.prepare('SELECT stage,score,total,created_at FROM scores WHERE user_id = ? ORDER BY created_at DESC').bind(userId).all();return json({scores:rows.results},headers);}
+  if(url.pathname==='/api/scores'&&request.method==='POST'){const {userId,stage,score,total}=await request.json();await env.DB.prepare('INSERT INTO scores (user_id,stage,score,total,created_at) VALUES (?,?,?,?,?)').bind(userId,stage,score,total,now()).run();return json({ok:true},headers);}
+  if(url.pathname==='/api/admin/reset-analytics'&&request.method==='POST'){
+   const key=request.headers.get('x-admin-key')||'';
+   if(!env.ADMIN_KEY)return json({error:'ADMIN_KEY is not configured on the Cloudflare Worker.'},headers,500);
+   if(!key||key!==env.ADMIN_KEY)return json({error:'Incorrect admin key.'},headers,401);
+   await env.DB.batch([env.DB.prepare('DELETE FROM visits'),env.DB.prepare('DELETE FROM analytics_events')]);
+   return json({ok:true,message:'Visitor analytics reset. Accounts and quiz scores were kept.'},headers);
+  }
+  if(url.pathname==='/api/admin/stats'&&request.method==='POST'){
+   const key=request.headers.get('x-admin-key')||'';
+   if(!env.ADMIN_KEY)return json({error:'ADMIN_KEY is not configured on the Cloudflare Worker.'},headers,500);
+   if(!key||key!==env.ADMIN_KEY)return json({error:'Incorrect admin key.'},headers,401);
+   const users=await env.DB.prepare('SELECT id,name,username,created_at FROM users ORDER BY created_at DESC').all();
+   const totals=await env.DB.prepare('SELECT COUNT(*) AS visits,COUNT(DISTINCT visitor_id) AS unique_visitors FROM visits').first();
+   const authenticatedTotals=await env.DB.prepare("SELECT COUNT(*) AS visits,COUNT(DISTINCT visitor_id) AS unique_visitors FROM visits WHERE visitor_id LIKE 'account:%'").first();
+   const anonymousTotals=await env.DB.prepare("SELECT COUNT(*) AS visits,COUNT(DISTINCT visitor_id) AS unique_visitors FROM visits WHERE visitor_id LIKE 'anonymous:%' OR visitor_id NOT LIKE '%:%'").first();
+   const periods=await env.DB.prepare("SELECT COUNT(DISTINCT CASE WHEN created_at>=datetime('now','-1 day') THEN visitor_id END) AS daily,COUNT(DISTINCT CASE WHEN created_at>=datetime('now','-7 day') THEN visitor_id END) AS weekly,COUNT(DISTINCT CASE WHEN created_at>=datetime('now','-30 day') THEN visitor_id END) AS monthly FROM visits").first();
+   const visitorsByDay=await env.DB.prepare("SELECT date(created_at) AS day,COUNT(*) AS views,COUNT(DISTINCT visitor_id) AS visitors FROM visits WHERE created_at>=datetime('now','-30 day') GROUP BY date(created_at) ORDER BY day").all();
+   const pages=await env.DB.prepare('SELECT path,COUNT(*) AS views,COUNT(DISTINCT visitor_id) AS visitors FROM visits GROUP BY path ORDER BY views DESC').all();
+   const recent=await env.DB.prepare('SELECT visitor_id,path,created_at FROM visits ORDER BY created_at DESC LIMIT 100').all();
+   const scores=await env.DB.prepare('SELECT u.username,u.name,s.stage,s.score,s.total,s.created_at FROM scores s JOIN users u ON u.id=s.user_id ORDER BY s.created_at DESC LIMIT 500').all();
+   const active=await env.DB.prepare("SELECT COUNT(DISTINCT visitor_id) AS active_users FROM visits WHERE visitor_id LIKE 'account:%' AND created_at>=datetime('now','-30 minutes')").first();
+   const quizTotals=await env.DB.prepare("SELECT COUNT(*) AS quizzes,COALESCE(AVG(CASE WHEN total>0 THEN score*100.0/total END),0) AS average_score FROM scores").first();
+   const difficulty=await env.DB.prepare("SELECT difficulty,COUNT(*) AS uses FROM analytics_events WHERE event_type='quiz_completed' AND difficulty IS NOT NULL GROUP BY difficulty ORDER BY uses DESC").all();
+   const features=await env.DB.prepare("SELECT feature,COUNT(*) AS uses FROM analytics_events WHERE feature IS NOT NULL GROUP BY feature ORDER BY uses DESC").all();
+   const missed=await env.DB.prepare("SELECT question,COUNT(*) AS misses FROM analytics_events WHERE event_type='question_result' AND correct=0 AND question IS NOT NULL GROUP BY question ORDER BY misses DESC LIMIT 15").all();
+   const featurePeriod=await env.DB.prepare("SELECT feature,COUNT(*) AS uses FROM analytics_events WHERE feature IS NOT NULL AND created_at>=datetime('now','-30 day') GROUP BY feature ORDER BY uses DESC").all();
+   const locationRows=await env.DB.prepare("SELECT visitor_id,metadata,created_at FROM analytics_events WHERE event_type='page_view' AND visitor_id LIKE 'account:%' AND metadata IS NOT NULL ORDER BY created_at DESC LIMIT 5000").all();
+   const latestByVisitor=new Map();
+   for(const row of locationRows.results||[]){if(!latestByVisitor.has(row.visitor_id))latestByVisitor.set(row.visitor_id,row);}
+   const currentLocations=[];
+   for(const row of latestByVisitor.values()){try{const m=JSON.parse(row.metadata||'{}'),l=m.location||{};if(l.country||l.city)currentLocations.push({country:l.country||'Unknown',city:l.city||'Unknown',region:l.region||'',timezone:l.timezone||'',last_seen:row.created_at});}catch{}}
+   const countryMap=new Map(),cityMap=new Map();
+   for(const l of currentLocations){countryMap.set(l.country,(countryMap.get(l.country)||0)+1);const key=l.city+'|'+l.country;cityMap.set(key,(cityMap.get(key)||0)+1);}
+   const countries=[...countryMap.entries()].map(([country,visitors])=>({country,visitors,views:visitors})).sort((a,b)=>b.visitors-a.visitors);
+   const cities=[...cityMap.entries()].map(([key,visitors])=>{const i=key.lastIndexOf('|');return{city:key.slice(0,i),country:key.slice(i+1),visitors,views:visitors};}).sort((a,b)=>b.visitors-a.visitors);
+   return json({users:users.results,totals,authenticated_totals:authenticatedTotals,anonymous_totals:anonymousTotals,periods,active_users:Number(active?.active_users||0),quiz_totals:quizTotals,difficulty:difficulty.results,features:features.results,featurePeriod:featurePeriod.results,missed:missed.results,visitorsByDay:visitorsByDay.results,pages:pages.results,recent:recent.results,scores:scores.results,countries,cities,current_locations:currentLocations,tracking:{version:'2026-09-29-v2',identity:'account-id when signed in',visitDedupMinutes:30,adminPagesExcluded:true,botLikeClientsExcluded:true}},headers);
+  }
+  return json({error:'Not found'},headers,404);
+ }catch(e){return json({error:e?.message||'Server error'},headers,500);}
+}};
+async function hashPassword(password,salt){const digest=await crypto.subtle.digest('SHA-256',encoder.encode(salt+':'+password));return Array.from(new Uint8Array(digest)).map(b=>b.toString(16).padStart(2,'0')).join('');}
+function timingSafeEqual(a,b){if(a.length!==b.length)return false;let d=0;for(let i=0;i<a.length;i++)d|=a.charCodeAt(i)^b.charCodeAt(i);return d===0;}
+function json(data,headers,status=200){return new Response(JSON.stringify(data),{status,headers});}
