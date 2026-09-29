@@ -60,7 +60,7 @@ function renderConfig(){
  document.querySelectorAll('input[name="qtype"]').forEach(r=>r.checked=r.value===state.type);
  const modeWrap=document.querySelector('.mode-list');
  if(modeWrap)modeWrap.innerHTML=state.experience==='quiz'
-   ? `<label><input type="radio" name="mode" value="timed" checked> ${ui('Timed · 5 minutes','مؤقت · 5 دقائق','מؤقت · 5 דקות')}</label>`
+   ? `<span class="mode-label">${ui('Time limit','الوقت المحدد','מגבלת הזמן')}</span><div class="mode-options"><label><input type="radio" name="mode" value="5" ${state.time===300?'checked':''}> 5 minutes</label><label><input type="radio" name="mode" value="7" ${state.time===420?'checked':''}> 7 minutes</label><label><input type="radio" name="mode" value="10" ${state.time===600?'checked':''}> 10 minutes</label></div>`
    : '';
  const badge=$('practiceBadge');if(badge)badge.textContent=state.experience==='quiz'?ui('QUIZ','اختبار','חידון'):ui('PRACTICE','تدريب','תרגול');
 }
@@ -68,6 +68,7 @@ function bindConfig(){
  document.querySelectorAll('[data-stage]').forEach(b=>b.addEventListener('click',()=>{if(state.running)return;state.difficulty=b.dataset.stage;renderConfig()}));
  document.querySelectorAll('input[name="experience"]').forEach(r=>r.addEventListener('change',()=>{if(state.running)return;state.experience=r.value;renderConfig()}));
  document.querySelectorAll('input[name="qtype"]').forEach(r=>r.addEventListener('change',()=>{if(state.running)return;state.type=r.value;renderConfig()}));
+ document.querySelectorAll('input[name="mode"]').forEach(r=>r.addEventListener('change',()=>{if(state.running)return;state.time=Number(r.value)*60;renderConfig()}));
  const oldStart=$('newQuiz');
  if(oldStart){const start=oldStart.cloneNode(true);oldStart.replaceWith(start);start.addEventListener('click',startSession)}
 }
@@ -79,7 +80,12 @@ function startSession(){
  stopTimer();state.running=true;state.index=0;state.score=0;state.correct=0;state.answers=[];state.items=[...questions[state.difficulty]].sort(()=>Math.random()-.5).slice(0,Math.min(8,questions[state.difficulty].length));
  $('quizArea').innerHTML='';$('scoreArea').innerHTML='';$('retryMistakes')?.classList.add('hidden');
  updateHeader();renderStats();renderQuestion();showCancel(true);
- if(state.experience==='quiz'){state.timed=true;state.time=300;startTimer()}
+ if(state.experience==='quiz'){
+   const selected=document.querySelector('input[name="mode"]:checked');
+   state.time=selected?Number(selected.value)*60:300;
+   state.timed=true;
+   startTimer();
+ }
  window.scrollTo({top:document.querySelector('.section.alt')?.offsetTop||0,behavior:'smooth'});
 }
 function showCancel(show){const area=document.querySelector('.quiz-actions');if(!area)return;let b=$('cancelQuiz');if(show&&!b){b=document.createElement('button');b.id='cancelQuiz';b.type='button';b.className='secondary';area.prepend(b);b.addEventListener('click',cancelSession)}if(b){b.textContent=state.experience==='quiz'?ui('Cancel quiz','إلغاء الاختبار','ביטול حيدون'):ui('Cancel practice','إلغاء التدريب','ביטול תרגול');b.classList.toggle('hidden',!show)}}
