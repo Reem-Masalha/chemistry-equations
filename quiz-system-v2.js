@@ -9,6 +9,18 @@ const normalize=s=>String(s||'').replace(/[₀₁₂₃₄₅₆₇₈₉]/g,c=>
 function formatFormula(f){let s=String(f||'').replace(/[₀₁₂₃₄₅₆₇₈₉]/g,c=>REV[c]);let out='';for(let i=0;i<s.length;i++){if(/\d/.test(s[i])){let j=i;while(j<s.length&&/\d/.test(s[j]))j++;out+=s.slice(i,j).replace(/\d/g,d=>SUB[d]);i=j-1}else out+=s[i]}return escapeHtml(out)}
 function formatMolecule(part){const p=String(part||'').trim();const m=p.match(/^(\d+)\s*(.*)$/);return m?`${escapeHtml(m[1])}${formatFormula(m[2])}`:formatFormula(p)}
 function chem(eq){return normalize(eq).split('→').map(side=>side.split('+').map(formatMolecule).join(' + ')).join(' → ')}
+const formulaQuestions=[
+ ['Sodium chloride','NaCl',['NaCl','Na₂Cl','SCl','NaCl₂']],
+ ['Water','H2O',['H2O','HO2','H2O2','HO']],
+ ['Carbon dioxide','CO2',['CO2','C2O','CO','C2O2']],
+ ['Calcium chloride','CaCl2',['CaCl2','Ca2Cl','CaCl','Ca2Cl2']],
+ ['Magnesium oxide','MgO',['MgO','Mg2O','MgO2','MGO']],
+ ['Aluminum oxide','Al2O3',['Al2O3','AlO','Al3O2','AlO3']],
+ ['Sodium oxide','Na2O',['Na2O','NaO','NaO2','Na2O2']],
+ ['Hydrochloric acid','HCl',['HCl','H2Cl','ClH2','HCl2']],
+ ['Sulfuric acid','H2SO4',['H2SO4','HSO4','H2SO3','H2S2O4']],
+ ['Ammonia','NH3',['NH3','N3H','NH2','N2H3']]
+];
 const questions={
  easy:[
   ['H2 + O2 → H2O','2H2 + O2 → 2H2O','Hydrogen and oxygen must both be equal.'],
@@ -52,10 +64,17 @@ function makeChoices(solution){const correct=coefficients(solution);const option
  while(options.length<4){const c=correct.map((n,i)=>Math.max(1,n+(i%4)+1));const x=withCoefficients(solution,c);if(!options.includes(x))options.push(x);else break}
  return options.sort(()=>Math.random()-.5).slice(0,4);
 }
+function formatBuildMolecule(formula,index){return `<span class="build-molecule"><input class="build-coef-inline" inputmode="numeric" pattern="[0-9]*" data-build-coef="${index}" placeholder="?" aria-label="Coefficient ${index+1}">${formatFormula(formula)}</span>`}
+function formulaChoices(item){
+ const correct=item[1], options=[...item[2]];
+ return options.sort(()=>Math.random()-.5);
+}
 function renderConfig(){
  document.querySelectorAll('[data-stage]').forEach(b=>b.classList.toggle('active-stage',b.dataset.stage===state.difficulty));
  const start=$('newQuiz');
  if(start)start.textContent=state.experience==='quiz'?ui('Start quiz','ابدأ الاختبار','התחל חידון'):ui('Start practice','ابدأ التدريب','התחל תרגול');
+ const typeLabels=document.querySelectorAll('input[name="qtype"]');
+ typeLabels.forEach(r=>{const label=r.closest('label');if(label)label.classList.toggle('type-selected',r.checked)});
  document.querySelectorAll('input[name="experience"]').forEach(r=>r.checked=r.value===state.experience);
  document.querySelectorAll('input[name="qtype"]').forEach(r=>r.checked=r.value===state.type);
  document.querySelectorAll('input[name="mode"]').forEach(r=>r.checked=r.value==='timed');
@@ -75,7 +94,9 @@ function updateHeader(){
  const timerText=$('timerText');if(timerText)timerText.textContent=state.experience==='quiz'?ui('Answer each question. Your results appear when you finish.','أجب عن كل سؤال. ستظهر نتيجتك عند الانتهاء.','ענה על כל שאלה. התוצאה תופיע בסיום.'):ui('Get feedback after each answer and learn from mistakes.','احصل على ملاحظات بعد كل إجابة وتعلم من أخطائك.','קבל משוב לאחר כל תשובה ולמד מהטעויות.');
 }
 function startSession(){
- stopTimer();state.running=true;state.index=0;state.score=0;state.correct=0;state.answers=[];state.items=[...questions[state.difficulty]].sort(()=>Math.random()-.5).slice(0,Math.min(8,questions[state.difficulty].length));
+ stopTimer();state.running=true;state.index=0;state.score=0;state.correct=0;state.answers=[];state.items=state.type==='formula'
+ ? [...formulaQuestions].sort(()=>Math.random()-.5).slice(0,Math.min(8,formulaQuestions.length))
+ : [...questions[state.difficulty]].sort(()=>Math.random()-.5).slice(0,Math.min(8,questions[state.difficulty].length));
  $('quizArea').innerHTML='';$('scoreArea').innerHTML='';$('retryMistakes')?.classList.add('hidden');
  updateHeader();renderStats();renderQuestion();showCancel(true);
  if(state.experience==='quiz'){state.timed=true;state.time=300;startTimer()}
@@ -89,13 +110,32 @@ function drawTimer(){const m=Math.floor(state.time/60),s=String(state.time%60).p
 function renderStats(){const box=$('scoreArea');if(!box)return;const s=readStats();box.innerHTML=`<div class="practice-live-stats"><div><b>${state.score}</b><span>${ui('Score','النقاط','ניקוד')}</span></div><div><b>${state.correct}</b><span>${ui('Correct','صحيح','נכון')}</span></div><div><b>${state.running?state.index+1:0}</b><span>${ui('Question','السؤال','שאלה')}</span></div><div><b>${s.best||0}</b><span>${ui('Best score','أفضل نتيجة','שיא')}</span></div></div>`}
 function renderQuestion(){
  const item=state.items[state.index];if(!item)return finishSession(false);
- const [raw,solution,hint]=item;const area=$('quizArea');if(!area)return;
- let controls='';
- if(state.type==='choice')controls=makeChoices(solution).map((x,i)=>`<button type="button" class="practice-choice" data-answer="${encodeURIComponent(x)}">${String.fromCharCode(65+i)}. ${chem(x)}</button>`).join('');
- else controls=`<div class="coefficient-entry"><div class="coefficient-slots">${formulaParts(solution).map((_,i)=>`<input inputmode="numeric" pattern="[0-9]*" data-coef="${i}" placeholder="?" aria-label="Coefficient ${i+1}">`).join('')}</div><p class="muted">${ui('Enter coefficients from left to right. Include both sides and use 1 when needed.','أدخل المعاملات من اليسار إلى اليمين، للجانبين معًا، واستخدم 1 عند الحاجة.','הקלד את המקדמים משמאל לימין, לשני הצדדים, והשתמש ב-1 כשצריך.')}</p><button class="primary practice-submit" type="button">${ui('Submit answer','أرسل الإجابة','שלח תשובה')}</button></div>`;
- area.innerHTML=`<article class="practice-question-card"><div class="practice-question-meta"><span>${ui('Question','السؤال','שאלה')} ${state.index+1} / ${state.items.length}</span><span>${state.difficulty.toUpperCase()}</span></div><div class="practice-equation">${chem(raw)}</div><h3>${state.type==='choice'?ui('Choose the balanced equation','اختر المعادلة الموزونة','בחר את המשוואה המאוזנת'):ui('Type the coefficients','اكتب المعاملات','הקלד את המקדמים')}</h3><div class="practice-controls">${controls}</div><div id="answerFeedback" class="answer-feedback hidden"></div></article>`;
- area.querySelectorAll('.practice-choice').forEach(b=>b.addEventListener('click',()=>answerQuestion(decodeURIComponent(b.dataset.answer),solution,hint,b)));
- area.querySelector('.practice-submit')?.addEventListener('click',()=>{const vals=[...area.querySelectorAll('[data-coef]')].map(x=>Number(x.value||0));const wanted=coefficients(solution);answerQuestion(vals.map(String).join(','),wanted.map(String).join(','),hint,null,vals,wanted,solution)});
+ const area=$('quizArea');if(!area)return;
+ let raw,solution,hint,controls='',prompt='';
+ if(state.type==='formula'){
+   const [name,correct,options]=item;
+   raw=name;solution=correct;hint='Use the element symbols and subscripts that make up the compound name.';
+   controls=formulaChoices(item).map((x,i)=>`<button type="button" class="practice-choice formula-choice" data-answer="${encodeURIComponent(x)}">${String.fromCharCode(65+i)}. ${formatFormula(x)}</button>`).join('');
+   prompt=ui('Choose the correct chemical formula','اختر الصيغة الكيميائية الصحيحة','בחר את הנוסחה הכימית הנכונה');
+   area.innerHTML=`<article class="practice-question-card"><div class="practice-question-meta"><span>${ui('Question','السؤال','שאלה')} ${state.index+1} / ${state.items.length}</span><span>${state.difficulty.toUpperCase()}</span></div><div class="formula-name-prompt">${escapeHtml(name)}</div><h3>${prompt}</h3><div class="practice-controls">${controls}</div><div id="answerFeedback" class="answer-feedback hidden"></div></article>`;
+   area.querySelectorAll('.practice-choice').forEach(b=>b.addEventListener('click',()=>answerQuestion(decodeURIComponent(b.dataset.answer),solution,hint,b)));
+   renderStats();return;
+ }
+ [raw,solution,hint]=item;
+ const parts=formulaParts(raw);
+ if(state.type==='build'){
+   const left=parts.slice(0,raw.split('→')[0].split('+').length),right=parts.slice(left.length);
+   controls=`<div class="build-equation"><div><span class="build-label">${ui('Reactants','المتفاعلات','المتفاعلات')}</span><div class="build-side">${left.map((p,i)=>formatBuildMolecule(p,i)+(i<left.length-1?' <span class="build-plus">+</span>':'')).join('')}</div></div><div class="build-arrow">→</div><div><span class="build-label">${ui('Product','الناتج','الناتج')}</span><div class="build-side">${right.map((p,i)=>formatBuildMolecule(p,left.length+i)+(i<right.length-1?' <span class="build-plus">+</span>':'')).join('')}</div></div></div><p class="muted">${ui('Complete the balanced equation by entering the coefficients. Use 1 where a coefficient is needed but not shown.','أكمل المعادلة الموزونة بإدخال المعاملات. استخدم 1 عندما يكون المعامل مطلوبًا لكنه غير ظاهر.','השלם את המשוואה המאוזנת באמצעות הזנת המקדמים. השתמש ב־1 כאשר צריך מקדם אך הוא אינו מוצג.')}</p><button class="primary practice-submit" type="button">${ui('Check equation','تحقق من المعادلة','בדוק את המשוואה')}</button>`;
+ }else{
+   controls=`<div class="coefficient-entry"><div class="coefficient-slots">${parts.map((_,i)=>`<input inputmode="numeric" pattern="[0-9]*" data-coef="${i}" placeholder="?" aria-label="Coefficient ${i+1}">`).join('')}</div><p class="muted">${ui('Enter coefficients from left to right. Include both sides and use 1 when needed.','أدخل المعاملات من اليسار إلى اليمين، للجانبين معًا، واستخدم 1 عند الحاجة.','הקלד את המקדמים משמאל לימין, לשני הצדדים، واستخدم 1 כשצריך.')}</p><button class="primary practice-submit" type="button">${ui('Submit answer','أرسل الإجابة','שלח תשובה')}</button></div>`;
+ }
+ const title=state.type==='build'?ui('Build the balanced equation','كوّن المعادلة الموزونة','בנה את המשוואה המאוזנת'):ui('Type the coefficients','اكتب المعاملات','הקלד את המקדמים');
+ area.innerHTML=`<article class="practice-question-card"><div class="practice-question-meta"><span>${ui('Question','السؤال','שאלה')} ${state.index+1} / ${state.items.length}</span><span>${state.difficulty.toUpperCase()}</span></div>${state.type==='build'?'':`<div class="practice-equation">${chem(raw)}</div>`}<h3>${title}</h3><div class="practice-controls">${controls}</div><div id="answerFeedback" class="answer-feedback hidden"></div></article>`;
+ area.querySelector('.practice-submit')?.addEventListener('click',()=>{
+   const vals=[...area.querySelectorAll(state.type==='build'?'[data-build-coef]':'[data-coef]')].map(x=>Number(x.value||0));
+   const wanted=coefficients(solution);
+   answerQuestion(vals.map(String).join(','),wanted.map(String).join(','),hint,null,vals,wanted,solution);
+ });
  renderStats();
 }
 function answerQuestion(answer,solution,hint,button,typed,wanted,solutionText){
