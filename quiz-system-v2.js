@@ -86,6 +86,46 @@ function currentUser(){try{return JSON.parse(localStorage.getItem('chemistryCurr
 function statKey(){return 'chemistryQuizStats:'+(currentUser()?.id||currentUser()?.username||'guest')}
 function readStats(){try{return JSON.parse(localStorage.getItem(statKey())||'{"sessions":0,"correct":0,"answered":0,"best":0}')}catch{return{sessions:0,correct:0,answered:0,best:0}}}
 function saveStats(score,correct,answered){const s=readStats();s.sessions=(s.sessions||0)+(answered?1:0);s.correct=(s.correct||0)+correct;s.answered=(s.answered||0)+answered;s.best=Math.max(s.best||0,score);localStorage.setItem(statKey(),JSON.stringify(s));return s}
+const masterySkills=[
+ {name:'Counting atoms',categories:['basic balancing','tricky formulas']},
+ {name:'Coefficients',categories:['coefficients']},
+ {name:'Diatomic elements',categories:['diatomic elements']},
+ {name:'Parentheses',categories:['parentheses']},
+ {name:'Polyatomic ions',categories:['polyatomic ions']},
+ {name:'Combustion',categories:['combustion']},
+ {name:'Redox',categories:['redox']},
+ {name:'Ionic equations',categories:['ionic equations']},
+ {name:'Tricky formulas',categories:['tricky formulas']},
+ {name:'Already-balanced equations',categories:['already-balanced equations']}
+];
+function readMastery(){
+ try{return JSON.parse(localStorage.getItem(statKey()+':mastery')||'{}')}
+ catch{return{}}
+}
+function saveMastery(answers){
+ const m=readMastery();
+ answers.forEach(a=>{
+   if(!a.category)return;
+   const x=m[a.category]||{correct:0,answered:0};
+   x.answered++;if(a.ok)x.correct++;
+   m[a.category]=x;
+ });
+ localStorage.setItem(statKey()+':mastery',JSON.stringify(m));
+ return m;
+}
+function masteryStatus(stats){
+ if(!stats||!stats.answered)return {icon:'○',label:'Not tested',className:'mastery-not-tested'};
+ const pct=stats.correct/stats.answered*100;
+ return pct>=80?{icon:'✓',label:'Strong',className:'mastery-strong'}:pct>=60?{icon:'~',label:'Needs practice',className:'mastery-needs'}:{icon:'✗',label:'Weak',className:'mastery-weak'};
+}
+function renderMastery(){
+ const m=readMastery();
+ return '<div class="concept-mastery"><div class="concept-mastery-head"><div><span class="eyebrow">CONCEPT MASTERY</span><h3>Skills</h3></div><span class="mastery-note">Based on answered questions</span></div><div class="mastery-list">'+masterySkills.map(skill=>{
+   const stats=skill.categories.reduce((acc,cat)=>{const x=m[cat];if(x){acc.correct+=x.correct||0;acc.answered+=x.answered||0}return acc},{correct:0,answered:0});
+   const st=masteryStatus(stats);
+   return '<div class="mastery-row"><span class="mastery-skill">'+escapeHtml(skill.name)+'</span><span class="mastery-status '+st.className+'"><b>'+st.icon+'</b> '+st.label+'</span></div>';
+ }).join('')+'</div></div>';
+}
 function coefficients(sol){return normalize(sol).split('→').flatMap(side=>side.split('+').map(x=>x.trim()).filter(Boolean)).map(x=>{const m=x.match(/^(\d+)\s*/);return m?Number(m[1]):1})}
 function formulaParts(eq){return normalize(eq).split('→').flatMap(side=>side.split('+').map(x=>x.trim()).filter(Boolean))}
 function withCoefficients(eq,cs){let i=0;return normalize(eq).split('→').map(side=>side.split('+').map(p=>{const m=p.trim().match(/^(\d+)\s*(.+)$/),formula=(m?m[2]:p).trim(),c=cs[i++]??1;return `${c===1?'':c}${formula}`}).join(' + ')).join(' → ')}
@@ -158,19 +198,19 @@ function renderQuestion(){
 }
 function answerQuestion(answer,solution,hint,button,typed,wanted,solutionText){
  if(!state.running)return;const ok=typed?typed.length===wanted.length&&typed.every((x,i)=>x===wanted[i]):normalize(answer)===normalize(solution);
- state.answers.push({ok});if(ok){state.correct++;state.score+=10;}
+ state.answers.push({ok,category});if(ok){state.correct++;state.score+=10;}
  if(state.experience==='practice'){showFeedback(ok,hint,solutionText||solution,answer,typed);document.querySelectorAll('.practice-choice').forEach(b=>b.disabled=true);const submit=document.querySelector('.practice-submit');if(submit)submit.disabled=true;setTimeout(()=>{state.index++;if(state.index<state.items.length)renderQuestion();else finishSession(false)},1800)}
  else {document.querySelectorAll('.practice-choice').forEach(b=>b.disabled=true);const submit=document.querySelector('.practice-submit');if(submit)submit.disabled=true;state.index++;setTimeout(()=>{if(state.index<state.items.length)renderQuestion();else finishSession(false)},250)}
  renderStats();
 }
 function showFeedback(ok,hint,correct,answer,typed){const f=$('answerFeedback');if(!f)return;f.className=`answer-feedback ${ok?'feedback-correct':'feedback-wrong'}`;f.innerHTML=ok?`<b>✓ ${ui('Correct','صحيحة','صحيحة')}</b><div>${ui('Great work!','أحسنت!','عمل رائع!')}</div>`:`<b>✗ ${ui('Not quite','ليست صحيحة','ليست صحيحة')}</b><div><strong>${ui('Correct answer:','الإجابة الصحيحة:','התשובה הנכונה:')}</strong> ${chem(correct)}</div><div class="muted">${escapeHtml(hint||'')}</div>`}
 function finishSession(timeUp){
- if(!state.running)return;stopTimer();state.running=false;state.timed=false;const answered=state.answers.length;const stats=saveStats(state.score,state.correct,answered);
+ if(!state.running)return;stopTimer();state.running=false;state.timed=false;const answered=state.answers.length;const stats=saveStats(state.score,state.correct,answered);saveMastery(state.answers);
  const pct=answered?Math.round(state.correct/answered*100):0;
  showCancel(false);$('timer')?.classList.add('hidden');
  $('quizArea').innerHTML=`<article class="quiz-finish-card"><div class="finish-icon">${timeUp?'⏱':'✓'}</div><h2>${timeUp?ui('Time is up','انتهى الوقت','انتهى الوقت'):ui('Quiz complete','اكتمل الاختبار','החידון הסתיים')}</h2><p>${ui('You answered','أجبت عن','ענית על')} <b>${answered}</b> ${ui('questions','أسئلة','שאלות')}.</p><div class="finish-score"><b>${state.score}</b><span>${ui('points','نقطة','נקודות')} · ${pct}% ${ui('correct','correct','נכון')}</span></div><div class="finish-actions"><button id="restartQuiz" class="primary" type="button">${ui('Try again','حاول مرة أخرى','נסה שוב')}</button><button id="backToSettings" class="secondary" type="button">${ui('Change settings','تغيير الإعدادات','שנה הגדרות')}</button></div></article>`;
  $('restartQuiz').onclick=startSession;$('backToSettings').onclick=()=>{$('quizArea').innerHTML='';renderConfig()};
- $('scoreArea').innerHTML=`<div class="practice-live-stats"><div><b>${state.score}</b><span>${ui('Score','النقاط','ניקוד')}</span></div><div><b>${state.correct}</b><span>${ui('Correct','صحيح','נכון')}</span></div><div><b>${pct}%</b><span>${ui('Accuracy','الدقة','דיוק')}</span></div><div><b>${stats.best||0}</b><span>${ui('Best score','أفضل نتيجة','שיא')}</span></div></div>`;
+ $('scoreArea').innerHTML=`<div class="practice-live-stats"><div><b>${state.score}</b><span>${ui('Score','النقاط','ניקוד')}</span></div><div><b>${state.correct}</b><span>${ui('Correct','صحيح','נכון')}</span></div><div><b>${pct}%</b><span>${ui('Accuracy','الدقة','דיוק')}</span></div><div><b>${stats.best||0}</b><span>${ui('Best score','أفضل نتيجة','שיא')}</span></div></div>${renderMastery()}`;
 }
 function setup(){
  if(!$('quizArea'))return;
