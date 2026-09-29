@@ -13,3 +13,10 @@
 .mastery-not-tested{color:var(--muted)}
 .mastery-status b{display:inline-block;width:16px;text-align:center}
 @media(max-width:760px){.concept-mastery-head{align-items:flex-start;flex-direction:column}.mastery-list{grid-template-columns:1fr}.mastery-row{padding:10px 0}}
+
+.history-list{display:grid;gap:8px;margin-top:14px}
+.history-row{display:grid;grid-template-columns:1fr auto auto;gap:14px;align-items:center;padding:11px 12px;border:1px solid var(--line);border-radius:10px;background:var(--surface)}
+.history-row span{font-size:13px}
+.history-row small{color:var(--muted);font-size:11px}
+.quiz-finish-card .finish-actions button.secondary{border:1px solid var(--accent)!important;background:var(--accent)!important;color:#fff!important}
+@media(max-width:760px){.history-row{grid-template-columns:1fr}.history-row small{margin-top:-6px}}
