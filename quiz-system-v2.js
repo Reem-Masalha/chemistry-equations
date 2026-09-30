@@ -83,14 +83,44 @@ const questions={
 }
 const state={difficulty:'easy',experience:'practice',type:'choice',timed:false,time:300,index:0,score:0,correct:0,answers:[],items:[],timer:null,running:false};
 function currentUser(){try{return JSON.parse(localStorage.getItem('chemistryCurrentUser')||'null')}catch{return null}}
-function statKey(){return 'chemistryQuizStats:'+(currentUser()?.id||currentUser()?.username||'guest')}
-function readStats(){try{return JSON.parse(localStorage.getItem(statKey())||'{"sessions":0,"correct":0,"answered":0,"best":0,"history":[]}')}catch{return{sessions:0,correct:0,answered:0,best:0,history:[]}}}
+function statKey(){const u=currentUser();return 'chemistryQuizStats:'+(u?.id||u?.username||'guest')}
+function statKeys(){
+ const u=currentUser();
+ if(!u)return [statKey()];
+ const keys=[statKey()];
+ if(u.id)keys.push('chemistryQuizStats:'+u.id);
+ if(u.username)keys.push('chemistryQuizStats:'+u.username);
+ return [...new Set(keys)];
+}
+function emptyStats(){return{sessions:0,correct:0,answered:0,best:0,history:[]}}
+function readStats(){
+ try{
+   const merged=emptyStats(),all=[];
+   statKeys().forEach(k=>{
+     const raw=localStorage.getItem(k);if(!raw)return;
+     const s=JSON.parse(raw);
+     merged.sessions=Math.max(merged.sessions||0,s.sessions||0);
+     merged.correct+=(s.correct||0);
+     merged.answered+=(s.answered||0);
+     merged.best=Math.max(merged.best||0,s.best||0);
+     if(Array.isArray(s.history))all.push(...s.history);
+   });
+   const seen=new Set();
+   merged.history=all.filter(h=>{const id=String(h?.date||'')+'|'+String(h?.difficulty||'')+'|'+String(h?.score||'')+'|'+String(h?.answered||'');if(seen.has(id))return false;seen.add(id);return true}).sort((a,b)=>String(b.date||'').localeCompare(String(a.date||''))).slice(0,20);
+   return merged;
+ }catch{return emptyStats()}
+}
 function saveStats(score,correct,answered){
- const s=readStats();s.sessions=(s.sessions||0)+(answered?1:0);s.correct=(s.correct||0)+correct;s.answered=(s.answered||0)+answered;s.best=Math.max(s.best||0,score);
+ const s=readStats();
+ s.sessions=(s.sessions||0)+(answered?1:0);
+ s.correct=(s.correct||0)+correct;
+ s.answered=(s.answered||0)+answered;
+ s.best=Math.max(s.best||0,score);
  s.history=Array.isArray(s.history)?s.history:[];
  if(answered)s.history.unshift({date:new Date().toISOString(),difficulty:state.difficulty,experience:state.experience,type:state.type,score,correct,answered,accuracy:Math.round(correct/answered*100),time:state.time});
  s.history=s.history.slice(0,20);
- localStorage.setItem(statKey(),JSON.stringify(s));return s
+ try{localStorage.setItem(statKey(),JSON.stringify(s))}catch{}
+ return s
 }
 function renderHistory(){
  const s=readStats(),statsBox=$('quizStats'),historyBox=$('historyList'),mistakes=$('mistakeList');
@@ -225,7 +255,7 @@ function finishSession(timeUp){
  if(!state.running)return;stopTimer();state.running=false;state.timed=false;const answered=state.answers.length;const stats=saveStats(state.score,state.correct,answered);saveMastery(state.answers);renderHistory();
  const pct=answered?Math.round(state.correct/answered*100):0;
  showCancel(false);$('timer')?.classList.add('hidden');
- $('quizArea').innerHTML=`<article class="quiz-finish-card"><div class="finish-icon">${timeUp?'⏱':'✓'}</div><h2>${timeUp?ui('Time is up','انتهى الوقت','انتهى الوقت'):ui('Quiz complete','اكتمل الاختبار','החידון הסתיים')}</h2><p>${ui('You answered','أجبت عن','ענית על')} <b>${answered}</b> ${ui('questions','أسئلة','שאלות')}.</p><div class="finish-score"><b>${state.score}</b><span>${ui('points','نقطة','נקודות')} · ${pct}% ${ui('correct','correct','נכון')}</span></div><div class="finish-actions"><button id="restartQuiz" class="primary" type="button">${ui('Try again','حاول مرة أخرى','נסה שוב')}</button><button id="backToSettings" class="primary" type="button">${ui('Change settings','تغيير الإعدادات','שנה הגדרות')}</button></div></article>`;
+ $('quizArea').innerHTML=`<article class="quiz-finish-card"><div class="finish-icon">${timeUp?'⏱':'✓'}</div><h2>${timeUp?ui('Time is up','انتهى الوقت','انتهى الوقت'):ui('Quiz complete','اكتمل الاختبار','החידון הסתיים')}</h2><p>${ui('You answered','أجبت عن','ענית על')} <b>${answered}</b> ${ui('questions','أسئلة','שאלות')}.</p><div class="finish-score"><b>${state.score}</b><span>${ui('points','نقطة','נקודות')} · ${pct}% ${ui('correct','correct','נכון')}</span></div><div class="finish-actions"><button id="restartQuiz" class="primary" type="button">${ui('Try again','حاول مرة أخرى','נסה שוב')}</button><button id="backToSettings" class="secondary finish-settings-button" type="button">${ui('Change settings','تغيير الإعدادات','שנה הגדרות')}</button></div></article>`;
  $('restartQuiz').onclick=startSession;$('backToSettings').onclick=()=>{$('quizArea').innerHTML='';renderConfig()};
  $('scoreArea').innerHTML=`<div class="practice-live-stats"><div><b>${state.score}</b><span>${ui('Score','النقاط','ניקוד')}</span></div><div><b>${state.correct}</b><span>${ui('Correct','صحيح','נכון')}</span></div><div><b>${pct}%</b><span>${ui('Accuracy','الدقة','דיוק')}</span></div><div><b>${stats.best||0}</b><span>${ui('Best score','أفضل نتيجة','שיא')}</span></div></div>${renderMastery()}`;
 }
