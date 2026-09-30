@@ -20,3 +20,6 @@
 .history-row small{color:var(--muted);font-size:11px}
 .quiz-finish-card .finish-actions button.secondary{border:1px solid var(--accent)!important;background:var(--accent)!important;color:#fff!important}
 @media(max-width:760px){.history-row{grid-template-columns:1fr}.history-row small{margin-top:-6px}}
+
+.history-empty{padding:14px;border:1px dashed var(--line);border-radius:10px;color:var(--muted);background:var(--surface)}
+.question-bank-info{margin-top:12px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--surface);font-size:12px;line-height:1.5;color:var(--muted)}
