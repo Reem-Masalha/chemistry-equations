@@ -97,8 +97,8 @@ function renderHistory(){
  if(statsBox)statsBox.innerHTML=`<div><b>${s.sessions||0}</b><span>${ui('Sessions','الجلسات','סשנים')}</span></div><div><b>${s.answered||0}</b><span>${ui('Questions answered','الأسئلة','שאלות שנענו')}</span></div><div><b>${s.answered?Math.round((s.correct||0)/s.answered*100):0}%</b><span>${ui('Overall accuracy','الدقة الإجمالية','דיוק כולל')}</span></div><div><b>${s.best||0}</b><span>${ui('Best score','أفضل نتيجة','שיא')}</span></div>`;
  if(historyBox){
    const rows=Array.isArray(s.history)?s.history:[];
-   historyBox.classList.toggle('hidden',rows.length===0);
-   historyBox.innerHTML=rows.length?rows.map((h,i)=>`<div class="history-row"><span><b>#${rows.length-i}</b> ${escapeHtml(h.experience==='quiz'?ui('Quiz','اختبار','חידון'):ui('Practice','تدريب','תרגול'))} · ${escapeHtml(h.difficulty)}</span><span>${h.correct}/${h.answered} · ${h.accuracy}% · ${h.score} pts</span><small>${new Date(h.date).toLocaleString()}</small></div>`).join(''):``;
+   historyBox.classList.remove('hidden');
+   historyBox.innerHTML=rows.length?rows.map((h,i)=>`<div class="history-row"><span><b>#${rows.length-i}</b> ${escapeHtml(h.experience==='quiz'?ui('Quiz','اختبار','חידון'):ui('Practice','تدريب','תרגול'))} · ${escapeHtml(h.difficulty)}</span><span>${h.correct}/${h.answered} · ${h.accuracy}% · ${h.score} pts</span><small>${new Date(h.date).toLocaleString()}</small></div>`).join(''):`<div class="history-empty">${ui('No completed sessions yet. Finish a practice or quiz session and it will appear here.','لا توجد جلسات مكتملة بعد. أكمل تدريبًا أو اختبارًا وسيظهر هنا.','אין עדיין מפגשים שהושלמו. סיים תרגול או חידון והוא יופיע כאן.')}</div>`;
  }
  if(mistakes)mistakes.classList.add('hidden');
 }
@@ -164,6 +164,7 @@ function renderConfig(){
  if(modeWrap)modeWrap.innerHTML=state.experience==='quiz'
    ? `<span class="mode-label">${ui('Time limit','الوقت المحدد','מגבלת הזמן')}</span><div class="mode-options"><label><input type="radio" name="mode" value="5" ${state.time===300?'checked':''}> 5 minutes</label><label><input type="radio" name="mode" value="7" ${state.time===420?'checked':''}> 7 minutes</label><label><input type="radio" name="mode" value="10" ${state.time===600?'checked':''}> 10 minutes</label></div>`
    : '';
+ const bankNote=$('questionBankInfo');if(bankNote){const total=Object.values(questions).reduce((n,list)=>n+list.length,0);const categories=[...new Set(Object.values(questions).flat().map(q=>q.category))];bankNote.innerHTML=`<b>${total} questions</b> · ${categories.length} concepts: ${categories.map(escapeHtml).join(' · ')}`}
  const badge=$('practiceBadge');if(badge)badge.textContent=state.experience==='quiz'?ui('QUIZ','اختبار','חידון'):ui('PRACTICE','تدريب','תרגול');
 }
 function bindConfig(){
@@ -224,7 +225,7 @@ function finishSession(timeUp){
  if(!state.running)return;stopTimer();state.running=false;state.timed=false;const answered=state.answers.length;const stats=saveStats(state.score,state.correct,answered);saveMastery(state.answers);renderHistory();
  const pct=answered?Math.round(state.correct/answered*100):0;
  showCancel(false);$('timer')?.classList.add('hidden');
- $('quizArea').innerHTML=`<article class="quiz-finish-card"><div class="finish-icon">${timeUp?'⏱':'✓'}</div><h2>${timeUp?ui('Time is up','انتهى الوقت','انتهى الوقت'):ui('Quiz complete','اكتمل الاختبار','החידון הסתיים')}</h2><p>${ui('You answered','أجبت عن','ענית על')} <b>${answered}</b> ${ui('questions','أسئلة','שאלות')}.</p><div class="finish-score"><b>${state.score}</b><span>${ui('points','نقطة','נקודות')} · ${pct}% ${ui('correct','correct','נכון')}</span></div><div class="finish-actions"><button id="restartQuiz" class="primary" type="button">${ui('Try again','حاول مرة أخرى','נסה שוב')}</button><button id="backToSettings" class="secondary" type="button">${ui('Change settings','تغيير الإعدادات','שנה הגדרות')}</button></div></article>`;
+ $('quizArea').innerHTML=`<article class="quiz-finish-card"><div class="finish-icon">${timeUp?'⏱':'✓'}</div><h2>${timeUp?ui('Time is up','انتهى الوقت','انتهى الوقت'):ui('Quiz complete','اكتمل الاختبار','החידון הסתיים')}</h2><p>${ui('You answered','أجبت عن','ענית על')} <b>${answered}</b> ${ui('questions','أسئلة','שאלות')}.</p><div class="finish-score"><b>${state.score}</b><span>${ui('points','نقطة','נקודות')} · ${pct}% ${ui('correct','correct','נכון')}</span></div><div class="finish-actions"><button id="restartQuiz" class="primary" type="button">${ui('Try again','حاول مرة أخرى','נסה שוב')}</button><button id="backToSettings" class="primary" type="button">${ui('Change settings','تغيير الإعدادات','שנה הגדרות')}</button></div></article>`;
  $('restartQuiz').onclick=startSession;$('backToSettings').onclick=()=>{$('quizArea').innerHTML='';renderConfig()};
  $('scoreArea').innerHTML=`<div class="practice-live-stats"><div><b>${state.score}</b><span>${ui('Score','النقاط','ניקוד')}</span></div><div><b>${state.correct}</b><span>${ui('Correct','صحيح','נכון')}</span></div><div><b>${pct}%</b><span>${ui('Accuracy','الدقة','דיוק')}</span></div><div><b>${stats.best||0}</b><span>${ui('Best score','أفضل نتيجة','שיא')}</span></div></div>${renderMastery()}`;
 }
