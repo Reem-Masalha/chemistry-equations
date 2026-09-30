@@ -19,6 +19,19 @@
 .history-row span{font-size:13px}
 .history-row small{color:var(--muted);font-size:11px}
 .quiz-finish-card .finish-actions button.secondary{border:1px solid var(--accent)!important;background:var(--accent)!important;color:#fff!important}
+.quiz-finish-card .finish-actions #backToSettings.finish-settings-button{
+  appearance:none!important;
+  border:1px solid var(--accent)!important;
+  background:var(--accent)!important;
+  background-image:none!important;
+  color:#fff!important;
+  box-shadow:0 6px 16px rgba(49,88,214,.16)!important;
+}
+.quiz-finish-card .finish-actions #backToSettings.finish-settings-button:hover{
+  border-color:#294bc0!important;
+  background:#294bc0!important;
+  color:#fff!important;
+}
 @media(max-width:760px){.history-row{grid-template-columns:1fr}.history-row small{margin-top:-6px}}
 
 .history-empty{padding:14px;border:1px dashed var(--line);border-radius:10px;color:var(--muted);background:var(--surface)}
