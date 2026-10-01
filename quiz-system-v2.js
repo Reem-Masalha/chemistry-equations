@@ -83,7 +83,7 @@ const questions={
 }
 const state={difficulty:'easy',experience:'practice',type:'choice',timed:false,time:300,index:0,score:0,correct:0,answers:[],items:[],timer:null,running:false};
 function currentUser(){try{return JSON.parse(localStorage.getItem('chemistryCurrentUser')||sessionStorage.getItem('chemistryCurrentUser')||'null')}catch{return null}}
-function statKey(){const u=currentUser();return 'chemistryQuizStats:'+(u?.id||u?.username||'guest')}
+function statKey(){const u=currentUser();return 'chemistryQuizStats:'+(u?.id||u?.username||'guest')}\nfunction historyKeys(){const keys=['chemistryQuizHistory:guest'];const u=currentUser();if(u?.id!=null&&String(u.id))keys.push('chemistryQuizHistory:'+String(u.id));if(u?.username)keys.push('chemistryQuizHistory:'+String(u.username));return [...new Set(keys)]}
 function statKeys(){
  const u=currentUser();
  if(!u)return ['chemistryQuizStats:guest'];
@@ -105,7 +105,7 @@ function readStats(){
      merged.best=Math.max(merged.best||0,s.best||0);
      if(Array.isArray(s.history))all.push(...s.history);
    });
-   const seen=new Set();
+   const storedHistory=[];[...historyKeys(),'chemistryQuizHistory:guest'].forEach(k=>{try{const raw=localStorage.getItem(k);if(raw){const p=JSON.parse(raw);if(Array.isArray(p))storedHistory.push(...p)}}catch{}});try{const raw=sessionStorage.getItem('chemistryQuizHistory:guest');if(raw){const p=JSON.parse(raw);if(Array.isArray(p))storedHistory.push(...p)}}catch{}all.push(...storedHistory);\n   const seen=new Set();
    merged.history=all.filter(h=>{const id=String(h?.date||'')+'|'+String(h?.difficulty||'')+'|'+String(h?.score||'')+'|'+String(h?.answered||'');if(seen.has(id))return false;seen.add(id);return true}).sort((a,b)=>String(b.date||'').localeCompare(String(a.date||''))).slice(0,20);
    return merged;
  }catch{return emptyStats()}
@@ -117,14 +117,12 @@ function saveStats(score,correct,answered){
  s.answered=(s.answered||0)+answered;
  s.best=Math.max(s.best||0,score);
  s.history=Array.isArray(s.history)?s.history:[];
- if(answered)s.history.unshift({date:new Date().toISOString(),difficulty:state.difficulty,experience:state.experience,type:state.type,score,correct,answered,accuracy:Math.round(correct/answered*100),time:state.time});
- s.history=s.history.slice(0,20);
- try{
-  const key=statKey();
-  const payload=JSON.stringify(s);
-  localStorage.setItem(key,payload);
-  if(currentUser() && sessionStorage.getItem('chemistryCurrentUser') && !localStorage.getItem('chemistryCurrentUser')) sessionStorage.setItem(key,payload);
-}catch{}
+ if(answered){
+  const entry={date:new Date().toISOString(),difficulty:state.difficulty,experience:state.experience,type:state.type,score,correct,answered,accuracy:Math.round(correct/answered*100),time:state.time};
+  s.history.unshift(entry);s.history=s.history.slice(0,20);
+  try{const payload=JSON.stringify(s.history);historyKeys().forEach(k=>{try{localStorage.setItem(k,payload)}catch{}});try{sessionStorage.setItem('chemistryQuizHistory:guest',payload)}catch{}}catch{}
+ }
+ try{localStorage.setItem(statKey(),JSON.stringify(s))}catch{}
  return s
 }
 function renderHistory(){
@@ -161,7 +159,7 @@ function saveMastery(answers){
    x.answered++;if(a.ok)x.correct++;
    m[a.category]=x;
  });
- localStorage.setItem(statKey()+':mastery',JSON.stringify(m));
+ try{localStorage.setItem(statKey()+':mastery',JSON.stringify(m))}catch{}
  return m;
 }
 function masteryStatus(stats){
