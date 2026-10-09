@@ -98,13 +98,15 @@ function readStats(){
  try{
    const merged=emptyStats(),all=[];
    statKeys().forEach(k=>{
-     const raw=localStorage.getItem(k);if(!raw)return;
-     const s=JSON.parse(raw);
-     merged.sessions=Math.max(merged.sessions||0,s.sessions||0);
-     merged.correct+=(s.correct||0);
-     merged.answered+=(s.answered||0);
-     merged.best=Math.max(merged.best||0,s.best||0);
-     if(Array.isArray(s.history))all.push(...s.history);
+     try{
+       const raw=localStorage.getItem(k);if(!raw)return;
+       const s=JSON.parse(raw);if(!s||typeof s!=='object')return;
+       merged.sessions=Math.max(merged.sessions||0,Number(s.sessions)||0);
+       merged.correct+=Number(s.correct)||0;
+       merged.answered+=Number(s.answered)||0;
+       merged.best=Math.max(merged.best||0,Number(s.best)||0);
+       if(Array.isArray(s.history))all.push(...s.history);
+     }catch{}
    });
    const storedHistory=[];[...historyKeys(),'chemistryQuizHistory:guest'].forEach(k=>{try{const raw=localStorage.getItem(k);if(raw){const p=JSON.parse(raw);if(Array.isArray(p))storedHistory.push(...p)}}catch{}});try{const raw=sessionStorage.getItem('chemistryQuizHistory:guest');if(raw){const p=JSON.parse(raw);if(Array.isArray(p))storedHistory.push(...p)}}catch{}all.push(...storedHistory);
    const seen=new Set();
