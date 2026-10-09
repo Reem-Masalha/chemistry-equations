@@ -44,7 +44,7 @@ function guardQuizProgress(){
    const question=area.querySelector('.practice-question-card');
    if(question){
      const meta=question.querySelector('.practice-question-meta')?.textContent||'';
-     const match=meta.match(/Question\\s+(\\d+)\\s*\\/\\s*(\\d+)/i);
+     const match=meta.match(/Question\s+(\d+)\s*\/\s*(\d+)/i);
      const current=match?Number(match[1]):1;
      const total=match?Number(match[2]):1;
      score.innerHTML=`<div class="practice-live-stats quiz-live-progress"><div><b>${current}</b><span>Question</span></div><div><b>${total}</b><span>Total</span></div></div>`;
