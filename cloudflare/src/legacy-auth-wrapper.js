@@ -188,10 +188,15 @@ async function signInLegacy(request, env) {
 
   let ok = false;
 
+  // First verify the current salted-SHA256 format. If that fails, try the
+  // legacy encoded formats even when password_salt is populated: older
+  // PBKDF2 accounts may have both an embedded salt and a separate column.
   if (user.password_salt) {
     const expected = await sha256Hex(String(user.password_salt) + ':' + password);
     ok = safeEqual(expected, user.password_hash);
-  } else {
+  }
+
+  if (!ok) {
     ok = await legacyMatch(password, user);
   }
 
