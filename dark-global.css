@@ -27,3 +27,10 @@ html body.dark .nav-group-menu a{color:var(--text)!important}
 html body.dark .nav-group-menu a:hover{background:rgba(49,88,214,.14)!important}
 html body.dark .note{background:var(--surface)!important;color:var(--text)!important;border-color:var(--line)!important}
 html body.dark .privacy{color:var(--muted)!important}
+
+/* Account dashboard surfaces must follow the selected theme. */
+html body.dark .dashboard-card{background:var(--surface)!important;color:var(--text)!important;border-color:var(--line)!important}
+html body.dark .profile-level{background:#1c2a48!important;color:#b9caff!important}
+html body.dark .stage-pill{background:#1c2a48!important;color:#b9caff!important}
+html body.dark .recent-quiz,html body.dark .weak{color:var(--text)!important;border-color:var(--line)!important}
+html body.dark .profile-table td{color:var(--text)!important;border-color:var(--line)!important}
