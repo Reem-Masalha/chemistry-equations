@@ -65,7 +65,8 @@ const questions={
   {category:'already-balanced equations',raw:'2H2 + O2 → 2H2O',solution:'2H2 + O2 → 2H2O',hint:'It is already balanced; keep the smallest coefficients.'},
   {category:'already-balanced equations',raw:'Fe2O3 + 3CO → 2Fe + 3CO2',solution:'Fe2O3 + 3CO → 2Fe + 3CO2',hint:'Every element already has equal counts.'}
  ]
-}function selectQuestionMix(bank,count=8){
+};
+function selectQuestionMix(bank,count=8){
  const byCategory={};
  bank.forEach(q=>(byCategory[q.category]||(byCategory[q.category]=[])).push(q));
  Object.values(byCategory).forEach(list=>list.sort(()=>Math.random()-.5));
