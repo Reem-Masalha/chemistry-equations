@@ -7,10 +7,21 @@ function read(){try{const x=JSON.parse(localStorage.getItem(HISTORY_KEY)||'[]');
 function write(list){try{localStorage.setItem(HISTORY_KEY,JSON.stringify(list.slice(0,20)))}catch{}}
 function collectExisting(){
  const out=read();
- const keys=['chemistryQuizHistory:guest'];
- try{const u=JSON.parse(localStorage.getItem('chemistryCurrentUser')||sessionStorage.getItem('chemistryCurrentUser')||'null');if(u?.id)keys.push('chemistryQuizHistory:'+u.id);if(u?.username)keys.push('chemistryQuizHistory:'+u.username)}catch{}
- keys.forEach(k=>{try{const x=JSON.parse(localStorage.getItem(k)||'[]');if(Array.isArray(x))out.push(...x)}catch{}});
- const seen=new Set();const merged=out.filter(h=>{const k=[h?.date,h?.difficulty,h?.experience,h?.score,h?.answered].join('|');if(seen.has(k))return false;seen.add(k);return true}).sort((a,b)=>String(b?.date||'').localeCompare(String(a?.date||''))).slice(0,20);
+ const keys=['chemistryQuizHistory:guest','chemistryQuizStats:guest'];
+ try{
+  const u=JSON.parse(localStorage.getItem('chemistryCurrentUser')||sessionStorage.getItem('chemistryCurrentUser')||'null');
+  if(u?.id){keys.push('chemistryQuizHistory:'+u.id,'chemistryQuizStats:'+u.id)}
+  if(u?.username){keys.push('chemistryQuizHistory:'+u.username,'chemistryQuizStats:'+u.username)}
+ }catch{}
+ keys.forEach(k=>{try{
+  const raw=localStorage.getItem(k);if(!raw)return;
+  const x=JSON.parse(raw);
+  if(Array.isArray(x))out.push(...x);
+  else if(Array.isArray(x?.history))out.push(...x.history);
+ }catch{}});
+ try{const x=JSON.parse(sessionStorage.getItem('chemistryQuizHistory:guest')||'[]');if(Array.isArray(x))out.push(...x)}catch{}
+ const seen=new Set();
+ const merged=out.filter(h=>{const k=[h?.date,h?.difficulty,h?.experience,h?.score,h?.answered].join('|');if(seen.has(k))return false;seen.add(k);return true}).sort((a,b)=>String(b?.date||'').localeCompare(String(a?.date||''))).slice(0,20);
  write(merged);return merged;
 }
 function render(){
@@ -59,4 +70,28 @@ function init(){
  const score=$('scoreArea');if(score)new MutationObserver(guardQuizProgress).observe(score,{childList:true,subtree:true,characterData:true});
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
+
+/* Last-pass guard: during a quiz, progress may show question position only. */
+function enforceFinalOnlyQuizFeedback(){
+ const area=$('quizArea'),score=$('scoreArea');
+ if(!area||!score||document.querySelector('.quiz-finish-card'))return;
+ const question=area.querySelector('.practice-question-card');
+ if(!question)return;
+ const title=($('quizTitle')?.textContent||'').trim().toLowerCase();
+ const quizSelected=document.querySelector('input[name="experience"][value="quiz"]')?.checked;
+ if(!quizSelected&&!title.includes('quiz'))return;
+ const meta=question.querySelector('.practice-question-meta')?.textContent||'';
+ const match=meta.match(/Question\s+(\d+)\s*\/\s*(\d+)/i);
+ const current=match?Number(match[1]):1,total=match?Number(match[2]):1;
+ const desired='<div class="practice-live-stats quiz-live-progress"><div><b>'+current+'</b><span>Question</span></div><div><b>'+total+'</b><span>Total</span></div></div>';
+ if(score.innerHTML!==desired)score.innerHTML=desired;
+}
+
+function initFinalGuards(){
+ const area=$('quizArea'),score=$('scoreArea');
+ if(area)new MutationObserver(()=>{capture();enforceFinalOnlyQuizFeedback()}).observe(area,{childList:true,subtree:true});
+ if(score)new MutationObserver(enforceFinalOnlyQuizFeedback).observe(score,{childList:true,subtree:true,characterData:true});
+ enforceFinalOnlyQuizFeedback();
+}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',initFinalGuards,{once:true});else initFinalGuards();
 })();
