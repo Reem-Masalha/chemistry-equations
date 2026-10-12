@@ -63,7 +63,27 @@ async function legacyMatch(password, user) {
   // Older accounts use PBKDF2-SHA256 encoded as
   // scheme$iterations$salt$hex_digest. Support both observed legacy
   // schemes, using the salt embedded in the encoded hash.
-  const pbkdfParts = stored.split('
+  const pbkdfParts = stored.split('$');
+  if (
+    pbkdfParts.length === 4 &&
+    ['pbkdf2', 'pbkdf2_sha256'].includes(pbkdfParts[0].toLowerCase()) &&
+    /^\d+$/.test(pbkdfParts[1]) &&
+    pbkdfParts[2].length > 0 &&
+    /^[a-f0-9]{64}$/i.test(pbkdfParts[3])
+  ) {
+    const iterations = Number(pbkdfParts[1]);
+    if (Number.isSafeInteger(iterations) && iterations >= 1 && iterations <= 1000000) {
+      const embeddedSalt = pbkdfParts[2];
+      const expectedPbkdf = pbkdfParts[3].toLowerCase();
+      const exactPassword = String(password);
+      const trimmedPassword = exactPassword.trim();
+      if (safeEqual(await pbkdf2Hex(exactPassword, embeddedSalt, iterations), expectedPbkdf)) return true;
+      if (trimmedPassword !== exactPassword &&
+          safeEqual(await pbkdf2Hex(trimmedPassword, embeddedSalt, iterations), expectedPbkdf)) return true;
+    }
+    return false;
+  }
+
   const parts = stored.split('$');
   if (parts.length !== 3) return false;
 
