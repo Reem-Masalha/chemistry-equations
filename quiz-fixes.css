@@ -1,1 +1,24 @@
 .quiz-settings{align-items:start!important}.quiz-settings>.card:first-child{align-self:start!important;height:max-content!important;min-height:0!important}.quiz-settings .stage-list{height:auto!important;min-height:0!important;margin-bottom:0!important}.quiz-settings .stage{height:auto!important;min-height:0!important}.quiz-actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.quiz-empty-state{padding:24px 16px;text-align:center;color:var(--muted);border:1px dashed var(--line);border-radius:14px;background:var(--surface)}.quiz-finish-card{padding:24px;border:1px solid var(--line);border-radius:16px;background:var(--surface);box-shadow:var(--shadow);text-align:center}.finish-icon{font-size:34px}.quiz-finish-card h2{margin:8px 0}.finish-score{margin:18px 0}.finish-score b{display:block;font-size:46px;line-height:1}.finish-score span{color:var(--muted)}.finish-actions{display:flex;justify-content:center;gap:9px;flex-wrap:wrap}.finish-settings-button,.quiz-finish-card .finish-settings-button{background:var(--accent)!important;border:1px solid var(--accent)!important;color:#fff!important;opacity:1!important}.finish-settings-button:hover,.finish-settings-button:focus,.finish-settings-button:active{background:var(--accent)!important;color:#fff!important}.hidden{display:none!important}@media(max-width:760px){.quiz-settings>.card:first-child{width:100%}.finish-actions>*{width:100%}}
+/* Personal quiz regression fixes: keep the final action legible and the language selector unclipped. */
+#quizArea .quiz-finish-card .finish-actions #backToSettings,
+#quizArea .quiz-finish-card .finish-actions #backToSettings:visited,
+#quizArea .quiz-finish-card .finish-actions #backToSettings:hover,
+#quizArea .quiz-finish-card .finish-actions #backToSettings:focus,
+#quizArea .quiz-finish-card .finish-actions #backToSettings:active{
+ appearance:none!important;-webkit-appearance:none!important;
+ background:var(--accent,#3158d6)!important;background-color:var(--accent,#3158d6)!important;background-image:none!important;
+ border:1px solid var(--accent,#3158d6)!important;color:#fff!important;-webkit-text-fill-color:#fff!important;
+ opacity:1!important;visibility:visible!important;
+}
+#topbarControls,#topbarControls .site-language-control{flex-shrink:0!important;min-width:max-content!important;overflow:visible!important;box-sizing:border-box!important}
+#topbarControls .site-language-control select{
+ display:inline-block!important;flex:0 0 auto!important;box-sizing:border-box!important;
+ min-width:86px!important;width:auto!important;max-width:120px!important;
+ white-space:nowrap!important;overflow:visible!important;
+}
+@media(max-width:760px){
+ #topbarControls{gap:4px!important;max-width:none!important}
+ #topbarControls .site-language-control select{min-width:78px!important;width:78px!important;max-width:78px!important;font-size:10px!important;padding:3px 2px!important}
+ .topbar.topbar{overflow:visible!important}
+ .topbar.topbar>.topbar-controls{overflow:visible!important}
+}
