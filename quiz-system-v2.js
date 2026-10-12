@@ -116,15 +116,17 @@ function readStats(){
 }
 function saveStats(score,correct,answered){
  const s=readStats();
- s.sessions=(s.sessions||0)+(answered?1:0);
- s.correct=(s.correct||0)+correct;
- s.answered=(s.answered||0)+answered;
- s.best=Math.max(s.best||0,score);
+ s.sessions=(Number(s.sessions)||0)+(answered?1:0);
+ s.correct=(Number(s.correct)||0)+correct;
+ s.answered=(Number(s.answered)||0)+answered;
+ s.best=Math.max(Number(s.best)||0,score);
  s.history=Array.isArray(s.history)?s.history:[];
  if(answered){
   const entry={date:new Date().toISOString(),difficulty:state.difficulty,experience:state.experience,type:state.type,score,correct,answered,accuracy:Math.round(correct/answered*100),time:state.time};
   s.history.unshift(entry);s.history=s.history.slice(0,20);
-  try{const payload=JSON.stringify(s.history);historyKeys().forEach(k=>{try{localStorage.setItem(k,payload)}catch{}});try{sessionStorage.setItem('chemistryQuizHistory:guest',payload)}catch{}}catch{}
+  const payload=JSON.stringify(s.history);
+  [...new Set([...historyKeys(),'chemistryQuizHistory:guest'])].forEach(k=>{try{localStorage.setItem(k,payload)}catch{}});
+  try{sessionStorage.setItem('chemistryQuizHistory:guest',payload)}catch{}
  }
  try{localStorage.setItem(statKey(),JSON.stringify(s))}catch{}
  return s
