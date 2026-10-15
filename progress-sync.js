@@ -14,7 +14,7 @@ function mergeProgress(local,remote){
  }
  const la=Date.parse(a.updatedAt||0)||0,ra=Date.parse(b.updatedAt||0)||0;
  out.current=(la>=ra?a.current:b.current)||a.current||b.current||null;
- out.updatedAt=new Date(Math.max(la,ra,Date.now())).toISOString();
+ out.updatedAt=new Date(Math.max(la,ra)||Date.now()).toISOString();
  return out;
 }
 let ready=false, syncPromise=null, pending=null;
@@ -47,6 +47,11 @@ async function sync(){
    const latestLocal=read();
    if(Date.parse(latestLocal.updatedAt||0)>Date.parse(merged.updatedAt||0))merged=mergeProgress(latestLocal,merged);
    writeLocal(merged);ready=true;updateResume(merged);
+   const path=(location.pathname||'').split('/').pop()||'';
+   const pageLevel=path.startsWith('beginner-lessons')?'beginner':path.startsWith('intermediate-lessons')?'intermediate':path.startsWith('advanced-lessons')?'advanced':null;
+   if(pageLevel&&merged.current?.level===pageLevel&&!new URLSearchParams(location.search).has('lesson')){
+    const url=new URL(location.href);url.searchParams.set('lesson',String(Math.max(1,Number(merged.current.index)||0)+1));history.replaceState(null,'',url);
+   }
    window.dispatchEvent(new CustomEvent('chemistry:progress-restored',{detail:merged}));
    await post(merged);
    if(pending){const p=pending;pending=null;await post(p)}
