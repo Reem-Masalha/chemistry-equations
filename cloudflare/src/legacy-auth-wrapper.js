@@ -14,6 +14,82 @@ function json(data, status = 200) {
   return new Response(JSON.stringify(data), { status, headers: CORS });
 }
 
+async function createSession(env, userId) {
+  const token = crypto.randomUUID() + '.' + crypto.randomUUID();
+  const now = new Date();
+  const expires = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
+  const tokenHash = await sha256Hex(token);
+  await env.DB.prepare(
+    'INSERT INTO sessions (id,user_id,token_hash,created_at,expires_at) VALUES (?,?,?,?,?)'
+  ).bind(crypto.randomUUID(), String(userId), tokenHash, now.toISOString(), expires.toISOString()).run();
+  return token;
+}
+
+async function authenticatedUser(request, env) {
+  const header = request.headers.get('authorization') || '';
+  const match = header.match(/^Bearer\s+(.+)$/i);
+  if (!match) return null;
+  const tokenHash = await sha256Hex(match[1].trim());
+  return env.DB.prepare(
+    'SELECT u.id,u.name,u.username,s.id AS session_id FROM sessions s JOIN users u ON u.id=s.user_id WHERE s.token_hash=? AND s.expires_at>? LIMIT 1'
+  ).bind(tokenHash, new Date().toISOString()).first();
+}
+
+async function signOut(request, env, all = false) {
+  const user = await authenticatedUser(request, env);
+  const header = request.headers.get('authorization') || '';
+  const match = header.match(/^Bearer\s+(.+)$/i);
+  if (!user || !match) return json({ error: 'Please sign in again.' }, 401);
+  if (all) {
+    await env.DB.prepare('DELETE FROM sessions WHERE user_id=?').bind(user.id).run();
+  } else {
+    await env.DB.prepare('DELETE FROM sessions WHERE id=?').bind(user.session_id).run();
+  }
+  return json({ ok: true });
+}
+
+async function handleProgress(request, env, method) {
+  const user = await authenticatedUser(request, env);
+  if (!user) return json({ error: 'Please sign in again to sync your progress.' }, 401);
+  if (method === 'GET') {
+    const row = await env.DB.prepare('SELECT progress_json,updated_at FROM user_progress WHERE user_id=?').bind(user.id).first();
+    let progress = null;
+    if (row?.progress_json) {
+      try { progress = JSON.parse(row.progress_json); } catch { progress = null; }
+    }
+    return json({ ok: true, progress, updatedAt: row?.updated_at || null });
+  }
+  const body = await request.json().catch(() => ({}));
+  const progress = body?.progress;
+  if (!progress || typeof progress !== 'object' || Array.isArray(progress)) {
+    return json({ error: 'A valid progress object is required.' }, 400);
+  }
+  const serialized = JSON.stringify(progress);
+  if (serialized.length > 100000) return json({ error: 'Progress data is too large.' }, 413);
+  const updatedAt = new Date().toISOString();
+  await env.DB.prepare(
+    'INSERT INTO user_progress (user_id,progress_json,updated_at) VALUES (?,?,?) ON CONFLICT(user_id) DO UPDATE SET progress_json=excluded.progress_json,updated_at=excluded.updated_at'
+  ).bind(user.id, serialized, updatedAt).run();
+  return json({ ok: true, updatedAt });
+}
+
+async function handleScores(request, env, method) {
+  const user = await authenticatedUser(request, env);
+  if (!user) return json({ error: 'Please sign in to access account scores.' }, 401);
+  if (method === 'GET') {
+    const rows = await env.DB.prepare('SELECT stage,score,total,created_at FROM scores WHERE user_id=? ORDER BY created_at DESC').bind(user.id).all();
+    return json({ scores: rows.results || [] });
+  }
+  const body = await request.json().catch(() => ({}));
+  const stage = String(body.stage || '').slice(0,80);
+  const score = Number(body.score), total = Number(body.total);
+  if (!stage || !Number.isFinite(score) || !Number.isInteger(total) || total < 1 || score < 0 || score > total) {
+    return json({ error: 'A valid stage, score, and total are required.' }, 400);
+  }
+  await env.DB.prepare('INSERT INTO scores (user_id,stage,score,total,created_at) VALUES (?,?,?,?,?)').bind(user.id,stage,score,total,new Date().toISOString()).run();
+  return json({ ok: true });
+}
+
 function safeEqual(a, b) {
   a = String(a ?? '').toLowerCase();
   b = String(b ?? '').toLowerCase();
@@ -214,7 +290,7 @@ async function signInLegacy(request, env) {
     WHERE id = ?
   `).bind(hash, salt, user.id).run();
 
-  const sessionToken = crypto.randomUUID() + '.' + crypto.randomUUID();
+  const sessionToken = await createSession(env, user.id);
   const safeUser = {
     id: user.id,
     name: user.name,
@@ -231,6 +307,41 @@ export default {
 
     if (request.method === 'OPTIONS') {
       return new Response(null, { status: 204, headers: CORS });
+    }
+
+    if (url.pathname === '/api/create-account' && request.method === 'POST') {
+      try {
+        const response = await original.fetch(request.clone(), env, ctx);
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok || !data.user?.id) return json(data, response.status);
+        const token = await createSession(env, data.user.id);
+        data.token = token;
+        data.user = { ...data.user, token };
+        return json(data, response.status);
+      } catch (e) {
+        console.error('Account creation/session error:', e);
+        return json({ error: 'Could not create a secure account session. You can try signing in.' }, 500);
+      }
+    }
+
+    if (url.pathname === '/api/progress' && (request.method === 'GET' || request.method === 'POST')) {
+      try { return await handleProgress(request, env, request.method); }
+      catch (e) { console.error('Progress sync error:', e); return json({ error: 'Could not sync learning progress.' }, 500); }
+    }
+
+    if (url.pathname === '/api/scores' && (request.method === 'GET' || request.method === 'POST')) {
+      try { return await handleScores(request, env, request.method); }
+      catch (e) { console.error('Score access error:', e); return json({ error: 'Could not access account scores.' }, 500); }
+    }
+
+    if (url.pathname === '/api/sign-out' && request.method === 'POST') {
+      try { return await signOut(request, env, false); }
+      catch (e) { console.error('Sign-out error:', e); return json({ error: 'Could not sign out.' }, 500); }
+    }
+
+    if (url.pathname === '/api/sign-out-all' && request.method === 'POST') {
+      try { return await signOut(request, env, true); }
+      catch (e) { console.error('Sign-out-all error:', e); return json({ error: 'Could not sign out all sessions.' }, 500); }
     }
 
     if (url.pathname === '/api/sign-in' && request.method === 'POST') {
