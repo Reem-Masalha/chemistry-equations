@@ -48,6 +48,48 @@ async function signOut(request, env, all = false) {
   return json({ ok: true });
 }
 
+async function verifyStoredPassword(env, userId, password) {
+  const user = await env.DB.prepare('SELECT id,password_hash,password_salt,username FROM users WHERE id=? LIMIT 1').bind(userId).first();
+  if (!user?.password_hash || !user?.password_salt) return false;
+  const expected = await sha256Hex(String(user.password_salt) + ':' + String(password));
+  if (safeEqual(expected, user.password_hash)) return true;
+  return legacyMatch(String(password), user);
+}
+
+async function changePassword(request, env) {
+  const user = await authenticatedUser(request, env);
+  if (!user) return json({ error: 'Please sign in again.' }, 401);
+  const body = await request.json().catch(() => ({}));
+  const currentPassword = String(body.currentPassword || '');
+  const newPassword = String(body.newPassword || '');
+  if (!currentPassword || !newPassword) return json({ error: 'Current and new passwords are required.' }, 400);
+  if (newPassword.length < 8) return json({ error: 'Password must be at least 8 characters.' }, 400);
+  if (newPassword !== String(body.confirmPassword || '')) return json({ error: 'Passwords do not match.' }, 400);
+  if (!await verifyStoredPassword(env, user.id, currentPassword)) return json({ error: 'Current password is incorrect.' }, 401);
+  const salt = crypto.randomUUID();
+  const hash = await sha256Hex(salt + ':' + newPassword);
+  await env.DB.prepare('UPDATE users SET password_hash=?,password_salt=? WHERE id=?').bind(hash, salt, user.id).run();
+  await env.DB.prepare('DELETE FROM sessions WHERE user_id=?').bind(user.id).run();
+  const token = await createSession(env, user.id);
+  return json({ ok: true, token });
+}
+
+async function deleteAccount(request, env) {
+  const user = await authenticatedUser(request, env);
+  if (!user) return json({ error: 'Please sign in again.' }, 401);
+  const body = await request.json().catch(() => ({}));
+  if (!body.password || !await verifyStoredPassword(env, user.id, String(body.password))) {
+    return json({ error: 'Password is incorrect.' }, 401);
+  }
+  await env.DB.batch([
+    env.DB.prepare('DELETE FROM scores WHERE user_id=?').bind(user.id),
+    env.DB.prepare('DELETE FROM user_progress WHERE user_id=?').bind(user.id),
+    env.DB.prepare('DELETE FROM sessions WHERE user_id=?').bind(user.id),
+    env.DB.prepare('DELETE FROM users WHERE id=?').bind(user.id)
+  ]);
+  return json({ ok: true });
+}
+
 async function handleProgress(request, env, method) {
   const user = await authenticatedUser(request, env);
   if (!user) return json({ error: 'Please sign in again to sync your progress.' }, 401);
@@ -332,6 +374,16 @@ export default {
     if (url.pathname === '/api/scores' && (request.method === 'GET' || request.method === 'POST')) {
       try { return await handleScores(request, env, request.method); }
       catch (e) { console.error('Score access error:', e); return json({ error: 'Could not access account scores.' }, 500); }
+    }
+
+    if (url.pathname === '/api/change-password' && request.method === 'POST') {
+      try { return await changePassword(request, env); }
+      catch (e) { console.error('Password change error:', e); return json({ error: 'Could not change the password.' }, 500); }
+    }
+
+    if (url.pathname === '/api/delete-account' && request.method === 'POST') {
+      try { return await deleteAccount(request, env); }
+      catch (e) { console.error('Account deletion error:', e); return json({ error: 'Could not delete the account.' }, 500); }
     }
 
     if (url.pathname === '/api/sign-out' && request.method === 'POST') {
