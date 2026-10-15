@@ -39,6 +39,10 @@ async function sync(){
  syncPromise=(async()=>{
   try{
    const r=await fetch(API+'/api/progress',{headers:{authorization:'Bearer '+u.token}});
+   if(r.status===401){
+    try{localStorage.removeItem('chemistryCurrentUser');sessionStorage.removeItem('chemistryCurrentUser');localStorage.removeItem('chemistryRememberMe')}catch{}
+    location.reload();return;
+   }
    if(!r.ok)return;
    const data=await r.json(),local=read(),remote=data.progress;
    let merged;
