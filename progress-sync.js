@@ -17,13 +17,17 @@ function mergeProgress(local,remote){
  out.updatedAt=new Date(Math.max(la,ra)||Date.now()).toISOString();
  return out;
 }
-let ready=false, syncPromise=null, pending=null;
-async function post(p){
- const u=current();if(!u?.token)return;
- try{
-  const r=await fetch(API+'/api/progress',{method:'POST',headers:{'content-type':'application/json','authorization':'Bearer '+u.token},body:JSON.stringify({progress:p}),keepalive:true});
+let ready=false, syncPromise=null, pending=null, saveQueue=Promise.resolve();
+function post(p){
+ const u=current();if(!u?.token)return Promise.resolve();
+ const payload=JSON.stringify({progress:p});
+ saveQueue=saveQueue.catch(()=>{}).then(async()=>{
+  const latest=current();if(!latest?.token)return;
+  const r=await fetch(API+'/api/progress',{method:'POST',headers:{'content-type':'application/json','authorization':'Bearer '+latest.token},body:payload,keepalive:true});
   if(!r.ok)throw new Error('progress save failed');
- }catch(e){pending=p;}
+  pending=null;
+ }).catch(()=>{pending=p});
+ return saveQueue;
 }
 function updateResume(p){
  const title=document.getElementById('resumeLearningTitle'),desc=document.getElementById('resumeLearningText'),btn=document.getElementById('resumeLearningButton');
