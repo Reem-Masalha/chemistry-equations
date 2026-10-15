@@ -350,3 +350,33 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
  function install(){if(document.getElementById(id))return;const s=document.createElement('style');s.id=id;s.textContent=css;document.head.appendChild(s)}
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install,{once:true});else install();
 })(); 
+
+
+/* Mobile header: reserve a full row for navigation so controls cannot be clipped. */
+(()=>{
+ 'use strict';
+ const id='chemistry-mobile-header-grid-fix';
+ const css=`
+@media(max-width:760px){
+ .topbar.topbar{display:grid!important;grid-template-columns:minmax(0,1fr) max-content!important;grid-template-areas:"brand controls" "nav nav"!important;align-items:center!important;gap:6px 8px!important;width:100%!important;min-width:0!important;box-sizing:border-box!important;overflow:visible!important;padding:10px 10px!important}
+ .topbar.topbar>.brand{grid-area:brand!important;min-width:0!important;max-width:100%!important;margin:0!important;overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important}
+ .topbar.topbar>.main-nav{grid-area:nav!important;display:flex!important;width:100%!important;min-width:0!important;max-width:100%!important;box-sizing:border-box!important;justify-content:flex-start!important;overflow-x:auto!important;overflow-y:hidden!important}
+ .topbar.topbar>.topbar-controls{grid-area:controls!important;justify-self:end!important;display:flex!important;width:max-content!important;min-width:0!important;max-width:100%!important;gap:3px!important;overflow:visible!important}
+ .topbar.topbar>.topbar-controls .site-language-control{display:inline-flex!important;flex:0 0 auto!important;width:auto!important;min-width:0!important;max-width:none!important;margin:0!important;overflow:visible!important}
+ .topbar.topbar>.topbar-controls .site-language-control select{box-sizing:border-box!important;width:86px!important;min-width:86px!important;max-width:86px!important;padding:3px 5px!important;font-size:11px!important}
+ .topbar.topbar>.topbar-controls #accountTopBtn,.topbar.topbar>.topbar-controls #themeToggle{flex:0 0 30px!important;width:30px!important;min-width:30px!important;max-width:30px!important;box-sizing:border-box!important;overflow:hidden!important;padding:4px 2px!important;font-size:0!important;text-align:center!important}
+ .topbar.topbar>.topbar-controls #accountTopBtn::before{content:'👤';font-size:14px!important}
+ .topbar.topbar>.topbar-controls #themeToggle::before{content:'🌙';font-size:14px!important}
+ body.dark .topbar.topbar>.topbar-controls #themeToggle::before{content:'☀️'}
+ .topbar.topbar>.topbar-controls #logoutTopBtn{display:none!important}
+}
+@media(max-width:360px){
+ .topbar.topbar{padding-left:7px!important;padding-right:7px!important;gap:5px 5px!important}
+ .topbar.topbar>.brand{font-size:11px!important}
+ .topbar.topbar>.topbar-controls .site-language-control select{width:80px!important;min-width:80px!important;max-width:80px!important;font-size:10px!important}
+ .topbar.topbar>.topbar-controls{gap:2px!important}
+}
+`;
+ function install(){if(document.getElementById(id))return;const s=document.createElement('style');s.id=id;s.textContent=css;document.head.appendChild(s)}
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install,{once:true});else install();
+})();
