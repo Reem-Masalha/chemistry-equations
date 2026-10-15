@@ -310,3 +310,43 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});
  else start();
 })();
+
+/* Compact mobile header: reserve enough width for the complete language name. */
+(()=>{
+ 'use strict';
+ const id='chemistry-language-control-width-fix';
+ const css=`
+@media(max-width:520px){
+ .topbar.topbar>.topbar-controls{gap:4px!important;min-width:0!important}
+ .topbar.topbar>.topbar-controls .site-language-control{flex:0 0 auto!important;width:auto!important;max-width:none!important}
+ .topbar.topbar>.topbar-controls .site-language-control select{
+   box-sizing:border-box!important;
+   width:86px!important;
+   min-width:86px!important;
+   max-width:86px!important;
+   padding:3px 5px!important;
+   font-size:11px!important;
+   overflow:visible!important;
+ }
+ .topbar.topbar>.topbar-controls #logoutTopBtn{display:none!important}
+ .topbar.topbar>.topbar-controls #accountTopBtn{
+   box-sizing:border-box!important;width:30px!important;min-width:30px!important;max-width:30px!important;
+   overflow:hidden!important;font-size:0!important;padding:5px 3px!important;text-align:center!important;
+ }
+ .topbar.topbar>.topbar-controls #accountTopBtn::before{content:'👤';font-size:14px!important}
+ .topbar.topbar>.topbar-controls #themeToggle{
+   box-sizing:border-box!important;width:30px!important;min-width:30px!important;max-width:30px!important;
+   overflow:hidden!important;font-size:0!important;padding:4px!important;text-align:center!important;
+ }
+ .topbar.topbar>.topbar-controls #themeToggle::before{content:'🌙';font-size:14px!important}
+ body.dark .topbar.topbar>.topbar-controls #themeToggle::before{content:'☀️'}
+}
+@media(max-width:360px){
+ .topbar.topbar>.brand{font-size:11px!important;gap:2px!important}
+ .topbar.topbar>.topbar-controls .site-language-control select{width:82px!important;min-width:82px!important;max-width:82px!important;font-size:10px!important}
+ .topbar.topbar>.topbar-controls{gap:3px!important}
+}
+`;
+ function install(){if(document.getElementById(id))return;const s=document.createElement('style');s.id=id;s.textContent=css;document.head.appendChild(s)}
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install,{once:true});else install();
+})(); 
