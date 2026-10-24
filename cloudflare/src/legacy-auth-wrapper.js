@@ -121,6 +121,29 @@ async function changePassword(request, env) {
   return json({ ok: true, token });
 }
 
+async function adminResetPassword(request, env) {
+  const key = request.headers.get('x-admin-key') || '';
+  if (!env.ADMIN_KEY) return json({ error: 'ADMIN_KEY is not configured on the Cloudflare Worker.' }, 500);
+  if (!key || !safeEqual(key, env.ADMIN_KEY)) return json({ error: 'Incorrect admin key.' }, 401);
+
+  const body = await request.json().catch(() => ({}));
+  const username = String(body.username || '').trim().toLowerCase();
+  const newPassword = String(body.newPassword || '');
+  if (!username) return json({ error: 'Username is required.' }, 400);
+  if (newPassword.length < 8) return json({ error: 'Password must be at least 8 characters.' }, 400);
+
+  const user = await env.DB.prepare('SELECT id FROM users WHERE username=? LIMIT 1').bind(username).first();
+  if (!user) return json({ error: 'No account was found with that username.' }, 404);
+
+  const salt = crypto.randomUUID();
+  const hash = await sha256Hex(salt + ':' + newPassword);
+  await env.DB.batch([
+    env.DB.prepare('UPDATE users SET password_hash=?,password_salt=?,recovery_code_hash=NULL,recovery_code_expires_at=NULL WHERE id=?').bind(hash, salt, user.id),
+    env.DB.prepare('DELETE FROM sessions WHERE user_id=?').bind(user.id)
+  ]);
+  return json({ ok: true, message: 'Password reset successfully. The user can now sign in with the new password.' });
+}
+
 async function deleteAccount(request, env) {
   const user = await authenticatedUser(request, env);
   if (!user) return json({ error: 'Please sign in again.' }, 401);
@@ -438,6 +461,11 @@ export default {
     if (url.pathname === '/api/change-password' && request.method === 'POST') {
       try { return await changePassword(request, env); }
       catch (e) { console.error('Password change error:', e); return json({ error: 'Could not change the password.' }, 500); }
+    }
+
+    if (url.pathname === '/api/admin/reset-password' && request.method === 'POST') {
+      try { return await adminResetPassword(request, env); }
+      catch (e) { console.error('Admin password reset error:', e); return json({ error: 'Could not reset the password.' }, 500); }
     }
 
     if (url.pathname === '/api/delete-account' && request.method === 'POST') {
