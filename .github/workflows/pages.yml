@@ -247,6 +247,7 @@ jobs:
           node --check _site/nav-global.js
 
           node --test _site/cloudflare/tests/progress-sync.test.mjs
+          node --test _site/cloudflare/tests/i18n-coverage.test.mjs
 
           python3 - <<'PY'
           import pathlib, xml.etree.ElementTree as ET
