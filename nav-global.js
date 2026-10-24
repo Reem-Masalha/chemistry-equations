@@ -36,10 +36,11 @@ style.textContent=`
   .topbar.topbar>.brand{font-size:14px!important;flex:0 1 auto!important}
   .topbar.topbar>.main-nav.main-nav{order:3!important;flex:1 0 100%!important;width:100%!important;max-width:none!important;gap:2px!important;padding:3px 0 1px!important;justify-content:flex-start!important}
   .topbar.topbar>.main-nav.main-nav>a{font-size:10px!important;padding:6px 5px!important}
-  .topbar.topbar>.topbar-controls{order:2!important;gap:2px!important;margin-left:auto!important}
-  #themeToggle{font-size:10px!important;padding:6px 5px!important;min-height:32px!important}
-  #site-language-control{font-size:10px!important}
-  #site-language-control select{width:58px!important;max-width:58px!important}
+  .topbar.topbar>.topbar-controls{order:2!important;flex:0 0 100%!important;width:100%!important;max-width:100%!important;box-sizing:border-box!important;justify-content:flex-end!important;gap:6px!important;margin:0!important;min-width:0!important;overflow:visible!important}
+  .topbar.topbar>.topbar-controls #accountTopBtn,.topbar.topbar>.topbar-controls #logoutTopBtn{max-width:42vw!important;overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important;font-size:10px!important;padding:6px 7px!important}
+  #themeToggle{font-size:10px!important;padding:6px 6px!important;min-height:32px!important;flex:0 0 auto!important}
+  #site-language-control{font-size:10px!important;flex:0 0 auto!important;max-width:none!important}
+  #site-language-control select{width:70px!important;max-width:70px!important}
 }
 `;
 document.head.appendChild(style);
@@ -49,4 +50,14 @@ function normalize(){const nav=document.querySelector('.main-nav');if(!nav)retur
 function run(){flatten();controls();normalize();}
 run();
 window.addEventListener('resize',normalize,{passive:true});
+/* The language selector and account controls are created by deferred scripts on some pages.
+   Re-run only when a control exists outside the shared controls container. */
+const controlObserver=new MutationObserver(()=>{
+ const top=document.querySelector('.topbar'),box=document.getElementById('topbarControls');
+ if(!top||!box)return;
+ const needs=['accountTopBtn','logoutTopBtn','site-language-control'].some(id=>{const el=document.getElementById(id);return !!el&&el.parentElement!==box;});
+ if(needs){controls();normalize();}
+});
+if(document.body)controlObserver.observe(document.body,{childList:true,subtree:true});
+document.addEventListener('DOMContentLoaded',run,{once:true});
 })();
