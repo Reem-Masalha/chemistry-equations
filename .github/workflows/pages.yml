@@ -163,6 +163,8 @@ jobs:
           node --check _site/search-fix-20260908.js
           node --check _site/nav-global.js
 
+          node --test _site/cloudflare/tests/progress-sync.test.mjs
+
           printf '%s\n' "$GITHUB_SHA" > _site/DEPLOYMENT_COMMIT.txt
           printf 'chemistry-equations-pages-%s\n' "$GITHUB_SHA" > _site/SITE_BUILD_VERSION.txt
           echo "PAGES_SOURCE_COMMIT=$GITHUB_SHA"
