@@ -161,6 +161,51 @@ jobs:
           PY
 
           python3 - <<'PY'
+          import html.parser, pathlib
+          root = pathlib.Path('_site')
+          failures = []
+          class AccessibilityBasics(html.parser.HTMLParser):
+              def __init__(self, page):
+                  super().__init__()
+                  self.page = page
+                  self.lang = ''
+                  self.title = ''
+                  self.in_title = False
+                  self.viewport = False
+                  self.main_count = 0
+                  self.meta_refresh = False
+                  self.images_missing_alt = []
+              def handle_starttag(self, tag, attrs):
+                  attrs = dict(attrs)
+                  if tag == 'html': self.lang = (attrs.get('lang') or '').strip()
+                  elif tag == 'title': self.in_title = True
+                  elif tag == 'meta':
+                      if (attrs.get('name') or '').lower() == 'viewport': self.viewport = True
+                      if (attrs.get('http-equiv') or '').lower() == 'refresh': self.meta_refresh = True
+                  elif tag == 'main': self.main_count += 1
+                  elif tag == 'img' and 'alt' not in attrs: self.images_missing_alt.append(attrs.get('src', '(no src)'))
+              def handle_endtag(self, tag):
+                  if tag == 'title': self.in_title = False
+              def handle_data(self, data):
+                  if self.in_title: self.title += data
+          for page in sorted(root.glob('*.html')):
+              audit = AccessibilityBasics(page)
+              audit.feed(page.read_text(encoding='utf-8', errors='ignore'))
+              name = str(page.relative_to(root))
+              if not audit.lang: failures.append(f'{name}: missing html lang attribute')
+              if not audit.title.strip(): failures.append(f'{name}: missing or empty title')
+              if not audit.viewport: failures.append(f'{name}: missing viewport metadata')
+              # quiz.html is an intentional immediate redirect to personal-quiz.html.
+              if audit.main_count != 1 and not (name == 'quiz.html' and audit.meta_refresh and audit.main_count == 0):
+                  failures.append(f'{name}: expected one main landmark, found {audit.main_count}')
+              for src in audit.images_missing_alt:
+                  failures.append(f'{name}: image missing alt attribute ({src})')
+          if failures:
+              raise SystemExit('HTML accessibility/structure checks failed:\\n  ' + '\\n  '.join(failures))
+          print(f'Validated language, title, viewport, main landmark and image alt attributes across {len(list(root.glob("*.html")))} HTML pages')
+          PY
+
+          python3 - <<'PY'
           import pathlib, re
           root=pathlib.Path('_site')
           scripts=set()
