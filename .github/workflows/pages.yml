@@ -123,6 +123,44 @@ jobs:
           test -s _site/cache-bust.js
 
           python3 - <<'PY'
+          import html.parser, pathlib, re
+          from urllib.parse import unquote, urlsplit
+          root = pathlib.Path('_site')
+          refs = []
+          class RefParser(html.parser.HTMLParser):
+              def __init__(self, page):
+                  super().__init__()
+                  self.page = page
+              def handle_starttag(self, tag, attrs):
+                  for key, value in attrs:
+                      if key in ('href', 'src') and value:
+                          refs.append((self.page, key, value.strip()))
+          for page in sorted(root.glob('*.html')):
+              parser = RefParser(page)
+              parser.feed(page.read_text(encoding='utf-8', errors='ignore'))
+          missing = []
+          for page, attr, raw in refs:
+              parts = urlsplit(raw)
+              if parts.scheme or parts.netloc or raw.startswith('#') or parts.path == '':
+                  continue
+              path = unquote(parts.path)
+              if path.startswith('/'):
+                  path = path.lstrip('/')
+                  if path.startswith('chemistry-equations/'):
+                      path = path[len('chemistry-equations/'):]
+              target = (root / path).resolve()
+              if not target.is_relative_to(root.resolve()):
+                  continue
+              if path.endswith('/'):
+                  target = target / 'index.html'
+              if not target.is_file():
+                  missing.append(f'{page.relative_to(root)} [{attr}="{raw}"]')
+          if missing:
+              raise SystemExit('Broken local HTML references:\\n  ' + '\\n  '.join(missing))
+          print(f'Validated {len(refs)} local and external href/src references across HTML pages')
+          PY
+
+          python3 - <<'PY'
           import pathlib, re
           root=pathlib.Path('_site')
           scripts=set()
