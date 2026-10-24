@@ -5,7 +5,7 @@ function corsHeaders() {
     'content-type': 'application/json; charset=UTF-8',
     'access-control-allow-origin': '*',
     'access-control-allow-methods': 'GET,POST,OPTIONS',
-    'access-control-allow-headers': 'content-type,x-admin-key',
+    'access-control-allow-headers': 'content-type,authorization,x-admin-key',
     'access-control-max-age': '86400',
   };
 }
