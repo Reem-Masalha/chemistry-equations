@@ -50,7 +50,7 @@ const expandedRuntime = readFileSync(new URL('lesson-content-i18n.js', root), 'u
 
 test('expanded translation runtime parses and contains lesson, quiz, and account coverage', () => {
   assert.doesNotThrow(() => Function(expandedRuntime), 'expanded translation runtime must parse');
-  const match = expandedRuntime.match(/const rows=(\\[[\\s\\S]*?\\]);const M=/);
+  const match = expandedRuntime.match(/const rows=(\[[\s\S]*?\]);const M=/);
   assert.ok(match, 'translation rows must be extractable for coverage checks');
   const rows = JSON.parse(match[1]);
   const dictionary = new Map(rows.map(row => [row[0], row]));
@@ -70,7 +70,7 @@ test('expanded translation runtime parses and contains lesson, quiz, and account
     assert.ok(row, 'missing expanded translation entry: ' + key);
     assert.ok(row[1] && row[2], 'Arabic and Hebrew must both be present: ' + key);
   }
-  assert.match(expandedRuntime, /Daily practice streak: \\(\\d\+\\)/);
+  assert.ok(expandedRuntime.includes('Daily practice streak: (\\d+)'));
   assert.match(expandedRuntime, /Coefficient for /);
 });
 
@@ -88,6 +88,6 @@ test('all user-facing learning, quiz, challenge, checker, and account pages load
     'set-password.html'
   ]) {
     const html = readFileSync(new URL(page, root), 'utf8');
-    assert.match(html, /lesson-content-i18n\\.js/, page + ' must load expanded translation runtime');
+    assert.match(html, /lesson-content-i18n\.js/, page + ' must load expanded translation runtime');
   }
 });
