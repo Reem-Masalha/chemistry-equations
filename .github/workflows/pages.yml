@@ -165,6 +165,34 @@ jobs:
 
           node --test _site/cloudflare/tests/progress-sync.test.mjs
 
+          python3 - <<'PY'
+          import pathlib, xml.etree.ElementTree as ET
+          root = pathlib.Path('_site')
+          sitemap = root / 'sitemap.xml'
+          robots = root / 'robots.txt'
+          if not sitemap.is_file() or not robots.is_file():
+              raise SystemExit('SEO files missing: sitemap.xml and robots.txt must be deployed')
+          ns = {'sm': 'http://www.sitemaps.org/schemas/sitemap/0.9'}
+          tree = ET.parse(sitemap)
+          urls = [node.text for node in tree.findall('.//sm:loc', ns)]
+          required = {
+              'https://reem-masalha.github.io/chemistry-equations/',
+              'https://reem-masalha.github.io/chemistry-equations/learn.html',
+              'https://reem-masalha.github.io/chemistry-equations/beginner-lessons.html',
+              'https://reem-masalha.github.io/chemistry-equations/intermediate-lessons.html',
+              'https://reem-masalha.github.io/chemistry-equations/advanced-lessons.html',
+              'https://reem-masalha.github.io/chemistry-equations/challenges.html',
+              'https://reem-masalha.github.io/chemistry-equations/checker.html',
+              'https://reem-masalha.github.io/chemistry-equations/personal-quiz.html',
+          }
+          missing = sorted(required - set(urls))
+          if missing:
+              raise SystemExit('Sitemap missing public pages: ' + ', '.join(missing))
+          if 'Sitemap: https://reem-masalha.github.io/chemistry-equations/sitemap.xml' not in robots.read_text(encoding='utf-8'):
+              raise SystemExit('robots.txt does not point to sitemap.xml')
+          print(f'Validated sitemap.xml ({len(urls)} URLs) and robots.txt')
+          PY
+
           printf '%s\n' "$GITHUB_SHA" > _site/DEPLOYMENT_COMMIT.txt
           printf 'chemistry-equations-pages-%s\n' "$GITHUB_SHA" > _site/SITE_BUILD_VERSION.txt
           echo "PAGES_SOURCE_COMMIT=$GITHUB_SHA"
