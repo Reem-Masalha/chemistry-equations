@@ -132,11 +132,24 @@ function saveStats(score,correct,answered){
  try{localStorage.setItem(statKey(),JSON.stringify(s))}catch{}
  return s
 }
+let remoteHistory=[];
+function accountToken(){try{const u=JSON.parse(localStorage.getItem('chemistryCurrentUser')||sessionStorage.getItem('chemistryCurrentUser')||'null');return u?.token||''}catch{return ''}}
+async function loadRemoteHistory(){
+ const token=accountToken();if(!token)return;
+ try{const r=await fetch((window.CHEMISTRY_API_WORKER||'https://chemistry-equations-api.reemkhmasalha.workers.dev')+'/api/scores',{headers:{authorization:'Bearer '+token}});if(!r.ok)return;const d=await r.json();if(!Array.isArray(d.scores))return;
+ remoteHistory=d.scores.map(x=>{const parts=String(x.stage||'').split(':');return {date:x.created_at||'',difficulty:parts[0]||'easy',experience:parts[1]||'quiz',type:'choice',score:Number(x.score)||0,correct:Number(x.score)||0,answered:Number(x.total)||0,accuracy:Number(x.total)>0?Math.round(Number(x.score)*100/Number(x.total)):0,remote:true}});
+ renderHistory();
+ }catch{}
+}
+async function saveRemoteScore(entry){
+ const token=accountToken();if(!token)return;
+ try{await fetch((window.CHEMISTRY_API_WORKER||'https://chemistry-equations-api.reemkhmasalha.workers.dev')+'/api/scores',{method:'POST',headers:{'content-type':'application/json','authorization':'Bearer '+token},body:JSON.stringify({stage:entry.difficulty+':'+entry.experience,score:entry.correct,total:entry.answered})})}catch{}
+}
 function renderHistory(){
  const s=readStats(),statsBox=$('quizStats'),historyBox=$('historyList'),mistakes=$('mistakeList');
  if(statsBox)statsBox.innerHTML=`<div><b>${s.sessions||0}</b><span>${ui('Sessions','الجلسات','סשנים')}</span></div><div><b>${s.answered||0}</b><span>${ui('Questions answered','الأسئلة','שאלות שנענו')}</span></div><div><b>${s.answered?Math.round((s.correct||0)/s.answered*100):0}%</b><span>${ui('Overall accuracy','الدقة الإجمالية','דיוק כולל')}</span></div><div><b>${s.best||0}</b><span>${ui('Best score','أفضل نتيجة','שיא')}</span></div>`;
  if(historyBox){
-   const rows=Array.isArray(s.history)?s.history:[];
+   const rows=[...(Array.isArray(s.history)?s.history:[]),...remoteHistory].filter((h,i,a)=>a.findIndex(x=>String(x.date||'')+'|'+String(x.difficulty||'')+'|'+String(x.score||'')+'|'+String(x.answered||'')===String(h.date||'')+'|'+String(h.difficulty||'')+'|'+String(h.score||'')+'|'+String(h.answered||''))===i).sort((a,b)=>String(b.date||'').localeCompare(String(a.date||''))).slice(0,20);
    historyBox.classList.remove('hidden');
    historyBox.innerHTML=rows.length?rows.map((h,i)=>`<div class="history-row"><span><b>#${rows.length-i}</b> ${escapeHtml(h.experience==='quiz'?ui('Quiz','اختبار','חידון'):ui('Practice','تدريب','תרגול'))} · ${escapeHtml(h.difficulty)}</span><span>${h.correct}/${h.answered} · ${h.accuracy}% · ${h.score} pts</span><small>${new Date(h.date).toLocaleString()}</small></div>`).join(''):`<div class="history-empty">${ui('No completed sessions yet. Finish a practice or quiz session and it will appear here.','لا توجد جلسات مكتملة بعد. أكمل تدريبًا أو اختبارًا وسيظهر هنا.','אין עדיין מפגשים שהושלמו. סיים תרגול או חידון והוא יופיע כאן.')}</div>`;
  }
@@ -262,7 +275,7 @@ function answerQuestion(answer,solution,hint,button,typed,wanted,solutionText,ca
 }
 function showFeedback(ok,hint,correct,answer,typed){const f=$('answerFeedback');if(!f)return;f.className=`answer-feedback ${ok?'feedback-correct':'feedback-wrong'}`;f.innerHTML=ok?`<b>✓ ${ui('Correct','صحيحة','صحيحة')}</b><div>${ui('Great work!','أحسنت!','عمل رائع!')}</div>`:`<b>✗ ${ui('Not quite','ليست صحيحة','ليست صحيحة')}</b><div><strong>${ui('Correct answer:','الإجابة الصحيحة:','התשובה הנכונה:')}</strong> ${chem(correct)}</div><div class="muted">${escapeHtml(hint||'')}</div>`}
 function finishSession(timeUp){
- if(!state.running)return;stopTimer();state.running=false;state.timed=false;const answered=state.answers.length;const stats=saveStats(state.score,state.correct,answered);saveMastery(state.answers);renderHistory();
+ if(!state.running)return;stopTimer();state.running=false;state.timed=false;const answered=state.answers.length;const stats=saveStats(state.score,state.correct,answered);if(stats.history?.[0])saveRemoteScore(stats.history[0]);saveMastery(state.answers);renderHistory();
  const pct=answered?Math.round(state.correct/answered*100):0;
  showCancel(false);$('timer')?.classList.add('hidden');
  $('quizArea').innerHTML=`<article class="quiz-finish-card"><div class="finish-icon">${timeUp?'⏱':'✓'}</div><h2>${timeUp?ui('Time is up','انتهى الوقت','انتهى الوقت'):ui('Quiz complete','اكتمل الاختبار','החידון הסתיים')}</h2><p>${ui('You answered','أجبت عن','ענית על')} <b>${answered}</b> ${ui('questions','أسئلة','שאלות')}.</p><div class="finish-score"><b>${state.score}</b><span>${ui('points','نقطة','נקודות')} · ${pct}% ${ui('correct','correct','נכון')}</span></div><div class="finish-actions"><button id="restartQuiz" class="primary" type="button">${ui('Try again','حاول مرة أخرى','נסה שוב')}</button><button id="backToSettings" class="primary finish-settings-button" type="button" style="background:var(--accent, #3158d6)!important;border:1px solid var(--accent, #3158d6)!important;color:#fff!important;opacity:1!important;visibility:visible!important;">${ui('Change settings','تغيير الإعدادات','שנה הגדרות')}</button></div></article>`;
@@ -273,7 +286,7 @@ function setup(){
  if(!$('quizArea'))return;
  const retry=$('retryMistakes');if(retry)retry.classList.add('hidden');
  const badge=$('practiceBadge');if(badge)badge.textContent=ui('PRACTICE','تدريب','תרגול');
- renderConfig();bindConfig();updateHeader();renderHistory();showCancel(false);
+ renderConfig();bindConfig();updateHeader();renderHistory();loadRemoteHistory();showCancel(false);
  $('quizArea').innerHTML=`<div class="quiz-empty-state">${ui('Choose your settings, then press Start.','اختر إعداداتك ثم اضغط ابدأ.','בחר את ההגדרות שלך ולחץ על התחל.')}</div>`;
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',setup);else setup();
