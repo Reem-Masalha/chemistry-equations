@@ -71,7 +71,8 @@ async function sync(){
  const local=switchScope(id);
  updateResume(local);
  if(!u?.token)return;
- if(syncPromises.has(id))return syncPromises.get(id);
+ const syncKey=id+'|'+u.token;
+ if(syncPromises.has(syncKey))return syncPromises.get(syncKey);
  const promise=(async()=>{
   try{
    const r=await fetch(API+'/api/progress',{headers:{authorization:'Bearer '+u.token},signal:AbortSignal.timeout?.(15000)});
@@ -104,9 +105,9 @@ async function sync(){
    const pending=pendingByIdentity.get(id);
    if(pending&&identity(current())===id)await post(pending);
   }catch(e){/* Keep local progress available when offline. */}
-  finally{if(syncPromises.get(id)===promise)syncPromises.delete(id)}
+  finally{if(syncPromises.get(syncKey)===promise)syncPromises.delete(syncKey)}
  })();
- syncPromises.set(id,promise);
+ syncPromises.set(syncKey,promise);
  return promise;
 }
 function save(progress){
