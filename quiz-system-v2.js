@@ -109,7 +109,7 @@ function readStats(){
        if(Array.isArray(s.history))all.push(...s.history);
      }catch{}
    });
-   const storedHistory=[];[...historyKeys(),'chemistryQuizHistory:guest'].forEach(k=>{try{const raw=localStorage.getItem(k);if(raw){const p=JSON.parse(raw);if(Array.isArray(p))storedHistory.push(...p)}}catch{}});try{const raw=sessionStorage.getItem('chemistryQuizHistory:guest');if(raw){const p=JSON.parse(raw);if(Array.isArray(p))storedHistory.push(...p)}}catch{}all.push(...storedHistory);
+   const storedHistory=[];[...new Set([...historyKeys(),'chemistryQuizHistory:guest'])].forEach(k=>{try{const raw=localStorage.getItem(k);if(raw){const p=JSON.parse(raw);if(Array.isArray(p))storedHistory.push(...p);else if(Array.isArray(p?.history))storedHistory.push(...p.history)}}catch{}});try{const raw=sessionStorage.getItem('chemistryQuizHistory:guest');if(raw){const p=JSON.parse(raw);if(Array.isArray(p))storedHistory.push(...p);else if(Array.isArray(p?.history))storedHistory.push(...p.history)}}catch{}all.push(...storedHistory);
    const seen=new Set();
    merged.history=all.filter(h=>{const id=String(h?.date||'')+'|'+String(h?.difficulty||'')+'|'+String(h?.score||'')+'|'+String(h?.answered||'');if(seen.has(id))return false;seen.add(id);return true}).sort((a,b)=>String(b.date||'').localeCompare(String(a.date||''))).slice(0,20);
    return merged;
