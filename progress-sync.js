@@ -47,7 +47,7 @@ let saveQueue=Promise.resolve();
 function post(p){
  const u=current(),id=identity(u);
  if(!u?.token)return Promise.resolve();
- const queuedProgress={...p};
+ const queuedProgress=p;
  saveQueue=saveQueue.catch(()=>{}).then(async()=>{
   const latest=current();
   // Never send one account's queued progress using another account's token.
