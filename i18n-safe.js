@@ -12,10 +12,10 @@ function buildReverse(){reverse.clear();for(const [en,v] of Object.entries(M)){i
 function baseText(raw){const b=normalize(raw);if(!b)return b;if(M[b])return b;return reverse.get(b)||b}
 function translateDynamic(base,l){
  if(l==='en')return base;
- const streak=base.match(/^Daily practice streak: (\\d+) (day|days) · Best: (\\d+)$/);
+ const streak=base.match(/^Daily practice streak: (\d+) (day|days) · Best: (\d+)$/);
  if(streak){
   const current=Number(streak[1]),best=Number(streak[3]);
-  return l==='ar'?\`سلسلة التدريب اليومي: \${current} يوم · الأفضل: \${best}\`:\`רצף תרגול יומי: \${current} ימים · שיא: \${best}\`;
+  return l==='ar'?'سلسلة التدريب اليومي: '+current+' يوم · الأفضل: '+best:'רצף תרגול יומי: '+current+' ימים · שיא: '+best;
  }
  return base;
 }
