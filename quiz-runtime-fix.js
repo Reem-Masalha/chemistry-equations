@@ -13,7 +13,7 @@ function enforceFinalOnlyQuizFeedback(){
  const quizSelected=document.querySelector('input[name="experience"][value="quiz"]')?.checked;
  if(!quizSelected&&!title.includes('quiz'))return;
  const meta=question.querySelector('.practice-question-meta')?.textContent||'';
- const match=meta.match(/Question\s+(\d+)\s*\/\s*(\d+)/i);
+ const match=meta.match(/(\d+)\s*\/\s*(\d+)/);
  const current=match?Number(match[1]):1;
  const total=match?Number(match[2]):1;
  const lang=localStorage.getItem('chemistryLanguage')||'en';
