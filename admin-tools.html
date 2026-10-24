@@ -54,7 +54,7 @@
 }
 .admin-actions #refresh:focus-visible { outline: 3px solid rgba(49,88,214,.35); outline-offset: 2px; }
 </style>
-<script src="theme.js?v=20260911-03" defer></script><script src="account.js?v=20260908-08" defer></script>
+<script src="theme.js?v=20260911-03" defer></script><script src="account.js?v=20261024-02" defer></script>
 <script>
 (()=>{const API='https://chemistry-equations-api.reemkhmasalha.workers.dev',$=id=>document.getElementById(id),esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));let key='';const empty='<tr><td colspan="10" class="muted">No data yet.</td></tr>';const rows=(a,fn)=>a&&a.length?a.map(fn).join(''):empty;const name=p=>{const f=String(p||'').split('?')[0].split('#')[0].split('/').pop()||'index.html';return ({'index.html':'Balancer','learn.html':'Learning','personal-quiz.html':'Quiz','challenges.html':'Challenges','checker.html':'Checker','profile.html':'Profile','admin.html':'Admin','admin-tools.html':'Admin Tools'})[f]||f.replace(/\.html$/i,'').replace(/[-_]+/g,' ').replace(/\b\w/g,c=>c.toUpperCase())};
 function render(d){const q=d.quiz_totals||{},p=d.authenticated_periods||d.periods||{},t=d.authenticated_totals||d.totals||{},features=d.featurePeriod||d.features||[];const metrics=[[(d.users||[]).length,'Registered accounts'],[d.active_users||0,'Active users · 30 min'],[t.unique_visitors||0,'Unique viewers'],[t.visits||0,'Total page views'],[p.daily||0,'Daily visitors'],[p.weekly||0,'Weekly visitors'],[p.monthly||0,'Monthly visitors'],[q.quizzes||0,'Quizzes taken'],[Number(q.average_score||0).toFixed(1)+'%','Average quiz score']];$('metrics').innerHTML=metrics.map(x=>`<div><b>${esc(x[0])}</b><span>${esc(x[1])}</span></div>`).join('');
