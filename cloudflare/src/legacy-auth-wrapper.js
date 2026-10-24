@@ -124,7 +124,7 @@ async function changePassword(request, env) {
 async function adminResetPassword(request, env) {
   const key = request.headers.get('x-admin-key') || '';
   if (!env.ADMIN_KEY) return json({ error: 'ADMIN_KEY is not configured on the Cloudflare Worker.' }, 500);
-  if (!key || !safeEqual(key, env.ADMIN_KEY)) return json({ error: 'Incorrect admin key.' }, 401);
+  if (!key || key !== env.ADMIN_KEY) return json({ error: 'Incorrect admin key.' }, 401);
 
   const body = await request.json().catch(() => ({}));
   const username = String(body.username || '').trim().toLowerCase();
