@@ -40,7 +40,7 @@ test('recently added learning and daily-challenge UI has Arabic and Hebrew trans
 });
 
 test('language runtime retains all three supported language codes and RTL direction', () => {
-  assert.match(runtime, /v==='ar'\|\|v==='he'/);
+  assert.match(runtime, /const LANG=\{en:\{dir:'ltr',label:'English'\},ar:\{dir:'rtl',label:'العربية'\},he:\{dir:'rtl',label:'עברית'\}\}/);
   assert.match(runtime, /document\.documentElement\.dir=LANG\[l\]\.dir/);
   assert.match(runtime, /window\.ChemLang=window\.ChemistryI18n/);
 });
