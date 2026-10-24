@@ -22,3 +22,16 @@
  .topbar.topbar{overflow:visible!important}
  .topbar.topbar>.topbar-controls{overflow:visible!important}
 }
+
+/* Keep the quiz settings action readable even when global button themes override it. */
+#quizArea .quiz-finish-card .finish-actions #backToSettings,
+#quizArea .quiz-finish-card .finish-actions #backToSettings:hover,
+#quizArea .quiz-finish-card .finish-actions #backToSettings:focus,
+#quizArea .quiz-finish-card .finish-actions #backToSettings:active {
+  background: var(--accent, #3158d6) !important;
+  background-image: none !important;
+  border: 1px solid var(--accent, #3158d6) !important;
+  color: #fff !important;
+  -webkit-text-fill-color: #fff !important;
+  opacity: 1 !important;
+}
