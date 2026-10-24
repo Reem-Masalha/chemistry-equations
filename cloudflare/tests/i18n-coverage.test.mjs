@@ -25,7 +25,7 @@ test('recently added learning and daily-challenge UI has Arabic and Hebrew trans
     'Start your learning path',
     'Mini-course structure',
     'A new chemistry challenge every day',
-    'Today\\'s challenge',
+    'Today\'s challenge',
     'Share result',
     'Result copied',
     'Sharing unavailable',
