@@ -54,7 +54,8 @@ function post(p){
   if(!latest?.token||identity(latest)!==id)return;
   const r=await fetch(API+'/api/progress',{method:'POST',headers:{'content-type':'application/json','authorization':'Bearer '+latest.token},body:JSON.stringify({progress:queuedProgress}),keepalive:true});
   if(!r.ok)throw new Error('progress save failed');
-  if(pendingByIdentity.get(id)===queuedProgress)pendingByIdentity.delete(id);
+  const pending=pendingByIdentity.get(id);
+  if(!pending||Date.parse(pending.updatedAt||0)<=Date.parse(queuedProgress.updatedAt||0))pendingByIdentity.delete(id);
  }).catch(()=>{pendingByIdentity.set(id,queuedProgress)});
  return saveQueue;
 }
@@ -101,9 +102,9 @@ async function sync(){
     const url=new URL(location.href);url.searchParams.set('lesson',String(Math.max(1,Number(merged.current.index)||0)+1));history.replaceState(null,'',url);
    }
    window.dispatchEvent(new CustomEvent('chemistry:progress-restored',{detail:merged}));
+   // The merged snapshot already includes local changes; retrying an older pending
+   // snapshot after this write could overwrite newer progress on the server.
    await post(merged);
-   const pending=pendingByIdentity.get(id);
-   if(pending&&identity(current())===id)await post(pending);
   }catch(e){/* Keep local progress available when offline. */}
   finally{if(syncPromises.get(syncKey)===promise)syncPromises.delete(syncKey)}
  })();
