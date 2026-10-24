@@ -37,7 +37,7 @@ async function recoveryCode(request, env) {
 async function resetPassword(request, env) {
   const body = await request.json().catch(() => ({}));
   const username = String(body.username || '').trim().toLowerCase();
-  const code = String(body.recoveryCode || '').trim().replace(/\\s+/g, '').toUpperCase();
+  const code = String(body.recoveryCode || '').trim().replace(/\s+/g, '').toUpperCase();
   const newPassword = String(body.newPassword || '');
   const confirmPassword = String(body.confirmPassword || '');
   if (!username || !code || !newPassword) return json({ error: 'Username, recovery code, and new password are required.' }, 400);
