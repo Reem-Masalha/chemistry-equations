@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://reem-masalha.github.io/chemistry-equations/sitemap.xml
