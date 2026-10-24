@@ -64,7 +64,15 @@ test('expanded translation runtime parses and contains lesson, quiz, and account
     'Solo Practice and Multiplayer Challenge are separate experiences. In a challenge, both players get the same questions and race against the clock.',
     'Set a new password',
     'Could not set the password.',
-    'No completed sessions yet. Finish a practice or quiz session and it will appear here.'
+    'No completed sessions yet. Finish a practice or quiz session and it will appear here.',
+    'A detailed beginner path for understanding chemical equations and learning how to balance them.',
+    'A chemical formula tells you which elements are present and how many atoms of each element are in one particle of the substance. A small number written after an element is a subscript.',
+    'Quiz history',
+    'Best results and accuracy are stored locally.',
+    'Sign in to access your saved scores and progress.',
+    'This code can be used to reset your password if you forget it. Save it somewhere safe. It will not be shown again unless you generate a new one.',
+    'Passwords do not match.',
+    'Draw a chemical equation, tap Recognize, check the transcription, then balance it.'
   ]) {
     const row = dictionary.get(key);
     assert.ok(row, 'missing expanded translation entry: ' + key);
@@ -88,6 +96,6 @@ test('all user-facing learning, quiz, challenge, checker, and account pages load
     'set-password.html'
   ]) {
     const html = readFileSync(new URL(page, root), 'utf8');
-    assert.match(html, /lesson-content-i18n\.js/, page + ' must load expanded translation runtime');
+    assert.match(html, /lesson-content-i18n\.js\?v=20261024-audit-2/, page + ' must load the current expanded translation runtime');
   }
 });
