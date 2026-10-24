@@ -14,6 +14,53 @@ function json(data, status = 200) {
   return new Response(JSON.stringify(data), { status, headers: CORS });
 }
 
+
+function newRecoveryCode() {
+  return crypto.randomUUID().replace(/-/g, '').toUpperCase();
+}
+
+async function issueRecoveryCode(env, userId) {
+  const code = newRecoveryCode();
+  const hash = await sha256Hex(code);
+  await env.DB.prepare('UPDATE users SET recovery_code_hash=?, recovery_code_expires_at=NULL WHERE id=?')
+    .bind(hash, userId).run();
+  return code;
+}
+
+async function recoveryCode(request, env) {
+  const user = await authenticatedUser(request, env);
+  if (!user) return json({ error: 'Please sign in again.' }, 401);
+  const code = await issueRecoveryCode(env, user.id);
+  return json({ ok: true, recoveryCode: code });
+}
+
+async function resetPassword(request, env) {
+  const body = await request.json().catch(() => ({}));
+  const username = String(body.username || '').trim().toLowerCase();
+  const code = String(body.recoveryCode || '').trim().replace(/\\s+/g, '').toUpperCase();
+  const newPassword = String(body.newPassword || '');
+  const confirmPassword = String(body.confirmPassword || '');
+  if (!username || !code || !newPassword) return json({ error: 'Username, recovery code, and new password are required.' }, 400);
+  if (newPassword.length < 8) return json({ error: 'Password must be at least 8 characters.' }, 400);
+  if (newPassword !== confirmPassword) return json({ error: 'Passwords do not match.' }, 400);
+  const user = await env.DB.prepare('SELECT id,name,username,recovery_code_hash,recovery_code_expires_at FROM users WHERE username=? LIMIT 1').bind(username).first();
+  if (!user || !user.recovery_code_hash || !safeEqual(await sha256Hex(code), user.recovery_code_hash)) {
+    return json({ error: 'The username or recovery code is incorrect.' }, 401);
+  }
+  if (user.recovery_code_expires_at && Date.parse(user.recovery_code_expires_at) < Date.now()) {
+    return json({ error: 'This recovery code has expired. Generate a new code from Account & security while signed in.' }, 401);
+  }
+  const salt = crypto.randomUUID();
+  const hash = await sha256Hex(salt + ':' + newPassword);
+  await env.DB.batch([
+    env.DB.prepare('UPDATE users SET password_hash=?,password_salt=?,recovery_code_hash=NULL,recovery_code_expires_at=NULL WHERE id=?').bind(hash, salt, user.id),
+    env.DB.prepare('DELETE FROM sessions WHERE user_id=?').bind(user.id)
+  ]);
+  const token = await createSession(env, user.id);
+  const recoveryCode = await issueRecoveryCode(env, user.id);
+  return json({ ok: true, token, user: { id: user.id, name: user.name, username: user.username, token }, recoveryCode });
+}
+
 async function createSession(env, userId) {
   const token = crypto.randomUUID() + '.' + crypto.randomUUID();
   const now = new Date();
@@ -357,13 +404,25 @@ export default {
         const data = await response.json().catch(() => ({}));
         if (!response.ok || !data.user?.id) return json(data, response.status);
         const token = await createSession(env, data.user.id);
+        const recoveryCode = await issueRecoveryCode(env, data.user.id);
         data.token = token;
+        data.recoveryCode = recoveryCode;
         data.user = { ...data.user, token };
         return json(data, response.status);
       } catch (e) {
         console.error('Account creation/session error:', e);
         return json({ error: 'Could not create a secure account session. You can try signing in.' }, 500);
       }
+    }
+
+    if (url.pathname === '/api/recovery-code' && request.method === 'POST') {
+      try { return await recoveryCode(request, env); }
+      catch (e) { console.error('Recovery-code error:', e); return json({ error: 'Could not generate a recovery code.' }, 500); }
+    }
+
+    if (url.pathname === '/api/reset-password' && request.method === 'POST') {
+      try { return await resetPassword(request, env); }
+      catch (e) { console.error('Password reset error:', e); return json({ error: 'Could not reset the password.' }, 500); }
     }
 
     if (url.pathname === '/api/progress' && (request.method === 'GET' || request.method === 'POST')) {
