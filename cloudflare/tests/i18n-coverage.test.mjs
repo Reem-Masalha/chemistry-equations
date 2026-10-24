@@ -8,7 +8,7 @@ const dictionarySource = readFileSync(new URL('site-language-v2.js', root), 'utf
 
 test('shared language dictionary has a valid extraction boundary', () => {
   const start = dictionarySource.indexOf('const M=');
-  const end = dictionarySource.indexOf(';\\nconst original', start);
+  const end = dictionarySource.indexOf(';\nconst original', start);
   assert.notEqual(start, -1, 'dictionary declaration must exist');
   assert.notEqual(end, -1, 'dictionary must end before the original-text tracker');
   const objectSource = dictionarySource.slice(start + 'const M='.length, end);
@@ -25,7 +25,7 @@ test('recently added learning and daily-challenge UI has Arabic and Hebrew trans
     'Start your learning path',
     'Mini-course structure',
     'A new chemistry challenge every day',
-    'Today\'s challenge',
+    'Today\\'s challenge',
     'Share result',
     'Result copied',
     'Sharing unavailable',
@@ -36,11 +36,11 @@ test('recently added learning and daily-challenge UI has Arabic and Hebrew trans
   for (const key of required) {
     assert.ok(runtime.includes(JSON.stringify(key) + ':['), 'missing localization entry: ' + key);
   }
-  assert.match(runtime, /function translateDynamic\\(base,l\\)/, 'dynamic daily streak text must be localized');
+  assert.match(runtime, /function translateDynamic\(base,l\)/, 'dynamic daily streak text must be localized');
 });
 
 test('language runtime retains all three supported language codes and RTL direction', () => {
-  assert.match(runtime, /v==='ar'\\|\\|v==='he'/);
-  assert.match(runtime, /document\\.documentElement\\.dir=l==='ar'\\|\\|l==='he'\\?'rtl':'ltr'/);
-  assert.match(runtime, /window\\.ChemLang=window\\.ChemistryI18n/);
+  assert.match(runtime, /v==='ar'\|\|v==='he'/);
+  assert.match(runtime, /document\.documentElement\.dir=l==='ar'\|\|l==='he'\?'rtl':'ltr'/);
+  assert.match(runtime, /window\.ChemLang=window\.ChemistryI18n/);
 });
