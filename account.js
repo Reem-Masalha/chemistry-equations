@@ -29,6 +29,46 @@
   function closeQuickMenu(){const q=document.getElementById('accountQuickMenu');if(q){q.style.display='none';b.setAttribute('aria-expanded','false')}}
   b.addEventListener('click',e=>{e.preventDefault();e.stopImmediatePropagation();openQuickMenu()});
   document.addEventListener('click',e=>{const q=document.getElementById('accountQuickMenu');if(q&&!q.contains(e.target)&&e.target!==b)closeQuickMenu();if(e.target.closest?.('[data-close]'))modal.style.display='none'});
-  function render(mode='signin'){clearErrors();const a=current();if(a&&a.token&&mode==='account'){document.getElementById('accountTitle').textContent='Account & security';document.getElementById('accountStatus').textContent='Manage your session and password securely.';forms.innerHTML='<div class="account-form"><button id="profileBtn" type="button">View profile</button></div><div class="account-form"><h3>Change password</h3><label>Current password'+passwordField('currentPassword','current-password')+'</label><label>New password'+passwordField('newPassword','new-password')+'</label><label>Confirm new password'+passwordField('newPassword2','new-password')+'</label><button id="changePasswordSubmit" type="button">Change password</button></div><div class="security-actions"><button id="signOutAllBtn" type="button">Sign out from all devices</button><button id="signOutBtn" type="button">Sign out</button><button id="deleteAccountBtn" class="danger" type="button">Delete account</button></div>';document.getElementById('profileBtn').onclick=()=>location.href='profile.html';document.getElementById('changePasswordSubmit').onclick=changePassword;document.getElementById('signOutAllBtn').onclick=signOutAll;document.getElementById('signOutBtn').onclick=signOut;document.getElementById('deleteAccountBtn').onclick=deleteAccount;installPasswordToggles();return}if(a&&a.token){forms.innerHTML='<button id="profileBtn" type="button">View profile</button><button id="adminToolsBtn" type="button">Admin tools</button><button id="signOutBtn" type="button">Sign out</button>';document.getElementById('profileBtn').onclick=()=>location.href='profile.html';document.getElementById('adminToolsBtn').onclick=()=>location.href='admin-tools.html';document.getElementById('signOutBtn').onclick=signOut;document.getElementById('accountTitle').textContent='Account';document.getElementById('accountStatus').textContent='You are signed in.';return}document.getElementById('accountTitle').textContent='Sign in';document.getElementById('accountStatus').textContent='Sign in to access your saved scores and progress.';forms.innerHTML='<div class="account-form"><label>Username<input id="signInUsername" autocomplete="username"></label><label>Password'+passwordField('signInPassword','current-password')+'</label><button id="signInSubmit" type="button">Sign in</button><button id="recoverLink" class="account-link" type="button">Forgot password?</button><div class="account-switch">New here? <button id="showCreate" type="button">Create an account</button></div></div>';document.getElementById('signInSubmit').onclick=signin;document.getElementById('recoverLink').onclick=()=>render('recover');document.getElementById('showCreate').onclick=()=>render('create');installPasswordToggles()}
+  function render(mode='signin'){
+    clearErrors();
+    const a=current();
+    const setTitle=(title,status)=>{document.getElementById('accountTitle').textContent=title;document.getElementById('accountStatus').textContent=status};
+    if(a&&a.token&&mode==='account'){
+      setTitle('Account & security','Manage your session and password securely.');
+      forms.innerHTML='<div class="account-form"><button id="profileBtn" type="button">View profile</button></div><div class="account-form"><h3>Change password</h3><label>Current password'+passwordField('currentPassword','current-password')+'</label><label>New password'+passwordField('newPassword','new-password')+'</label><label>Confirm new password'+passwordField('newPassword2','new-password')+'</label><button id="changePasswordSubmit" type="button">Change password</button></div><div class="security-actions"><button id="signOutAllBtn" type="button">Sign out from all devices</button><button id="signOutBtn" type="button">Sign out</button><button id="deleteAccountBtn" class="danger" type="button">Delete account</button></div>';
+      document.getElementById('profileBtn').onclick=()=>location.href='profile.html';
+      document.getElementById('changePasswordSubmit').onclick=changePassword;
+      document.getElementById('signOutAllBtn').onclick=signOutAll;
+      document.getElementById('signOutBtn').onclick=signOut;
+      document.getElementById('deleteAccountBtn').onclick=deleteAccount;
+      installPasswordToggles();return;
+    }
+    if(a&&a.token){
+      setTitle('Account','You are signed in.');
+      forms.innerHTML='<div class="account-form"><button id="profileBtn" type="button">View profile</button><button id="accountSecurityBtn" type="button">Account & security</button><button id="adminToolsBtn" type="button">Admin tools</button><button id="signOutBtn" type="button">Sign out</button></div>';
+      document.getElementById('profileBtn').onclick=()=>location.href='profile.html';
+      document.getElementById('accountSecurityBtn').onclick=()=>render('account');
+      document.getElementById('adminToolsBtn').onclick=()=>location.href='admin-tools.html';
+      document.getElementById('signOutBtn').onclick=signOut;return;
+    }
+    if(mode==='create'){
+      setTitle('Create an account','Create an account to keep your learning progress associated with your username.');
+      forms.innerHTML='<div class="account-form"><label>Name<input id="accountName" autocomplete="name" maxlength="100"></label><label>Username<input id="accountUsername" autocomplete="username" maxlength="50"></label><label>Password'+passwordField('accountPassword','new-password')+'</label><label>Confirm password'+passwordField('accountPassword2','new-password')+'</label><label class="remember-row"><input id="rememberMe" type="checkbox" checked> Keep me signed in on this device</label><button id="createAccountSubmit" class="primary" type="button">Create account</button><div class="account-switch">Already have an account? <button id="showSignIn" type="button">Sign in</button></div></div>';
+      document.getElementById('createAccountSubmit').onclick=create;
+      document.getElementById('showSignIn').onclick=()=>render('signin');
+      installPasswordToggles();return;
+    }
+    if(mode==='recover'){
+      setTitle('Reset password','Password recovery codes are not currently supported by the account server. Contact the site owner to reset your account password.');
+      forms.innerHTML='<div class="account-form"><p>For account security, do not share your password. The self-service recovery form is unavailable until server-side recovery codes are configured.</p><button id="backToSignIn" class="primary" type="button">Back to sign in</button></div>';
+      document.getElementById('backToSignIn').onclick=()=>render('signin');return;
+    }
+    setTitle('Sign in','Sign in to access your saved scores and progress.');
+    forms.innerHTML='<div class="account-form"><label>Username<input id="signInUsername" autocomplete="username"></label><label>Password'+passwordField('signInPassword','current-password')+'</label><button id="signInSubmit" class="primary" type="button">Sign in</button><button id="recoverLink" class="account-link" type="button">Forgot password?</button><div class="account-switch">New here? <button id="showCreate" type="button">Create an account</button></div></div>';
+    document.getElementById('signInSubmit').onclick=signin;
+    document.getElementById('recoverLink').onclick=()=>render('recover');
+    document.getElementById('showCreate').onclick=()=>render('create');
+    installPasswordToggles();
+  }
   refresh();
 })();
