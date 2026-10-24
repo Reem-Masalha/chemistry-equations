@@ -16,7 +16,9 @@ function enforceFinalOnlyQuizFeedback(){
  const match=meta.match(/Question\s+(\d+)\s*\/\s*(\d+)/i);
  const current=match?Number(match[1]):1;
  const total=match?Number(match[2]):1;
- const desired='<div class="practice-live-stats quiz-live-progress"><div><b>'+current+'</b><span>Question</span></div><div><b>'+total+'</b><span>Total</span></div></div>';
+ const lang=localStorage.getItem('chemistryLanguage')||'en';
+ const labels=lang==='ar'?['السؤال','المجموع']:lang==='he'?['שאלה','סה״כ']:['Question','Total'];
+ const desired='<div class="practice-live-stats quiz-live-progress"><div><b>'+current+'</b><span>'+labels[0]+'</span></div><div><b>'+total+'</b><span>'+labels[1]+'</span></div></div>';
  if(score.innerHTML!==desired)score.innerHTML=desired;
 }
 function init(){
