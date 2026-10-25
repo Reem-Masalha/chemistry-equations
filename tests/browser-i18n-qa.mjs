@@ -63,6 +63,7 @@ for(const viewport of viewports){
      httpOk:(response?.status()??500)<400,
      languageApplied:state.lang===lang.code&&state.selectedLanguage===lang.code,
      directionCorrect:state.dir===lang.dir,
+     languageLabelTranslated:state.languageLabel===(lang.code==='ar'?'اللغة':lang.code==='he'?'שפה':'Language'),
      navTranslated:state.nav.length===0||state.nav.some(item=>item.includes(lang.nav)),
      noPageHorizontalOverflow:state.bodyScrollWidth<=state.viewportWidth+2,
      headerControlsInsideViewport:state.controls.filter(x=>['site-language-select','topbar-controls','topbarControls','accountTopBtn'].includes(x.name)).every(x=>x.left>=-1&&x.right<=state.viewportWidth+1)
