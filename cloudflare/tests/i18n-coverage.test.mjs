@@ -13,6 +13,21 @@ test('shared language runtime and dictionary assignments parse', () => {
   assert.doesNotThrow(() => Function(dictionarySource), 'complete language runtime must parse as JavaScript');
 });
 
+test('shared language runtime covers dynamic progress labels and profile dashboard', () => {
+  assert.match(dictionarySource, /const lesson=key\.match\(\/\^\(Beginner\|Intermediate\|Advanced\)/, 'dynamic lesson labels must be translated');
+  for (const key of [
+    'Continue Learning',
+    'Continue where you left off',
+    'Your profile',
+    'Statistics',
+    'Completed stages',
+    'Certificate of Achievement',
+    'Download / Print Certificate'
+  ]) {
+    assert.ok(dictionarySource.includes(JSON.stringify(key) + ':'), 'missing shared runtime translation: ' + key);
+  }
+});
+
 test('recently added learning and daily-challenge UI has Arabic and Hebrew translations', () => {
   const required = [
     'Start with the basics',
