@@ -39,6 +39,22 @@ jobs:
           npm install --no-save playwright
           npx playwright install --with-deps chromium
 
+      - name: Wait for this commit to be live on GitHub Pages
+        env:
+          EXPECTED_SHA: ${{ github.sha }}
+          SITE_URL: https://reem-masalha.github.io/chemistry-equations/index.html
+        run: |
+          for attempt in $(seq 1 36); do
+            if curl -fsSL "$SITE_URL" | grep -F "cache-bust.js?v=$EXPECTED_SHA" >/dev/null; then
+              echo "GitHub Pages is serving $EXPECTED_SHA"
+              exit 0
+            fi
+            echo "Waiting for Pages deployment ($attempt/36)…"
+            sleep 5
+          done
+          echo "Timed out waiting for the current commit to deploy"
+          exit 1
+
       - name: Test live site in 3 languages × 2 viewport sizes
         run: node tests/browser-i18n-qa.mjs
 
