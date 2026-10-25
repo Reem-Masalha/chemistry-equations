@@ -36,7 +36,7 @@ function scan(root,l){
   const base=originals.get(n);const v=M[base];const translated=v&&v[l==='ar'?0:1];const out=l==='en'?base:(translated||translateDynamic(base,l));
   if(out!==nrm)n.nodeValue=raw.replace(nrm,out);
  }
- const els=(root||document).querySelectorAll?.('input[placeholder],textarea[placeholder],input[aria-label],textarea[aria-label],button[aria-label],input[title],button[title],a[title]')||[];
+ const els=(root||document).querySelectorAll?.('input[placeholder],textarea[placeholder],[aria-label],[title]')||[];
  for(const el of els){if(isProtected(el))continue;for(const a of ['placeholder','aria-label','title']){if(!el.hasAttribute(a))continue;const raw=el.getAttribute(a)||'';const b=originals.get(el)||baseText(raw);originals.set(el,b);const v=M[b];const translated=v&&v[l==='ar'?0:1];const out=l==='en'?b:(translated||translateDynamic(b,l));if(out!==raw)el.setAttribute(a,out)}}
 }
 function shell(){
