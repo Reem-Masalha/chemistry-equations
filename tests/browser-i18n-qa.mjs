@@ -3,7 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 const base = 'https://reem-masalha.github.io/chemistry-equations/';
-const pages = ['index.html','learn.html','beginner-lessons.html','intermediate-lessons.html','advanced-lessons.html','personal-quiz.html','quiz.html','challenges.html','checker.html','profile.html','set-password.html','admin-tools.html'];
+const pages = ['index.html','learn.html','beginner-lessons.html','intermediate-lessons.html','advanced-lessons.html','personal-quiz.html','quiz.html','challenges.html','checker.html','profile.html','set-password.html','admin-tools.html','admin.html'];
 const languages = [{code:'en',dir:'ltr',nav:'Learn'},{code:'ar',dir:'rtl',nav:'تعلّم'},{code:'he',dir:'rtl',nav:'למידה'}];
 const viewports = [{name:'desktop',width:1440,height:1000},{name:'mobile',width:390,height:844}];
 const out='browser-i18n-artifacts';
@@ -23,7 +23,7 @@ for(const viewport of viewports){
    page.on('console',msg=>{if(msg.type()==='error')report.errors.push({page:pagePath,lang:lang.code,viewport:viewport.name,console:msg.text()})});
    try{
     const response=await page.goto(new URL(pagePath,base).href,{waitUntil:'domcontentloaded',timeout:25000});
-    await page.waitForSelector('#site-language-select',{timeout:7000});
+    await page.waitForFunction(()=>document.querySelector('#site-language-select')||document.querySelector('#adminLanguageSelect'),null,{timeout:7000});
     await page.waitForTimeout(500);
     const state=await page.evaluate(()=>{
      const visible=el=>!!(el&&(el.offsetWidth||el.offsetHeight||el.getClientRects().length));
@@ -39,13 +39,13 @@ for(const viewport of viewports){
      const placeholders=[...document.querySelectorAll('input[placeholder],textarea[placeholder],[aria-label]')].filter(visible).map(el=>el.getAttribute('placeholder')||el.getAttribute('aria-label')||'').filter(Boolean);
      const heading=document.querySelector('main h1,h1');
      const nav=[...document.querySelectorAll('.main-nav a')].filter(visible).map(a=>a.innerText.trim());
-     const selector=document.querySelector('#site-language-select');
+     const selector=document.querySelector('#site-language-select,#adminLanguageSelect');
      const overflowingElements=[...document.querySelectorAll('body *')].filter(visible).map(el=>{const r=el.getBoundingClientRect(),cs=getComputedStyle(el);return {tag:el.tagName,id:el.id||'',className:typeof el.className==='string'?el.className:'',left:Math.round(r.left),right:Math.round(r.right),width:Math.round(r.width),scrollWidth:el.scrollWidth,clientWidth:el.clientWidth,overflowX:cs.overflowX,parent:el.parentElement?.tagName+'#'+(el.parentElement?.id||'')+'.'+(typeof el.parentElement?.className==='string'?el.parentElement.className:'')};}).filter(x=>x.right>innerWidth+2||x.left < -2).sort((a,b)=>(b.right-innerWidth)-(a.right-innerWidth)).slice(0,20);
-     const controls=[...document.querySelectorAll('.topbar .brand,.topbar .main-nav,.topbar-controls,#site-language-select,#accountTopBtn')].filter(visible).map(el=>{
+     const controls=[...document.querySelectorAll('.topbar .brand,.topbar .main-nav,.topbar-controls,#site-language-select,#adminLanguageSelect,#accountTopBtn')].filter(visible).map(el=>{
       const r=el.getBoundingClientRect();
       return {name:el.id||el.className||el.tagName,left:Math.round(r.left),right:Math.round(r.right),top:Math.round(r.top),bottom:Math.round(r.bottom),width:Math.round(r.width),height:Math.round(r.height)};
      });
-     return {title:document.title,lang:document.documentElement.lang,dir:document.documentElement.dir,selectedLanguage:selector?.value,languageLabel:document.querySelector('.site-language-label')?.innerText||'',heading:heading?.innerText?.replace(/\s+/g,' ').trim()||'',nav,bodyLines,textNodes,placeholders,overflowingElements,bodyScrollWidth:document.documentElement.scrollWidth,viewportWidth:innerWidth,documentHeight:document.documentElement.scrollHeight,controls};
+     return {title:document.title,lang:document.documentElement.lang,dir:document.documentElement.dir,selectedLanguage:selector?.value,languageLabel:document.querySelector('.site-language-label,#adminLanguageLabel')?.innerText||'',heading:heading?.innerText?.replace(/\s+/g,' ').trim()||'',nav,bodyLines,textNodes,placeholders,overflowingElements,bodyScrollWidth:document.documentElement.scrollWidth,viewportWidth:innerWidth,documentHeight:document.documentElement.scrollHeight,controls};
     });
     report.checks.push({page:pagePath,lang:lang.code,viewport:viewport.name,status:response?.status()??null,...state});
     const key=viewport.name+':'+pagePath;
@@ -66,7 +66,7 @@ for(const viewport of viewports){
      languageLabelTranslated:state.languageLabel===(lang.code==='ar'?'اللغة':lang.code==='he'?'שפה':'Language'),
      navTranslated:state.nav.length===0||state.nav.some(item=>item.includes(lang.nav)),
      noPageHorizontalOverflow:state.bodyScrollWidth<=state.viewportWidth+2,
-     headerControlsInsideViewport:state.controls.filter(x=>['site-language-select','topbar-controls','topbarControls','accountTopBtn'].includes(x.name)).every(x=>x.left>=-1&&x.right<=state.viewportWidth+1)
+     headerControlsInsideViewport:state.controls.filter(x=>['site-language-select','adminLanguageSelect','topbar-controls','topbarControls','accountTopBtn'].includes(x.name)).every(x=>x.left>=-1&&x.right<=state.viewportWidth+1)
     };
     report.checks[report.checks.length-1].assertions=assertions;
    }catch(e){report.errors.push({page:pagePath,lang:lang.code,viewport:viewport.name,error:String(e)})}
