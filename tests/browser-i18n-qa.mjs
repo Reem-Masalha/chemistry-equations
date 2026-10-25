@@ -27,6 +27,15 @@ for(const viewport of viewports){
     const state=await page.evaluate(()=>{
      const visible=el=>!!(el&&(el.offsetWidth||el.offsetHeight||el.getClientRects().length));
      const bodyLines=(document.body.innerText||'').split(/\n+/).map(s=>s.trim()).filter(Boolean);
+     const textNodes=[];
+     const walker=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT);
+     while(walker.nextNode()){
+      const n=walker.currentNode,p=n.parentElement;
+      if(!p||!visible(p)||p.closest('script,style,noscript,textarea,select,option,code,pre,.equation,.chemical-equation,.formula,.math,[data-equation],[data-chemical],.site-language-control'))continue;
+      const v=(n.nodeValue||'').replace(/\s+/g,' ').trim();
+      if(v.length>=3)textNodes.push(v);
+     }
+     const placeholders=[...document.querySelectorAll('input[placeholder],textarea[placeholder],[aria-label]')].filter(visible).map(el=>el.getAttribute('placeholder')||el.getAttribute('aria-label')||'').filter(Boolean);
      const heading=document.querySelector('main h1,h1');
      const nav=[...document.querySelectorAll('.main-nav a')].filter(visible).map(a=>a.innerText.trim());
      const selector=document.querySelector('#site-language-select');
@@ -41,8 +50,8 @@ for(const viewport of viewports){
     if(lang.code==='en')baselines.set(key,new Set([...state.textNodes,...state.placeholders]));
     else{
      const baseline=baselines.get(key)||new Set();
-     const ignored=/^(?:⚗ Chemistry|Equations|Learn|Quiz|Challenges|Balancer|Checker|Account|English|العربية|עברית|[\d\s.,()+→⇌⇄=₀-₉A-Za-z_\-:·•✓✔✕×÷%]+)$/;
-     const candidates=[...new Set(state.bodyLines.filter(line=>baseline.has(line)&&line.length>=5&&!ignored.test(line)))].slice(0,80);
+     const formula=/^(?=.*(?:\d|[₀-₉]|→|⇌|⇄|=|\+))[A-Z0-9\s.,()+→⇌⇄=₀-₉_:\-·•✓✔✕×÷%]+$/;
+     const candidates=[...new Set([...state.textNodes,...state.placeholders].filter(line=>baseline.has(line)&&line.length>=3&&!formula.test(line)&&!['⚗ Chemistry Equations','English','العربية','עברית','Ctrl K'].includes(line)))].slice(0,120);
      if(candidates.length)report.untranslatedCandidates.push({page:pagePath,lang:lang.code,viewport:viewport.name,lines:candidates});
     }
     const shot=path.join(out,pagePath.replace('.html','')+'-'+lang.code+'-'+viewport.name+'.png');
