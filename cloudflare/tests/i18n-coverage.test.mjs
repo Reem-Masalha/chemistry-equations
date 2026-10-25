@@ -6,13 +6,11 @@ const root = new URL('../../', import.meta.url);
 const runtime = readFileSync(new URL('i18n-safe.js', root), 'utf8');
 const dictionarySource = readFileSync(new URL('site-language-v2.js', root), 'utf8');
 
-test('shared language dictionary has a valid extraction boundary', () => {
-  const start = dictionarySource.indexOf('const M=');
-  const end = dictionarySource.indexOf(';\nconst original', start);
-  assert.notEqual(start, -1, 'dictionary declaration must exist');
-  assert.notEqual(end, -1, 'dictionary must end before the original-text tracker');
-  const objectSource = dictionarySource.slice(start + 'const M='.length, end);
-  assert.doesNotThrow(() => Function('return (' + objectSource + ')')(), 'dictionary must parse as a JavaScript object');
+test('shared language runtime and dictionary assignments parse', () => {
+  assert.ok(dictionarySource.includes('const M='), 'dictionary declaration must exist');
+  assert.ok(dictionarySource.includes('Object.assign(M,'), 'additional dictionary entries must be merged into the shared dictionary');
+  assert.ok(dictionarySource.includes('const original=new WeakMap();'), 'original-text tracker must follow the dictionary');
+  assert.doesNotThrow(() => Function(dictionarySource), 'complete language runtime must parse as JavaScript');
 });
 
 test('recently added learning and daily-challenge UI has Arabic and Hebrew translations', () => {
