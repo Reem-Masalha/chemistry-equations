@@ -1,15 +1,10 @@
 name: Browser visual QA — English, Arabic, Hebrew
 
 on:
-  push:
+  workflow_run:
+    workflows: ["Deploy to GitHub Pages"]
+    types: [completed]
     branches: [main]
-    paths:
-      - 'tests/browser-i18n-qa.mjs'
-      - '.github/workflows/browser-i18n-qa.yml'
-      - '*.html'
-      - '*.js'
-      - '*.css'
-      - 'cloudflare/**'
   workflow_dispatch:
 
 permissions:
@@ -21,13 +16,14 @@ concurrency:
 
 jobs:
   browser-i18n:
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
     timeout-minutes: 25
     steps:
       - name: Checkout
         uses: actions/checkout@v5
         with:
-          ref: main
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
 
       - name: Set up Node
         uses: actions/setup-node@v5
@@ -38,22 +34,6 @@ jobs:
         run: |
           npm install --no-save playwright
           npx playwright install --with-deps chromium
-
-      - name: Wait for this commit to be live on GitHub Pages
-        env:
-          EXPECTED_SHA: ${{ github.sha }}
-          SITE_URL: https://reem-masalha.github.io/chemistry-equations/index.html
-        run: |
-          for attempt in $(seq 1 36); do
-            if curl --connect-timeout 5 --max-time 15 -fsSL "$SITE_URL" | grep -F "$EXPECTED_SHA" >/dev/null; then
-              echo "GitHub Pages is serving $EXPECTED_SHA"
-              exit 0
-            fi
-            echo "Waiting for Pages deployment ($attempt/36)…"
-            sleep 5
-          done
-          echo "Timed out waiting for the current commit to deploy"
-          exit 1
 
       - name: Test live site in 3 languages × 2 viewport sizes
         run: node tests/browser-i18n-qa.mjs
