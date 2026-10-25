@@ -53,7 +53,17 @@ Object.assign(M,{
 "Date":["التاريخ","תאריך"],
 "Download / Print Certificate":["تنزيل الشهادة / طباعتها","הורדת התעודה / הדפסה"],
 "Major achievement: Certificate":["إنجاز رئيسي: الشهادة","הישג מרכזי: תעודה"],
-"Complete Easy, Medium and Hard to unlock your certificate.":["أكمل مستويات السهل والمتوسط والصعب لفتح الشهادة.","השלימו את הרמות קל, בינוני וקשה כדי לפתוח את התעודה."]
+"Complete Easy, Medium and Hard to unlock your certificate.":["أكمل مستويات السهل والمتوسط والصعب لفتح الشهادة.","השלימו את הרמות קל, בינוני וקשה כדי לפתוח את התעודה."],
+"Easy":["سهل","קל"],
+"Medium":["متوسط","בינוני"],
+"Hard":["صعب","קשה"],
+"Easy • Medium • Hard":["سهل • متوسط • صعب","קל • בינוני • קשה"],
+"chemistry equation challenges.":["تحديات المعادلات الكيميائية.","אתגרי משוואות כימיות."],
+"Stoichiometry":["الحسابات الكيميائية","סטויכיומטריה"],
+"Redox equations":["معادلات الأكسدة والاختزال","משוואות חמצון-חיזור"],
+"6 misses":["6 إجابات خاطئة","6 טעויות"],
+"3 misses":["3 إجابات خاطئة","3 טעויות"],
+"August 2026":["أغسطس 2026","אוגוסט 2026"]
 });
 const original=new WeakMap();
 function lang(){try{const x=localStorage.getItem(KEY);return LANG[x]?x:'en'}catch{return'en'}}
