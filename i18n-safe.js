@@ -12,7 +12,11 @@ function buildReverse(){reverse.clear();for(const [en,v] of Object.entries(M)){i
 function baseText(raw){const b=normalize(raw);if(!b)return b;if(M[b])return b;return reverse.get(b)||b}
 function translateDynamic(base,l){
  if(l==='en')return base;
- const balance=base.match(/^Balance (.+)$/);\n if(balance)return l==='ar'?'وازن '+balance[1]:'אזנו '+balance[1];\n const challenge=base.match(/^Today's challenge · (.+)$/);\n if(challenge)return l==='ar'?'تحدي اليوم · '+challenge[1]:'האתגר של היום · '+challenge[1];\n const streak=base.match(/^Daily practice streak: (\d+) (day|days) · Best: (\d+)$/);
+ const balance=base.match(/^Balance (.+)$/);
+ if(balance)return l==='ar'?'وازن '+balance[1]:'אזנו '+balance[1];
+ const challenge=base.match(/^Today's challenge · (.+)$/);
+ if(challenge)return l==='ar'?'تحدي اليوم · '+challenge[1]:'האתגר של היום · '+challenge[1];
+ const streak=base.match(/^Daily practice streak: (\d+) (day|days) · Best: (\d+)$/);
  if(streak){
   const current=Number(streak[1]),best=Number(streak[3]);
   return l==='ar'?'سلسلة التدريب اليومي: '+current+' يوم · الأفضل: '+best:'רצף תרגול יומי: '+current+' ימים · שיא: '+best;
@@ -45,7 +49,8 @@ function shell(){
   const controls=document.getElementById('topbarControls');
   if(controls&&box.parentElement!==controls)controls.appendChild(box);
  }
- const languageLabel=box.querySelector('.site-language-label');if(languageLabel)languageLabel.textContent=getLang()==='ar'?'اللغة':getLang()==='he'?'שפה':'Language';\n box.querySelector('select').value=getLang();
+ const languageLabel=box.querySelector('.site-language-label');if(languageLabel)languageLabel.textContent=getLang()==='ar'?'اللغة':getLang()==='he'?'שפה':'Language';
+ box.querySelector('select').value=getLang();
  const b=document.getElementById('accountTopBtn');if(b&&!b.dataset.i18nSafe){b.dataset.i18nSafe='1';b.addEventListener('click',()=>{setTimeout(()=>{const modal=document.getElementById('accountModal');if(modal)modal.style.display='block'},0)})}
 }
 function rtlCss(){if(document.getElementById('i18n-safe-style'))return;const s=document.createElement('style');s.id='i18n-safe-style';s.textContent=`html[dir="rtl"] body{text-align:right}html[dir="rtl"] .topbar,html[dir="rtl"] .main-nav,html[dir="rtl"] .section-head,html[dir="rtl"] .input-row,html[dir="rtl"] .hand-head,html[dir="rtl"] .hand-actions,html[dir="rtl"] .balancer-actions,html[dir="rtl"] .pad-tools{direction:rtl}html[dir="rtl"] .main-nav{flex-direction:row-reverse}html[dir="rtl"] .brand{direction:ltr}html[dir="rtl"] input:not([data-equation]),html[dir="rtl"] textarea{direction:rtl;text-align:right}html[dir="rtl"] .equation,html[dir="rtl"] .chemical-equation,html[dir="rtl"] .formula,html[dir="rtl"] [data-equation],html[dir="rtl"] [data-chemical],html[dir="rtl"] .math{direction:ltr!important;text-align:left!important;unicode-bidi:isolate}.site-language-control{display:inline-flex!important;align-items:center;gap:7px;margin-left:10px;white-space:nowrap}.site-language-control select{font:inherit;min-height:36px}html[dir="rtl"] .site-language-control{margin-left:0;margin-right:10px}`;document.head.appendChild(s)}
