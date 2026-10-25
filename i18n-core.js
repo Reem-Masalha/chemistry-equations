@@ -20,7 +20,7 @@ function boot(){
  class NoopObserver{observe(){}disconnect(){}takeRecords(){return[]}}
  window.MutationObserver=NoopObserver;
  const s=document.createElement('script');
- s.src='site-language-v2.js?v=20261025-translation-audit-11';
+ s.src='site-language-v2.js?v=20261025-translation-audit-12';
  s.async=false;s.defer=false;
  s.onload=()=>{window.MutationObserver=real;wrap();window.ChemistryI18n?.refresh?.()};
  s.onerror=()=>{window.MutationObserver=real};
