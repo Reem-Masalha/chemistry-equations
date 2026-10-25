@@ -110,6 +110,14 @@ jobs:
                   else:
                       text=text+'\n'+tag+'\n'
                   changed=True
+              # Apply the shared UI translation dictionary to every page. This
+              # supplements page-specific lesson translations and observes dynamic UI.
+              if 'site-language-complete-v2.js' not in text:
+                  if re.search(r'</body>', text, re.I):
+                      text=re.sub(r'</body>', '<script src="site-language-complete-v2.js?v=${GITHUB_SHA}"></script>\\n</body>', text, count=1, flags=re.I)
+                  else:
+                      text=text+'\\n<script src="site-language-complete-v2.js?v=${GITHUB_SHA}"></script>\\n'
+                  changed=True
               # Every page that displays the account control must bind its click
               # action, even when that page did not originally load account.js.
               if 'id="accountTopBtn"' in text and not re.search(r'<script[^>]+src=["\'][^"\']*account\.js(?:\?[^"\']*)?["\']', text, re.I):
