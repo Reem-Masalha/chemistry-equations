@@ -24,7 +24,7 @@ for(const viewport of viewports){
    try{
     const response=await page.goto(new URL(pagePath,base).href,{waitUntil:'domcontentloaded',timeout:25000});
     await page.waitForFunction(()=>document.querySelector('#site-language-select')||document.querySelector('#adminLanguageSelect'),null,{timeout:7000});
-    await page.waitForTimeout(500);
+    await page.waitForTimeout(lang.code==='en'?350:2700);
     const state=await page.evaluate(()=>{
      const visible=el=>!!(el&&(el.offsetWidth||el.offsetHeight||el.getClientRects().length));
      const bodyLines=(document.body.innerText||'').split(/\n+/).map(s=>s.trim()).filter(Boolean);
