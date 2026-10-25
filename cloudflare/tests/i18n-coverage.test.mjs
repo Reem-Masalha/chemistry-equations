@@ -37,6 +37,22 @@ test('recently added learning and daily-challenge UI has Arabic and Hebrew trans
   assert.match(runtime, /function translateDynamic\(base,l\)/, 'dynamic daily streak text must be localized');
 });
 
+test('safe translation loader parses merged dictionaries and covers progress/profile UI', () => {
+  const safeRuntime = readFileSync(new URL('i18n-safe.js', root), 'utf8');
+  assert.match(safeRuntime, /Function\(src\.slice\(start,end\)\+';return M;'\)\(\)/, 'loader must parse the full dictionary declaration and merged entries');
+  assert.match(safeRuntime, /\^\(Beginner\|Intermediate\|Advanced\) · Lesson /, 'dynamic learning progress labels must be translated');
+  for (const key of [
+    'Statistics',
+    'Completed stages',
+    'Certificate of Achievement',
+    'Download / Print Certificate',
+    'Complete your first quiz.',
+    'Your profile'
+  ]) {
+    assert.ok(safeRuntime.includes(JSON.stringify(key) + ':'), 'missing profile translation: ' + key);
+  }
+});
+
 test('language runtime retains all three supported language codes and RTL direction', () => {
   assert.match(runtime, /const LANG=\{en:\{dir:'ltr',label:'English'\},ar:\{dir:'rtl',label:'العربية'\},he:\{dir:'rtl',label:'עברית'\}\}/);
   assert.match(runtime, /document\.documentElement\.dir=LANG\[l\]\.dir/);
