@@ -343,7 +343,7 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 }
 @media(max-width:360px){
  .topbar.topbar>.brand{font-size:11px!important;gap:2px!important}
- .topbar.topbar>.topbar-controls .site-language-control select{width:82px!important;min-width:82px!important;max-width:82px!important;font-size:10px!important}
+ .topbar.topbar>.topbar-controls .site-language-control select{width:100px!important;min-width:100px!important;max-width:100px!important;font-size:10px!important}
  .topbar.topbar>.topbar-controls{gap:3px!important}
 }
 `;
@@ -363,7 +363,7 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
  .topbar.topbar>.main-nav{grid-area:nav!important;display:flex!important;width:100%!important;min-width:0!important;max-width:100%!important;box-sizing:border-box!important;justify-content:flex-start!important;overflow-x:auto!important;overflow-y:hidden!important}
  .topbar.topbar>.topbar-controls{grid-area:controls!important;justify-self:end!important;display:flex!important;width:max-content!important;min-width:0!important;max-width:100%!important;gap:3px!important;overflow:visible!important}
  .topbar.topbar>.topbar-controls .site-language-control{display:inline-flex!important;flex:0 0 auto!important;width:auto!important;min-width:0!important;max-width:none!important;margin:0!important;overflow:visible!important}
- .topbar.topbar>.topbar-controls .site-language-control select{box-sizing:border-box!important;width:86px!important;min-width:86px!important;max-width:86px!important;padding:3px 5px!important;font-size:11px!important}
+ .topbar.topbar>.topbar-controls .site-language-control select{box-sizing:border-box!important;width:104px!important;min-width:104px!important;max-width:104px!important;padding:3px 5px!important;font-size:11px!important}
  .topbar.topbar>.topbar-controls #accountTopBtn,.topbar.topbar>.topbar-controls #themeToggle{flex:0 0 30px!important;width:30px!important;min-width:30px!important;max-width:30px!important;box-sizing:border-box!important;overflow:hidden!important;padding:4px 2px!important;font-size:0!important;text-align:center!important}
  .topbar.topbar>.topbar-controls #accountTopBtn::before{content:'👤';font-size:14px!important}
  .topbar.topbar>.topbar-controls #themeToggle::before{content:'🌙';font-size:14px!important}
@@ -373,7 +373,7 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 @media(max-width:360px){
  .topbar.topbar{padding-left:7px!important;padding-right:7px!important;gap:5px 5px!important}
  .topbar.topbar>.brand{font-size:11px!important}
- .topbar.topbar>.topbar-controls .site-language-control select{width:80px!important;min-width:80px!important;max-width:80px!important;font-size:10px!important}
+ .topbar.topbar>.topbar-controls .site-language-control select{width:96px!important;min-width:96px!important;max-width:96px!important;font-size:10px!important}
  .topbar.topbar>.topbar-controls{gap:2px!important}
 }
 `;
