@@ -18,7 +18,8 @@ for(const viewport of viewports){
    const context=await browser.newContext({viewport:{width:viewport.width,height:viewport.height},deviceScaleFactor:1});
    await context.addInitScript(language=>localStorage.setItem('chemistryLanguage',language),lang.code);
    const page=await context.newPage();
-   page.on('pageerror',e=>report.errors.push({page:pagePath,lang:lang.code,viewport:viewport.name,error:String(e),stack:String(e.stack||'').slice(0,1200)}));\n   page.on('response',response=>{if(response.status()>=400&&response.request().resourceType()==='script')report.errors.push({page:pagePath,lang:lang.code,viewport:viewport.name,scriptResponseStatus:response.status(),scriptUrl:response.url()})});
+   page.on('pageerror',e=>report.errors.push({page:pagePath,lang:lang.code,viewport:viewport.name,error:String(e),stack:String(e.stack||'').slice(0,1200)}));
+   page.on('response',response=>{if(response.status()>=400&&response.request().resourceType()==='script')report.errors.push({page:pagePath,lang:lang.code,viewport:viewport.name,scriptResponseStatus:response.status(),scriptUrl:response.url()})});
    page.on('console',msg=>{if(msg.type()==='error')report.errors.push({page:pagePath,lang:lang.code,viewport:viewport.name,console:msg.text()})});
    try{
     const response=await page.goto(new URL(pagePath,base).href,{waitUntil:'domcontentloaded',timeout:25000});
@@ -75,7 +76,8 @@ for(const lang of languages){
  const context=await browser.newContext({viewport:{width:1440,height:1000}});
  await context.addInitScript(language=>localStorage.setItem('chemistryLanguage',language),lang.code);
  const page=await context.newPage();
- page.on('pageerror',e=>report.errors.push({page:'interactive-journeys',lang:lang.code,error:String(e),stack:String(e.stack||'').slice(0,1200)}));\n page.on('response',response=>{if(response.status()>=400&&response.request().resourceType()==='script')report.errors.push({page:'interactive-journeys',lang:lang.code,scriptResponseStatus:response.status(),scriptUrl:response.url()})});
+ page.on('pageerror',e=>report.errors.push({page:'interactive-journeys',lang:lang.code,error:String(e),stack:String(e.stack||'').slice(0,1200)}));
+ page.on('response',response=>{if(response.status()>=400&&response.request().resourceType()==='script')report.errors.push({page:'interactive-journeys',lang:lang.code,scriptResponseStatus:response.status(),scriptUrl:response.url()})});
  try{
   await page.goto(new URL('checker.html',base).href,{waitUntil:'domcontentloaded',timeout:60000});
   await page.waitForSelector('#site-language-select');await page.waitForTimeout(700);
