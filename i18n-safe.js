@@ -86,10 +86,10 @@ async function init(){
  if(document.body&&!window.__chemistryI18nObserver){
   window.__chemistryI18nObserver=true;let timer=0;
   const observer=new MutationObserver(records=>{
-   if(!records.some(r=>(r.addedNodes&&r.addedNodes.length)||r.type==='characterData'))return;
+   if(!records.some(r=>r.addedNodes&&r.addedNodes.length))return;
    clearTimeout(timer);timer=setTimeout(()=>apply(),100);
   });
-  observer.observe(document.body,{childList:true,subtree:true,characterData:true});
+  observer.observe(document.body,{childList:true,subtree:true});
  }
  window.ChemistryI18n={lang:getLang,refresh:()=>apply(),apply:(root=document.body)=>scan(root,getLang()),setLanguage:l=>{try{localStorage.setItem(KEY,l)}catch{};location.reload()},t:(en,ar,he)=>getLang()==='ar'?(ar??en):getLang()==='he'?(he??en):en};window.ChemLang=window.ChemistryI18n}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
