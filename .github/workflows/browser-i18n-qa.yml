@@ -1,0 +1,52 @@
+name: Browser visual QA — English, Arabic, Hebrew
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'tests/browser-i18n-qa.mjs'
+      - '.github/workflows/browser-i18n-qa.yml'
+      - '*.html'
+      - '*.js'
+      - '*.css'
+      - 'cloudflare/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: browser-i18n-qa
+  cancel-in-progress: true
+
+jobs:
+  browser-i18n:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          ref: main
+
+      - name: Set up Node
+        uses: actions/setup-node@v5
+        with:
+          node-version: 22
+
+      - name: Install Playwright and Chromium
+        run: |
+          npm install --no-save playwright
+          npx playwright install --with-deps chromium
+
+      - name: Test live site in 3 languages × 2 viewport sizes
+        run: node tests/browser-i18n-qa.mjs
+
+      - name: Upload screenshots and translation audit report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: browser-i18n-visual-qa
+          path: browser-i18n-artifacts/
+          if-no-files-found: warn
+          retention-days: 14
