@@ -27,7 +27,8 @@ function translateDynamic(base,l){
   const current=Number(streak[1]),best=Number(streak[3]);
   return l==='ar'?'سلسلة التدريب اليومي: '+current+' يوم · الأفضل: '+best:'רצף תרגול יומי: '+current+' ימים · שיא: '+best;
  }
- const shortStreak=base.match(/^Daily practice streak: (\\d+) days?$/);if(shortStreak){const n=shortStreak[1];return l==='ar'?'سلسلة التدريب اليومي: '+n+' يوم':'רצף תרגול יומי: '+n+' ימים';}
+ const shortStreak=base.match(/^Daily practice streak: (\d+) days?$/);if(shortStreak){const n=shortStreak[1];return l==='ar'?'سلسلة التدريب اليومي: '+n+' يوم':'רצף תרגול יומי: '+n+' ימים';}
+ const changed=base.match(/^Coefficient changed from (.+) to (.+)$/);if(changed)return l==='ar'?'تم تغيير المعامل من '+changed[1]+' إلى '+changed[2]:'המקדֵם השתנה מ־'+changed[1]+' ל־'+changed[2];
  return base;
 }
 function scan(root,l){
