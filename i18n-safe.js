@@ -12,6 +12,7 @@ function buildReverse(){reverse.clear();for(const [en,v] of Object.entries(M)){i
 function baseText(raw){const b=normalize(raw);if(!b)return b;if(M[b])return b;return reverse.get(b)||b}
 function translateDynamic(base,l){
  if(l==='en')return base;
+ if(base==='Balance an equation')return l==='ar'?'وازن معادلة':'אזן משוואה';
  const balance=base.match(/^Balance (.+)$/);
  if(balance)return l==='ar'?'وازن '+balance[1]:'אזנו '+balance[1];
  const challenge=base.match(/^Today's challenge · (.+)$/);
