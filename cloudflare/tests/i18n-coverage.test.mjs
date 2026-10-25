@@ -42,6 +42,8 @@ test('safe translation loader parses merged dictionaries and covers progress/pro
   assert.match(safeRuntime, /Function\(src\.slice\(start,end\)\+';return M;'\)\(\)/, 'loader must parse the full dictionary declaration and merged entries');
   assert.match(safeRuntime, /\^\(Beginner\|Intermediate\|Advanced\) · Lesson /, 'dynamic learning progress labels must be translated');
   for (const key of [
+    'Continue Learning',
+    'Continue where you left off',
     'Statistics',
     'Completed stages',
     'Certificate of Achievement',
