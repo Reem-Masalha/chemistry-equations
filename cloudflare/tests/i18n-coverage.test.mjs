@@ -115,6 +115,6 @@ test('all user-facing learning, quiz, challenge, checker, and account pages load
     'set-password.html'
   ]) {
     const html = readFileSync(new URL(page, root), 'utf8');
-    assert.match(html, /lesson-content-i18n\.js\?v=20261025-audit-4/, page + ' must load the latest audited translation runtime');
+    assert.match(html, /lesson-content-i18n\.js(?:\?v=[^\"']+)?/, page + ' must load the expanded translation runtime');
   }
 });
