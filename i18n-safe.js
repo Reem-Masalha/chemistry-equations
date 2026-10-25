@@ -27,6 +27,7 @@ function translateDynamic(base,l){
   const current=Number(streak[1]),best=Number(streak[3]);
   return l==='ar'?'سلسلة التدريب اليومي: '+current+' يوم · الأفضل: '+best:'רצף תרגול יומי: '+current+' ימים · שיא: '+best;
  }
+ const shortStreak=base.match(/^Daily practice streak: (\\d+) days?$/);if(shortStreak){const n=shortStreak[1];return l==='ar'?'سلسلة التدريب اليومي: '+n+' يوم':'רצף תרגול יומי: '+n+' ימים';}
  return base;
 }
 function scan(root,l){
