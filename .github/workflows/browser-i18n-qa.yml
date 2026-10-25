@@ -45,7 +45,7 @@ jobs:
           SITE_URL: https://reem-masalha.github.io/chemistry-equations/index.html
         run: |
           for attempt in $(seq 1 36); do
-            if curl -fsSL "$SITE_URL" | grep -F "cache-bust.js?v=$EXPECTED_SHA" >/dev/null; then
+            if curl --connect-timeout 5 --max-time 15 -fsSL "$SITE_URL" | grep -F "$EXPECTED_SHA" >/dev/null; then
               echo "GitHub Pages is serving $EXPECTED_SHA"
               exit 0
             fi
