@@ -76,7 +76,22 @@ test('expanded translation runtime parses and contains lesson, quiz, and account
     'Step 1',
     'Step 2',
     'Generating a new recovery code…',
-    'Copy failed'
+    'Copy failed',
+    'Result copied',
+    '⭐ Level',
+    'Copy full result',
+    'Copied ✓',
+    'Select and copy',
+    'Continue →',
+    '✗ Not yet — the equation is balanced, but the coefficients can be reduced.',
+    'Today\'s Daily Challenge is complete.',
+    'You can review your answers or come back tomorrow for a new challenge.',
+    'Delete your account and saved account data? This cannot be undone.',
+    'Enter your password to confirm account deletion:',
+    'The server did not return a recovery code.',
+    'Manage your session and password securely.',
+    'Create an account to keep your learning progress associated with your username.',
+    'This equation cannot be balanced with positive whole-number coefficients.'
   ]) {
     const row = dictionary.get(key);
     assert.ok(row, 'missing expanded translation entry: ' + key);
@@ -100,6 +115,6 @@ test('all user-facing learning, quiz, challenge, checker, and account pages load
     'set-password.html'
   ]) {
     const html = readFileSync(new URL(page, root), 'utf8');
-    assert.match(html, /lesson-content-i18n\.js(?:\?v=[^\"']+)?/, page + ' must load the expanded translation runtime');
+    assert.match(html, /lesson-content-i18n\.js\?v=20261025-audit-4/, page + ' must load the latest audited translation runtime');
   }
 });
