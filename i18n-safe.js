@@ -31,7 +31,7 @@ function translateDynamic(base,l){
 function scan(root,l){
  const walker=document.createTreeWalker(root||document.body,NodeFilter.SHOW_TEXT);const nodes=[];
  while(walker.nextNode())nodes.push(walker.currentNode);
- for(const n of nodes){const p=n.parentElement;if(isProtected(p))continue;const raw=n.nodeValue||'';const nrm=normalize(raw);if(!nrm)continue;
+ for(const n of nodes){const p=n.parentElement;const raw=n.nodeValue||'';const nrm=normalize(raw);if(!nrm)continue;if(nrm.startsWith('Balance ')||nrm.startsWith("Today's challenge · ")){const dynamic=translateDynamic(nrm,l);if(dynamic!==nrm)n.nodeValue=raw.replace(nrm,dynamic)}if(isProtected(p))continue;
   if(!originals.has(n))originals.set(n,baseText(nrm));
   const base=originals.get(n);const v=M[base];const translated=v&&v[l==='ar'?0:1];const out=l==='en'?base:(translated||translateDynamic(base,l));
   if(out!==nrm)n.nodeValue=raw.replace(nrm,out);
