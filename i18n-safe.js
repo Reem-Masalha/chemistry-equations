@@ -29,6 +29,8 @@ function translateDynamic(base,l){
  }
  const shortStreak=base.match(/^Daily practice streak: (\d+) days?$/);if(shortStreak){const n=shortStreak[1];return l==='ar'?'سلسلة التدريب اليومي: '+n+' يوم':'רצף תרגול יומי: '+n+' ימים';}
  const changed=base.match(/^Coefficient changed from (.+) to (.+)$/);if(changed)return l==='ar'?'تم تغيير المعامل من '+changed[1]+' إلى '+changed[2]:'המקדֵם השתנה מ־'+changed[1]+' ל־'+changed[2];
+ if(base.startsWith('Delete your account'+' and saved account data?'))return l==='ar'?'هل تريد حذف حسابك وبياناته المحفوظة؟ لا يمكن التراجع عن هذا الإجراء.':'למחוק את החשבון ואת הנתונים השמורים שלו? לא ניתן לבטל פעולה זו.';
+ if(base.startsWith('Enter your password to confirm account'+' deletion:'))return l==='ar'?'أدخل كلمة المرور لتأكيد حذف الحساب:':'הזינו את הסיסמה כדי לאשר את מחיקת החשבון:';
  return base;
 }
 function scan(root,l){
