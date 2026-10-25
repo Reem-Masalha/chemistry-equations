@@ -21,9 +21,9 @@ for(const viewport of viewports){
    page.on('pageerror',e=>report.errors.push({page:pagePath,lang:lang.code,viewport:viewport.name,error:String(e)}));
    page.on('console',msg=>{if(msg.type()==='error')report.errors.push({page:pagePath,lang:lang.code,viewport:viewport.name,console:msg.text()})});
    try{
-    const response=await page.goto(new URL(pagePath,base).href,{waitUntil:'domcontentloaded',timeout:60000});
-    await page.waitForSelector('#site-language-select',{timeout:15000});
-    await page.waitForTimeout(900);
+    const response=await page.goto(new URL(pagePath,base).href,{waitUntil:'domcontentloaded',timeout:25000});
+    await page.waitForSelector('#site-language-select',{timeout:7000});
+    await page.waitForTimeout(500);
     const state=await page.evaluate(()=>{
      const visible=el=>!!(el&&(el.offsetWidth||el.offsetHeight||el.getClientRects().length));
      const bodyLines=(document.body.innerText||'').split(/\n+/).map(s=>s.trim()).filter(Boolean);
@@ -46,7 +46,7 @@ for(const viewport of viewports){
      if(candidates.length)report.untranslatedCandidates.push({page:pagePath,lang:lang.code,viewport:viewport.name,lines:candidates});
     }
     const shot=path.join(out,pagePath.replace('.html','')+'-'+lang.code+'-'+viewport.name+'.png');
-    await page.screenshot({path:shot,fullPage:true,animations:'disabled'});
+    await page.screenshot({path:shot,fullPage:true,animations:'disabled',timeout:20000});
     report.screenshots.push(shot);
     const assertions={
      httpOk:(response?.status()??500)<400,
