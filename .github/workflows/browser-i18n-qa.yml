@@ -16,7 +16,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: browser-i18n-qa
+  group: browser-i18n-qa-v2
   cancel-in-progress: true
 
 jobs:
