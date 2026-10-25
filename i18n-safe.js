@@ -6,7 +6,7 @@ let M={};
 const originals=new WeakMap();
 const reverse=new Map();
 function getLang(){try{const v=localStorage.getItem(KEY);return LANG[v]?v:'en'}catch{return'en'}}
-function isProtected(el){return !el||!!el.closest('script,style,noscript,textarea,select,option,code,pre,[data-no-translate],.equation,.chemical-equation,.formula,.math,[data-equation],[data-chemical],.site-language-control,.brand')}
+function isProtected(el){return !el||!!el.closest('script,style,noscript,textarea,select,option,code,pre,[data-no-translate],.equation,.chemical-equation,.formula,.math,[data-equation],[data-chemical],.site-language-control')}
 function normalize(s){return String(s??'').replace(/\s+/g,' ').trim()}
 function buildReverse(){reverse.clear();for(const [en,v] of Object.entries(M)){if(v&&v[0])reverse.set(normalize(v[0]),en);if(v&&v[1])reverse.set(normalize(v[1]),en)}}
 function baseText(raw){const b=normalize(raw);if(!b)return b;if(M[b])return b;return reverse.get(b)||b}
@@ -86,10 +86,10 @@ async function init(){
  if(document.body&&!window.__chemistryI18nObserver){
   window.__chemistryI18nObserver=true;let timer=0;
   const observer=new MutationObserver(records=>{
-   if(!records.some(r=>r.addedNodes&&r.addedNodes.length))return;
+   if(!records.some(r=>(r.addedNodes&&r.addedNodes.length)||r.type==='characterData'))return;
    clearTimeout(timer);timer=setTimeout(()=>apply(),100);
   });
-  observer.observe(document.body,{childList:true,subtree:true});
+  observer.observe(document.body,{childList:true,subtree:true,characterData:true});
  }
  window.ChemistryI18n={lang:getLang,refresh:()=>apply(),apply:(root=document.body)=>scan(root,getLang()),setLanguage:l=>{try{localStorage.setItem(KEY,l)}catch{};location.reload()},t:(en,ar,he)=>getLang()==='ar'?(ar??en):getLang()==='he'?(he??en):en};window.ChemLang=window.ChemistryI18n}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
