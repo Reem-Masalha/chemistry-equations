@@ -94,6 +94,51 @@ for(const lang of languages){
  }catch(e){report.errors.push({page:'interactive-journeys',lang:lang.code,error:String(e)})}
  finally{await context.close()}
 }
+
+for(const lang of languages){
+ const context=await browser.newContext({viewport:{width:1440,height:1000}});
+ await context.addInitScript(language=>localStorage.setItem('chemistryLanguage',language),lang.code);
+ const page=await context.newPage();
+ page.on('pageerror',e=>report.errors.push({page:'dynamic-journeys',lang:lang.code,error:String(e),stack:String(e.stack||'').slice(0,1200)}));
+ page.on('response',response=>{if(response.status()===404)report.errors.push({page:'dynamic-journeys',lang:lang.code,notFoundStatus:404,resourceType:response.request().resourceType(),notFoundUrl:response.url()})});
+ try{
+  await page.goto(new URL('index.html',base).href,{waitUntil:'domcontentloaded',timeout:25000});
+  await page.waitForSelector('#site-language-select',{timeout:7000});
+  await page.waitForTimeout(lang.code==='en'?350:2700);
+  await page.locator('button[data-eq]').first().click();
+  await page.locator('#balanceBtn').click();
+  await page.waitForTimeout(500);
+  const balanceText=(await page.locator('#balanceResult').innerText().catch(()=>'' )).trim();
+  const balanceVisible=balanceText.length>0;
+  report.checks.push({page:'index.html:balance-equation',lang:lang.code,resultVisible:balanceVisible,resultText:balanceText,assertions:{balanceResultVisible:balanceVisible}});
+  await page.screenshot({path:path.join(out,'balancer-result-'+lang.code+'.png'),fullPage:true,animations:'disabled',timeout:20000});
+ }catch(e){report.errors.push({page:'index.html:balance-equation',lang:lang.code,error:String(e)})}
+ try{
+  await page.goto(new URL('learn.html',base).href,{waitUntil:'domcontentloaded',timeout:25000});
+  await page.waitForSelector('#site-language-select',{timeout:7000});
+  await page.waitForTimeout(lang.code==='en'?350:2700);
+  await page.locator('#dailyStart').click();
+  await page.waitForTimeout(700);
+  const dailyText=(await page.locator('#dailyArea').innerText().catch(()=>'' )).trim();
+  const dailyVisible=await page.locator('#dailyArea').isVisible().catch(()=>false)&&dailyText.length>0;
+  report.checks.push({page:'learn.html:daily-challenge-start',lang:lang.code,dailyAreaVisible:dailyVisible,dailyText,assertions:{dailyChallengeOpened:dailyVisible}});
+  await page.screenshot({path:path.join(out,'daily-challenge-'+lang.code+'.png'),fullPage:true,animations:'disabled',timeout:20000});
+ }catch(e){report.errors.push({page:'learn.html:daily-challenge-start',lang:lang.code,error:String(e)})}
+ try{
+  await page.goto(new URL('learn.html',base).href,{waitUntil:'domcontentloaded',timeout:25000});
+  await page.waitForSelector('#site-language-select',{timeout:7000});
+  await page.waitForTimeout(lang.code==='en'?350:2700);
+  await page.locator('#accountTopBtn').click();
+  await page.waitForSelector('#accountModal',{timeout:5000});
+  await page.waitForTimeout(lang.code==='en'?250:1000);
+  const modalText=(await page.locator('#accountModal').innerText()).trim();
+  const modalVisible=await page.locator('#accountModal').isVisible().catch(()=>false)&&modalText.length>0;
+  report.checks.push({page:'account-modal',lang:lang.code,modalVisible,modalText,assertions:{accountModalVisible:modalVisible}});
+  await page.screenshot({path:path.join(out,'account-modal-'+lang.code+'.png'),fullPage:true,animations:'disabled',timeout:20000});
+ }catch(e){report.errors.push({page:'account-modal',lang:lang.code,error:String(e)})}
+ await context.close();
+}
+
 const failed=report.checks.filter(c=>c.assertions&&Object.values(c.assertions).some(v=>!v));
 report.summary={pages:pages.length,languages:languages.map(x=>x.code),viewports:viewports.map(x=>x.name),screenshotCount:report.screenshots.length,assertionFailures:failed.map(c=>({page:c.page,lang:c.lang,viewport:c.viewport,failures:Object.entries(c.assertions).filter(([,v])=>!v).map(([k])=>k)})),errorCount:report.errors.length,untranslatedCandidateGroups:report.untranslatedCandidates.length};
 fs.writeFileSync(path.join(out,'report.json'),JSON.stringify(report,null,2));
