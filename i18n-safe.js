@@ -78,6 +78,8 @@ async function loadDictionary(){try{const r=await fetch('site-language-v2.js?dic
 "Already know the basics? Take a quiz":["هل تعرف الأساسيات بالفعل؟ جرّب اختبارًا","כבר מכירים את היסודות? עברו לחידון"],
 "Go straight to the balancer":["انتقل مباشرة إلى أداة الموازنة","עברו ישירות למאזן המשוואות"],
 "Continue learning":["واصل التعلّم","המשיכו ללמוד"],
+"Continue Learning":["متابعة التعلّم","המשך הלמידה"],
+"Continue where you left off":["تابع من حيث توقفت","המשיכו מהמקום שבו הפסקתם"],
 "Your current lesson will be saved so you can continue where you left off.":["سيُحفظ درسك الحالي لتتمكن من المتابعة من حيث توقفت.","השיעור הנוכחי יישמר כדי שתוכלו להמשיך מהמקום שבו עצרתם."],
 "Start your learning path":["ابدأ مسار التعلّم","התחילו את מסלול הלמידה"],
 "Mini-course structure":["بنية الدورة المصغّرة","מבנה הקורס הקצר"],
