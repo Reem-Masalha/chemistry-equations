@@ -19,7 +19,7 @@ for(const viewport of viewports){
    await context.addInitScript(language=>localStorage.setItem('chemistryLanguage',language),lang.code);
    const page=await context.newPage();
    page.on('pageerror',e=>report.errors.push({page:pagePath,lang:lang.code,viewport:viewport.name,error:String(e),stack:String(e.stack||'').slice(0,1200)}));
-   page.on('response',response=>{if(response.status()>=400&&response.request().resourceType()==='script')report.errors.push({page:pagePath,lang:lang.code,viewport:viewport.name,scriptResponseStatus:response.status(),scriptUrl:response.url()})});
+   page.on('response',response=>{if(response.status()===404)report.errors.push({page:pagePath,lang:lang.code,viewport:viewport.name,notFoundStatus:404,resourceType:response.request().resourceType(),notFoundUrl:response.url()})});
    page.on('console',msg=>{if(msg.type()==='error')report.errors.push({page:pagePath,lang:lang.code,viewport:viewport.name,console:msg.text()})});
    try{
     const response=await page.goto(new URL(pagePath,base).href,{waitUntil:'domcontentloaded',timeout:25000});
@@ -40,11 +40,12 @@ for(const viewport of viewports){
      const heading=document.querySelector('main h1,h1');
      const nav=[...document.querySelectorAll('.main-nav a')].filter(visible).map(a=>a.innerText.trim());
      const selector=document.querySelector('#site-language-select');
+     const overflowingElements=[...document.querySelectorAll('body *')].filter(visible).map(el=>{const r=el.getBoundingClientRect(),cs=getComputedStyle(el);return {tag:el.tagName,id:el.id||'',className:typeof el.className==='string'?el.className:'',left:Math.round(r.left),right:Math.round(r.right),width:Math.round(r.width),scrollWidth:el.scrollWidth,clientWidth:el.clientWidth,overflowX:cs.overflowX,parent:el.parentElement?.tagName+'#'+(el.parentElement?.id||'')+'.'+(typeof el.parentElement?.className==='string'?el.parentElement.className:'')};}).filter(x=>x.right>innerWidth+2||x.left < -2).sort((a,b)=>(b.right-innerWidth)-(a.right-innerWidth)).slice(0,20);
      const controls=[...document.querySelectorAll('.topbar .brand,.topbar .main-nav,.topbar-controls,#site-language-select,#accountTopBtn')].filter(visible).map(el=>{
       const r=el.getBoundingClientRect();
       return {name:el.id||el.className||el.tagName,left:Math.round(r.left),right:Math.round(r.right),top:Math.round(r.top),bottom:Math.round(r.bottom),width:Math.round(r.width),height:Math.round(r.height)};
      });
-     return {title:document.title,lang:document.documentElement.lang,dir:document.documentElement.dir,selectedLanguage:selector?.value,languageLabel:document.querySelector('.site-language-label')?.innerText||'',heading:heading?.innerText?.replace(/\s+/g,' ').trim()||'',nav,bodyLines,textNodes,placeholders,bodyScrollWidth:document.documentElement.scrollWidth,viewportWidth:innerWidth,documentHeight:document.documentElement.scrollHeight,controls};
+     return {title:document.title,lang:document.documentElement.lang,dir:document.documentElement.dir,selectedLanguage:selector?.value,languageLabel:document.querySelector('.site-language-label')?.innerText||'',heading:heading?.innerText?.replace(/\s+/g,' ').trim()||'',nav,bodyLines,textNodes,placeholders,overflowingElements,bodyScrollWidth:document.documentElement.scrollWidth,viewportWidth:innerWidth,documentHeight:document.documentElement.scrollHeight,controls};
     });
     report.checks.push({page:pagePath,lang:lang.code,viewport:viewport.name,status:response?.status()??null,...state});
     const key=viewport.name+':'+pagePath;
@@ -77,7 +78,7 @@ for(const lang of languages){
  await context.addInitScript(language=>localStorage.setItem('chemistryLanguage',language),lang.code);
  const page=await context.newPage();
  page.on('pageerror',e=>report.errors.push({page:'interactive-journeys',lang:lang.code,error:String(e),stack:String(e.stack||'').slice(0,1200)}));
- page.on('response',response=>{if(response.status()>=400&&response.request().resourceType()==='script')report.errors.push({page:'interactive-journeys',lang:lang.code,scriptResponseStatus:response.status(),scriptUrl:response.url()})});
+ page.on('response',response=>{if(response.status()===404)report.errors.push({page:'interactive-journeys',lang:lang.code,notFoundStatus:404,resourceType:response.request().resourceType(),notFoundUrl:response.url()})});
  try{
   await page.goto(new URL('checker.html',base).href,{waitUntil:'domcontentloaded',timeout:60000});
   await page.waitForSelector('#site-language-select');await page.waitForTimeout(700);
