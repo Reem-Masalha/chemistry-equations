@@ -3,7 +3,7 @@
 const load=()=>{
  if(window.ChemistryI18n){window.ChemistryI18n.refresh?.();return}
  const s=document.createElement('script');
- s.src='i18n-safe.js?v=20261025-i18n-qa-3';
+ s.src='i18n-safe.js?v=20261025-i18n-qa-4';
  s.async=false;
  s.onload=()=>window.ChemistryI18n?.refresh?.();
  document.head.appendChild(s);
