@@ -6,6 +6,9 @@ if(window.__CHEM_NAV_FINAL__)return;
 window.__CHEM_NAV_FINAL__=true;
 const style=document.createElement('style');
 style.textContent=`
+/* RTL search fix: keyboard-hint badges can overlap right-aligned placeholder text. Hide kbd hints globally in RTL, regardless of which search component created them. */
+html[dir="rtl"] kbd,html[dir="rtl"] [role="search"] kbd,html[dir="rtl"] input[type="search"]~kbd,html[dir="rtl"] .search-shortcut,html[dir="rtl"] .search-kbd,html[dir="rtl"] .kbd-hint{display:none!important;visibility:hidden!important}
+
 /* Flat navigation: keep the account controls separate and give the nav the remaining width. */
 .topbar.topbar{display:flex!important;align-items:center!important;min-width:0!important;overflow:visible!important;gap:18px!important}
 .topbar.topbar>.brand{order:1!important;margin-right:0!important;min-width:0!important;flex:0 1 auto!important;white-space:nowrap!important}
