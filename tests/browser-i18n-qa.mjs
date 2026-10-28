@@ -94,6 +94,17 @@ for(const lang of languages){
   const questionMeta=(await page.locator('.practice-question-meta').innerText().catch(()=>'' )).trim();
   const questionMetaLocalized=lang.code==='en'||!/\b(basic balancing|coefficients|diatomic elements|already-balanced equations|tricky formulas|parentheses|polyatomic ions|combustion|redox|ionic equations|beginner|intermediate|advanced|easy|medium|hard)\b/i.test(questionMeta);
   report.checks.push({page:'personal-quiz.html:start-practice',lang:lang.code,quizAreaVisible:quizAreaText.length>0,questionMeta,scoreArea:(await page.locator('#scoreArea').innerText()).trim(),assertions:{practiceStarted:quizAreaText.length>0,questionMetaLocalized}});
+  await page.locator('#cancelQuiz').click();
+  await page.locator('input[name="qtype"][value="coefficients"]').check();
+  await page.locator('#newQuiz').click();
+  const coefInputs=page.locator('#quizArea [data-coef]');
+  await coefInputs.first().fill('99');
+  for(let i=1;i<await coefInputs.count();i++)await coefInputs.nth(i).fill('1');
+  await page.locator('#quizArea .practice-submit').click();
+  await page.waitForSelector('#answerFeedback .muted',{timeout:5000});
+  const feedbackHint=(await page.locator('#answerFeedback .muted').innerText()).trim();
+  const feedbackHintLocalized=lang.code==='en'||(lang.code==='ar'?/[\\u0600-\\u06FF]/.test(feedbackHint):/[\\u0590-\\u05FF]/.test(feedbackHint));
+  report.checks.push({page:'personal-quiz.html:feedback-hint',lang:lang.code,feedbackHint,assertions:{feedbackHintLocalized}});
  }catch(e){report.errors.push({page:'interactive-journeys',lang:lang.code,error:String(e)})}
  finally{await context.close()}
 }
