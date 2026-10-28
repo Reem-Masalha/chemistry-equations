@@ -37,13 +37,15 @@ for (const route of routes) {
       await expect(page.locator('#site-language-control select')).toHaveValue(language.code);
       await expect(page.locator('.main-nav a[href="learn.html"]')).toContainText(language.learn);
 
-      const widths = await page.evaluate(() => ({
-        viewport: window.innerWidth,
-        document: document.documentElement.scrollWidth,
-        body: document.body.scrollWidth,
-      }));
-      expect(Math.max(widths.document, widths.body), JSON.stringify(widths))
-        .toBeLessThanOrEqual(widths.viewport + 2);
+      const layout = await page.evaluate(() => {
+        const offenders = [...document.querySelectorAll('body *')].map(el => {
+          const r = el.getBoundingClientRect();
+          return { tag: el.tagName, id: el.id, cls: typeof el.className === 'string' ? el.className.slice(0, 80) : '', left: Math.round(r.left), right: Math.round(r.right), width: Math.round(r.width) };
+        }).filter(el => el.right > innerWidth + 2 || el.left < -2).sort((a, b) => b.right - a.right).slice(0, 12);
+        return { viewport: innerWidth, document: document.documentElement.scrollWidth, body: document.body.scrollWidth, offenders };
+      });
+      expect(Math.max(layout.document, layout.body), JSON.stringify(layout))
+        .toBeLessThanOrEqual(layout.viewport + 2);
       expect(pageErrors, pageErrors.join('\n')).toEqual([]);
     });
   }
