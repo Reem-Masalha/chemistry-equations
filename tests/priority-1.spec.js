@@ -41,8 +41,15 @@ for (const route of routes) {
         const offenders = [...document.querySelectorAll('body *')].map(el => {
           const r = el.getBoundingClientRect();
           return { tag: el.tagName, id: el.id, cls: typeof el.className === 'string' ? el.className.slice(0, 80) : '', left: Math.round(r.left), right: Math.round(r.right), width: Math.round(r.width) };
-        }).filter(el => el.right > innerWidth + 2 || el.left < -2).sort((a, b) => b.right - a.right).slice(0, 12);
-        return { viewport: innerWidth, document: document.documentElement.scrollWidth, body: document.body.scrollWidth, offenders };
+        }).filter(el => el.right > innerWidth + 2 || el.left < -2 || el.width > innerWidth + 2)
+          .sort((a, b) => b.right - a.right).slice(0, 12);
+        const scrollers = [...document.querySelectorAll('body *')].map(el => {
+          const r = el.getBoundingClientRect();
+          return { tag: el.tagName, id: el.id, cls: typeof el.className === 'string' ? el.className.slice(0, 80) : '',
+            left: Math.round(r.left), right: Math.round(r.right), width: Math.round(r.width),
+            clientWidth: el.clientWidth, scrollWidth: el.scrollWidth };
+        }).filter(el => el.scrollWidth > el.clientWidth + 2).sort((a, b) => b.scrollWidth - a.scrollWidth).slice(0, 12);
+        return { viewport: innerWidth, document: document.documentElement.scrollWidth, body: document.body.scrollWidth, offenders, scrollers };
       });
       expect(Math.max(layout.document, layout.body), JSON.stringify(layout))
         .toBeLessThanOrEqual(layout.viewport + 2);
