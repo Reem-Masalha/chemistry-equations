@@ -49,7 +49,14 @@ for (const route of routes) {
             left: Math.round(r.left), right: Math.round(r.right), width: Math.round(r.width),
             clientWidth: el.clientWidth, scrollWidth: el.scrollWidth };
         }).filter(el => el.scrollWidth > el.clientWidth + 2).sort((a, b) => b.scrollWidth - a.scrollWidth).slice(0, 12);
-        return { viewport: innerWidth, document: document.documentElement.scrollWidth, body: document.body.scrollWidth, offenders, scrollers };
+        const checker = document.querySelector('.checker-card');
+        const children = checker ? [...checker.children].map(el => {
+          const r = el.getBoundingClientRect(), cs = getComputedStyle(el);
+          return { tag: el.tagName, id: el.id, cls: el.className, left: Math.round(r.left), right: Math.round(r.right),
+            width: Math.round(r.width), clientWidth: el.clientWidth, scrollWidth: el.scrollWidth,
+            boxSizing: cs.boxSizing, cssWidth: cs.width, padding: cs.padding, margin: cs.margin };
+        }) : [];
+        return { viewport: innerWidth, document: document.documentElement.scrollWidth, body: document.body.scrollWidth, offenders, scrollers, children };
       });
       expect(Math.max(layout.document, layout.body), JSON.stringify(layout))
         .toBeLessThanOrEqual(layout.viewport + 2);
