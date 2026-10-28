@@ -211,3 +211,18 @@ for (const language of languages.filter(item => item.code !== 'en')) {
     expect(Math.max(widths.document, widths.body), JSON.stringify(widths)).toBeLessThanOrEqual(widths.viewport + 2);
   });
 }
+
+
+for (const language of languages) {
+  test(`practice session starts and renders answer choices in ${language.code}`, async ({ page }) => {
+    await prepare(page, language.code);
+    await page.goto('/personal-quiz.html', { waitUntil: 'domcontentloaded' });
+    await page.waitForFunction(() => window.ChemistryI18nReady === true, null, { timeout: 15000 });
+    await page.locator('#newQuiz').click();
+    await expect(page.locator('#quizArea .practice-choice')).toHaveCount(4);
+    await expect(page.locator('#quizArea')).toContainText('H');
+    await expect(page.locator('#cancelQuiz')).toBeVisible();
+    await page.locator('#cancelQuiz').click();
+    await expect(page.locator('#quizArea')).toContainText(language.code === 'ar' ? 'تم إلغاء الاختبار' : language.code === 'he' ? 'החידון בוטל' : 'Quiz cancelled');
+  });
+}
