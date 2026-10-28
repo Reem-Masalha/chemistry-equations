@@ -1,0 +1,25 @@
+name: Priority 1 site reliability
+
+on:
+  push:
+    branches: [main, priority-1-reliability-20261028]
+  pull_request:
+    branches: [main]
+
+jobs:
+  browser-regression:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install Playwright
+        run: npm install --no-save @playwright/test
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Run localization, RTL, mobile and tool regression tests
+        run: npx playwright test
