@@ -176,6 +176,7 @@ for (const language of languages) {
     await expect(page.locator('html')).toHaveAttribute('dir', language.dir);
     await page.locator('#previewAchievements').click();
     await expect(page.locator('#achievements .achievement')).toHaveCount(5);
+    await expect(page.locator('#certificatePreviewOverlay')).toBeVisible({ timeout: 5000 });
     await expect(page.locator('#certificateArea .certificate')).toBeVisible();
     await expect(page.locator('#certificateArea')).not.toContainText('Certificate of Achievement');
     await expect(page.locator('#certificateArea')).not.toContainText('Overall score');
