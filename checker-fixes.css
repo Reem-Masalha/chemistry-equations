@@ -21,5 +21,7 @@ html body.dark .checker-section,html body.dark .checker-equation{background:var(
   .section > .grid-2 > .tips{margin-bottom:0;}
   /* These cards declare width:100% and also have padding; include padding in the width. */
   .checker-card,.tips,.checker-examples,.next-card{box-sizing:border-box!important;max-width:100%!important;min-width:0!important;}
+  /* The decorative circle used to sit 38px outside this card and enlarge scrollWidth. */
+  .checker-card:after{right:-2px!important;}
   .section > .grid-2 > *, .checker-example-list, .checker-status, .checker-section{min-width:0!important;}
 }
