@@ -80,26 +80,39 @@ for (const language of languages.filter(item => item.code !== 'en')) {
   });
 }
 
-test('balancer produces the correct coefficients', async ({ page }) => {
-  await prepare(page, 'en');
-  await page.goto('/index.html', { waitUntil: 'domcontentloaded' });
-  await page.waitForFunction(() => window.ChemistryI18nReady === true, null, { timeout: 15000 });
-  await page.locator('#equationEditor').fill('H2 + O2 -> H2O');
-  await page.locator('#balanceBtn').click();
-  await expect(page.locator('#balanceResult')).toBeVisible();
-  await expect(page.locator('#balanceResult')).toContainText('2');
-  await expect(page.locator('#balanceResult')).toContainText('H');
-});
+for (const language of languages) {
+  test(`balancer produces correct coefficients in ${language.code}`, async ({ page }) => {
+    await prepare(page, language.code);
+    await page.goto('/index.html', { waitUntil: 'domcontentloaded' });
+    await page.waitForFunction(() => window.ChemistryI18nReady === true, null, { timeout: 15000 });
+    await page.locator('#equationEditor').fill('H2 + O2 -> H2O');
+    await page.locator('#balanceBtn').click();
+    await expect(page.locator('#balanceResult')).toBeVisible();
+    await expect(page.locator('#balanceResult')).toContainText('2');
+    await expect(page.locator('#balanceResult')).toContainText('H');
+  });
 
-test('checker returns a result for a valid chemical equation', async ({ page }) => {
-  await prepare(page, 'en');
-  await page.goto('/checker.html', { waitUntil: 'domcontentloaded' });
-  await page.waitForFunction(() => window.ChemistryI18nReady === true, null, { timeout: 15000 });
-  await page.locator('#checkInput').fill('2H2 + O2 -> 2H2O');
-  await page.locator('#checkBtn').click();
-  await expect(page.locator('#checkResult')).toBeVisible();
-  await expect.poll(() => page.locator('#checkResult').innerText()).toMatch(/balanced|atoms|element/i);
-});
+  test(`checker returns a result in ${language.code}`, async ({ page }) => {
+    await prepare(page, language.code);
+    await page.goto('/checker.html', { waitUntil: 'domcontentloaded' });
+    await page.waitForFunction(() => window.ChemistryI18nReady === true, null, { timeout: 15000 });
+    await page.locator('#checkInput').fill('2H2 + O2 -> 2H2O');
+    await page.locator('#checkBtn').click();
+    await expect(page.locator('#checkResult')).toBeVisible();
+    await expect.poll(() => page.locator('#checkResult').innerText().then(text => text.trim().length))
+      .toBeGreaterThan(10);
+  });
+
+  test(`dark mode remains available in ${language.code}`, async ({ page }) => {
+    await prepare(page, language.code);
+    await page.goto('/learn.html', { waitUntil: 'domcontentloaded' });
+    await page.waitForFunction(() => window.ChemistryI18nReady === true, null, { timeout: 15000 });
+    await page.locator('#themeToggle').click();
+    await expect(page.locator('body')).toHaveClass(/dark/);
+    const surface = await page.locator('.card').first().evaluate(el => getComputedStyle(el).backgroundColor);
+    expect(surface).not.toBe('rgb(255, 255, 255)');
+  });
+}
 
 test('RTL layout remains within the viewport at 320px', async ({ page }) => {
   await prepare(page, 'ar', 320);
