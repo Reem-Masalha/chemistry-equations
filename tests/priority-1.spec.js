@@ -7,6 +7,7 @@ const routes = [
   'challenges.html',
   'checker.html',
   'chemistry-reference.html',
+  'test-maker.html',
   'beginner-lessons.html',
   'intermediate-lessons.html',
   'advanced-lessons.html',
