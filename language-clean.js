@@ -27,7 +27,7 @@ function stabilizeNavigation(){
     .topbar-controls{display:flex!important;align-items:center!important;justify-content:flex-end!important;gap:8px!important;flex:0 0 auto!important;min-width:max-content!important;white-space:nowrap!important}
     .topbar-controls .account-top{flex:0 0 auto!important;margin:0!important;white-space:nowrap!important}
     .topbar-controls .site-language-control{display:inline-flex!important;align-items:center!important;justify-content:center!important;gap:7px!important;margin:0!important;flex:0 0 auto!important;white-space:nowrap!important}
-    .topbar-controls .site-language-control select{font:inherit;min-height:36px;max-width:110px}
+    .topbar-controls .site-language-control select{font:inherit;min-height:36px;max-width:132px}
     @media(min-width:761px){
       .topbar{display:flex!important;align-items:center!important}
       .topbar .brand{margin-right:0!important;flex:0 0 auto!important;min-width:0!important}
@@ -365,7 +365,7 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
  .topbar.topbar>.main-nav{grid-area:nav!important;display:flex!important;width:100%!important;min-width:0!important;max-width:100%!important;box-sizing:border-box!important;justify-content:flex-start!important;overflow-x:auto!important;overflow-y:hidden!important}
  .topbar.topbar>.topbar-controls{grid-area:controls!important;justify-self:end!important;display:flex!important;width:max-content!important;min-width:0!important;max-width:100%!important;gap:3px!important;overflow:visible!important}
  .topbar.topbar>.topbar-controls .site-language-control{display:inline-flex!important;flex:0 0 auto!important;width:auto!important;min-width:0!important;max-width:none!important;margin:0!important;overflow:visible!important}
- .topbar.topbar>.topbar-controls .site-language-control select{box-sizing:border-box!important;width:104px!important;min-width:104px!important;max-width:104px!important;padding:3px 5px!important;font-size:11px!important}
+ .topbar.topbar>.topbar-controls .site-language-control select{box-sizing:border-box!important;width:120px!important;min-width:120px!important;max-width:120px!important;padding:3px 5px!important;font-size:11px!important}
  .topbar.topbar>.topbar-controls #accountTopBtn,.topbar.topbar>.topbar-controls #themeToggle{flex:0 0 30px!important;width:30px!important;min-width:30px!important;max-width:30px!important;box-sizing:border-box!important;overflow:hidden!important;padding:4px 2px!important;font-size:0!important;text-align:center!important}
  .topbar.topbar>.topbar-controls #accountTopBtn::before{content:'👤';font-size:14px!important}
  .topbar.topbar>.topbar-controls #themeToggle::before{content:'🌙';font-size:14px!important}
@@ -375,7 +375,7 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 @media(max-width:360px){
  .topbar.topbar{padding-left:7px!important;padding-right:7px!important;gap:5px 5px!important}
  .topbar.topbar>.brand{font-size:11px!important}
- .topbar.topbar>.topbar-controls .site-language-control select{width:96px!important;min-width:96px!important;max-width:96px!important;font-size:10px!important}
+ .topbar.topbar>.topbar-controls .site-language-control select{width:112px!important;min-width:112px!important;max-width:112px!important;font-size:10px!important}
  .topbar.topbar>.topbar-controls{gap:2px!important}
 }
 `;
