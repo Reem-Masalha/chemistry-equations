@@ -90,7 +90,21 @@ for(const lang of languages){
   await page.goto(new URL('personal-quiz.html',base).href,{waitUntil:'domcontentloaded',timeout:60000});
   await page.waitForSelector('#site-language-select');await page.waitForTimeout(700);
   await page.locator('#newQuiz').click();await page.waitForTimeout(500);
-  report.checks.push({page:'personal-quiz.html:start-practice',lang:lang.code,quizAreaVisible:(await page.locator('#quizArea').innerText()).trim().length>0,scoreArea:(await page.locator('#scoreArea').innerText()).trim()});
+  const quizAreaText=(await page.locator('#quizArea').innerText()).trim();
+  const questionMeta=(await page.locator('.practice-question-meta').innerText().catch(()=>'' )).trim();
+  const questionMetaLocalized=lang.code==='en'||!/\b(basic balancing|coefficients|diatomic elements|already-balanced equations|tricky formulas|parentheses|polyatomic ions|combustion|redox|ionic equations|beginner|intermediate|advanced|easy|medium|hard)\b/i.test(questionMeta);
+  report.checks.push({page:'personal-quiz.html:start-practice',lang:lang.code,quizAreaVisible:quizAreaText.length>0,questionMeta,scoreArea:(await page.locator('#scoreArea').innerText()).trim(),assertions:{practiceStarted:quizAreaText.length>0,questionMetaLocalized}});
+  await page.locator('#cancelQuiz').click();
+  await page.locator('input[name="qtype"][value="coefficients"]').check();
+  await page.locator('#newQuiz').click();
+  const coefInputs=page.locator('#quizArea [data-coef]');
+  await coefInputs.first().fill('99');
+  for(let i=1;i<await coefInputs.count();i++)await coefInputs.nth(i).fill('1');
+  await page.locator('#quizArea .practice-submit').click();
+  await page.waitForSelector('#answerFeedback .muted',{timeout:5000});
+  const feedbackHint=(await page.locator('#answerFeedback .muted').innerText()).trim();
+  const feedbackHintLocalized=lang.code==='en'||(lang.code==='ar'?/[ء-ي]/.test(feedbackHint):/[א-ת]/.test(feedbackHint));
+  report.checks.push({page:'personal-quiz.html:feedback-hint',lang:lang.code,feedbackHint,assertions:{feedbackHintLocalized}});
  }catch(e){report.errors.push({page:'interactive-journeys',lang:lang.code,error:String(e)})}
  finally{await context.close()}
 }
