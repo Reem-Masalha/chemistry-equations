@@ -6,6 +6,7 @@ const routes = [
   'personal-quiz.html',
   'challenges.html',
   'checker.html',
+  'chemistry-reference.html',
   'beginner-lessons.html',
   'intermediate-lessons.html',
   'advanced-lessons.html',
