@@ -178,10 +178,11 @@ for (const language of languages) {
     await expect(page.locator('#achievements .achievement')).toHaveCount(5);
     await expect(page.locator('#certificatePreviewOverlay')).toBeVisible({ timeout: 5000 });
     await expect(page.locator('#certificateArea .certificate')).toBeVisible();
-    await expect(page.locator('#certificateArea')).not.toContainText('Certificate of Achievement');
-    await expect(page.locator('#certificateArea')).not.toContainText('Overall score');
-    await expect(page.locator('#certificateArea')).not.toContainText('Equations solved');
-    await expect(page.locator('#certificateArea')).not.toContainText('Download / Print Certificate');
+    if (language.code !== 'en') {
+      for (const english of ['Certificate of Achievement', 'Overall score', 'Equations solved', 'Download / Print Certificate']) {
+        await expect(page.locator('#certificateArea')).not.toContainText(english);
+      }
+    }
     await expect(pageErrors, pageErrors.join('\\n')).toEqual([]);
     if (language.code !== 'en') {
       await expect(page.locator('#certificatePreviewOverlay .certificate-preview-title')).not.toContainText('Certificate Preview');
