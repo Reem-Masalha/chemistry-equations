@@ -221,3 +221,44 @@ body.dark footer{background:#0c121d}
   .profile-dashboard{gap:16px}
   .profile-summary{gap:12px}
 }
+
+
+/* Site-wide action-button consistency: prevent legacy page styles from leaving
+   secondary actions white while the matching primary actions are blue. */
+html body button.secondary,
+html body a.secondary,
+html body .secondary,
+html body button[class~="secondary"],
+html body a[class~="secondary"]{
+  background:var(--accent)!important;
+  border:1px solid var(--accent)!important;
+  color:#fff!important;
+  -webkit-text-fill-color:#fff!important;
+  box-shadow:0 5px 14px rgba(49,88,214,.14)!important;
+}
+html body button.secondary:hover,
+html body a.secondary:hover,
+html body .secondary:hover,
+html body button.secondary:focus-visible,
+html body a.secondary:focus-visible{
+  background:#294bc0!important;
+  border-color:#294bc0!important;
+  color:#fff!important;
+  -webkit-text-fill-color:#fff!important;
+}
+html body button.secondary:disabled,
+html body button.secondary[disabled]{
+  opacity:.55!important;
+  cursor:not-allowed!important;
+  box-shadow:none!important;
+}
+html body.dark button.secondary,
+html body.dark a.secondary,
+html body.dark .secondary,
+html body.dark button[class~="secondary"],
+html body.dark a[class~="secondary"]{
+  background:var(--accent)!important;
+  border-color:var(--accent)!important;
+  color:#fff!important;
+  -webkit-text-fill-color:#fff!important;
+}
