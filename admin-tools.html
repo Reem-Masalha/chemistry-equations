@@ -4,11 +4,11 @@
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="site-build" content="20260908-09">
 <title>Chemistry Equations — Admin Tools</title>
-<link rel="stylesheet" href="style.css?v=20260908-08">
+<link rel="stylesheet" href="style.css?v=20261028-reference-2">
 <link rel="stylesheet" href="mobile-fixes.css?v=20260908-08">
 </head>
 <body>
-<header class="topbar"><a class="brand" href="learn.html">⚗ Chemistry<span class="accent">Equations</span></a><nav class="main-nav"><a href="learn.html">Learn</a><a href="personal-quiz.html">Quiz</a><a href="challenges.html">Challenges</a><a href="index.html">Balancer</a><a href="checker.html">Checker</a></nav><button id="accountTopBtn" class="account-top" type="button">👤 Account</button></header>
+<header class="topbar"><a class="brand" href="learn.html">⚗ Chemistry<span class="accent">Equations</span></a><nav class="main-nav"><a href="learn.html">Learn</a><a href="personal-quiz.html">Quiz</a><a href="challenges.html">Challenges</a><a href="index.html">Balancer</a><a href="checker.html">Checker</a><a href="chemistry-reference.html">Reference</a></nav><button id="accountTopBtn" class="account-top" type="button">👤 Account</button></header>
 <main>
 <section class="section admin-page">
 <div class="admin-hero card"><div><span class="eyebrow">OWNER CONTROL CENTER</span><h1>Admin Tools</h1><p class="admin-lead">Everything you need to test, inspect and manage the Chemistry Equations site — without replacing the normal user experience.</p></div><div class="admin-actions"><a class="primary" href="admin.html">Analytics dashboard</a><button id="refresh" class="primary" type="button">Refresh data</button></div></div>
@@ -54,7 +54,7 @@
 }
 .admin-actions #refresh:focus-visible { outline: 3px solid rgba(49,88,214,.35); outline-offset: 2px; }
 </style>
-<script src="theme.js?v=20260911-03" defer></script><script src="account.js?v=20261025-translation-audit-1" defer></script>
+<script src="theme.js?v=20261028-reference-2" defer></script><script src="account.js?v=20261025-translation-audit-1" defer></script>
 <script>
 (()=>{const API='https://chemistry-equations-api.reemkhmasalha.workers.dev',$=id=>document.getElementById(id),esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));let key='';const empty='<tr><td colspan="10" class="muted">No data yet.</td></tr>';const rows=(a,fn)=>a&&a.length?a.map(fn).join(''):empty;const name=p=>{const f=String(p||'').split('?')[0].split('#')[0].split('/').pop()||'index.html';return ({'index.html':'Balancer','learn.html':'Learning','personal-quiz.html':'Quiz','challenges.html':'Challenges','checker.html':'Checker','profile.html':'Profile','admin.html':'Admin','admin-tools.html':'Admin Tools'})[f]||f.replace(/\.html$/i,'').replace(/[-_]+/g,' ').replace(/\b\w/g,c=>c.toUpperCase())};
 function render(d){const q=d.quiz_totals||{},p=d.authenticated_periods||d.periods||{},t=d.authenticated_totals||d.totals||{},features=d.featurePeriod||d.features||[];const f=d.account_funnel||{};const metrics=[[(d.users||[]).length,'Registered accounts'],[d.active_users||0,'Active users · 30 min'],[t.unique_visitors||0,'Unique viewers'],[t.visits||0,'Total page views'],[p.daily||0,'Daily visitors'],[p.weekly||0,'Weekly visitors'],[p.monthly||0,'Monthly visitors'],[q.quizzes||0,'Quizzes taken'],[Number(q.average_score||0).toFixed(1)+'%','Average quiz score'],[f.creations||0,'Account creations tracked'],[f.creations_30d||0,'Creations · 30 days'],[f.sign_ins||0,'Sign-ins tracked'],[f.sign_ins_30d||0,'Sign-ins · 30 days']];$('metrics').innerHTML=metrics.map(x=>`<div><b>${esc(x[0])}</b><span>${esc(x[1])}</span></div>`).join('');
@@ -63,6 +63,6 @@ const days=(d.visitorsByDay||[]).slice(-7),max=Math.max(1,...days.map(x=>Number(
 async function load(){key=$('adminKey').value.trim();if(!key){$('msg').textContent='Enter the admin key first.';return}$('msg').textContent='Loading admin data…';try{const r=await fetch(API+'/api/admin/stats',{method:'POST',headers:{'content-type':'application/json','x-admin-key':key},body:'{}'}),d=await r.json();if(!r.ok)throw Error(d.error||'Could not load admin data.');render(d);$('msg').textContent='Admin data loaded.';$('msg').style.color='var(--good)'}catch(e){$('msg').textContent=e.message||'Could not load admin data.';$('msg').style.color='var(--bad)'}}
 $('unlock').onclick=load;$('refresh').onclick=load;$('adminKey').onkeydown=e=>{if(e.key==='Enter')load()};$('replayDaily').onclick=e=>{e.preventDefault();try{localStorage.setItem('chemistryDailyAdminReplay','1')}catch{}location.href='learn.html#dailyChallenge'};$('resetBtn').onclick=async()=>{const u=$('username').value.trim(),p=$('newPassword').value;if(!key||!u||p.length<8){$('resetMsg').textContent='Enter the admin key, username, and a password of at least 8 characters.';return}$('resetMsg').textContent='Resetting password…';try{const r=await fetch(API+'/api/admin/reset-password',{method:'POST',headers:{'content-type':'application/json','x-admin-key':key},body:JSON.stringify({username:u,newPassword:p})}),d=await r.json().catch(()=>({}));if(!r.ok)throw Error(d.error||'Could not reset the password.');$('resetMsg').textContent=d.message||'Password reset successfully.';$('resetMsg').style.color='var(--good)';$('newPassword').value='';load()}catch(e){$('resetMsg').textContent=e.message||'Could not reset the password.';$('resetMsg').style.color='var(--bad)'}}})();
 </script>
-<script src="language-clean.js?v=20261028-priority1" defer></script>
+<script src="language-clean.js?v=20261028-priority2" defer></script>
 <script src="lesson-content-i18n.js?v=20261025-admin-i18n" defer></script>
 </body></html>
