@@ -227,7 +227,7 @@ body.dark footer{background:#0c121d}
    secondary actions white while the matching primary actions are blue. */
 html body button.secondary,
 html body a.secondary,
-html body .secondary,
+html body button.secondary,\nhtml body a.secondary,
 html body button[class~="secondary"],
 html body a[class~="secondary"]{
   background:var(--accent)!important;
@@ -238,7 +238,7 @@ html body a[class~="secondary"]{
 }
 html body button.secondary:hover,
 html body a.secondary:hover,
-html body .secondary:hover,
+html body button.secondary:hover,\nhtml body a.secondary:hover,
 html body button.secondary:focus-visible,
 html body a.secondary:focus-visible{
   background:#294bc0!important;
