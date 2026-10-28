@@ -63,7 +63,15 @@ Object.assign(M,{
 "Redox equations":["معادلات الأكسدة والاختزال","משוואות חמצון-חיזור"],
 "6 misses":["6 إجابات خاطئة","6 טעויות"],
 "3 misses":["3 إجابات خاطئة","3 טעויות"],
-"August 2026":["أغسطس 2026","אוגוסט 2026"]
+"August 2026":["أغسطس 2026","אוגוסט 2026"],
+"Certificate Preview":["معاينة الشهادة","תצוגה מקדימה של התעודה"],
+"Close certificate":["إغلاق الشهادة","סגירת התעודה"],
+"CHEMISTRY EQUATIONS":["المعادلات الكيميائية","משוואות כימיות"],
+"Certificate No. CE-":["رقم الشهادة CE-","מספר תעודה CE-"],
+"Preview mode is ON. Your real progress is unchanged.":["وضع المعاينة مفعّل. لم يتغير تقدمك الحقيقي.","מצב התצוגה המקדימה פעיל. ההתקדמות האמיתית שלכם לא השתנתה."],
+"Preview mode shows the complete design without changing your real progress.":["يعرض وضع المعاينة التصميم الكامل دون تغيير تقدمك الحقيقي.","מצב התצוגה המקדימה מציג את העיצוב המלא בלי לשנות את ההתקדמות האמיתית שלכם."],
+"Preview achievements & certificate":["معاينة الإنجازات والشهادة","תצוגה מקדימה של הישגים ותעודה"],
+"Back to my real profile":["العودة إلى ملفي الحقيقي","חזרה לפרופיל האמיתי שלי"]
 });
 const original=new WeakMap();
 function lang(){try{const x=localStorage.getItem(KEY);return LANG[x]?x:'en'}catch{return'en'}}
