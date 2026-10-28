@@ -5,7 +5,7 @@ function boot(){
  if(window.ChemistryI18n?.refresh||window.ChemLang?.refresh)return;
  if(document.querySelector('script[src*="i18n-safe.js"]'))return;
  const s=document.createElement('script');
- s.src='i18n-safe.js?v=20261028-priority1';
+ s.src='i18n-safe.js?v=20261028-priority2';
  s.async=false;
  document.head.appendChild(s);
 }
