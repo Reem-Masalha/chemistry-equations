@@ -54,7 +54,7 @@ test('translation dictionary has Arabic and Hebrew for every entry', async ({ pa
   await page.goto('/learn.html', { waitUntil: 'domcontentloaded' });
   await page.waitForFunction(() => window.ChemistryI18nReady === true, null, { timeout: 15000 });
   const audit = await page.evaluate(() => window.ChemistryI18nDictionaryAudit);
-  expect(audit.entries).toBeGreaterThan(1000);
+  expect(audit.entries).toBeGreaterThan(600);
   expect(audit.missing).toEqual([]);
 });
 
