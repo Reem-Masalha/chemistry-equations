@@ -4,7 +4,7 @@ $('resetAnalytics').onclick=resetAnalytics;$('key').onkeydown=e=>{if(e.key==='En
 <script>
 (()=>{const select=document.getElementById('adminLanguageSelect'),label=document.getElementById('adminLanguageLabel');const apply=()=>{let lang='en';try{lang=localStorage.getItem('chemistryLanguage')||'en'}catch{};if(!['en','ar','he'].includes(lang))lang='en';select.value=lang;label.textContent=lang==='ar'?'اللغة':lang==='he'?'שפה':'Language';select.setAttribute('aria-label',label.textContent);document.documentElement.lang=lang;document.documentElement.dir=lang==='ar'||lang==='he'?'rtl':'ltr';document.body.dir=document.documentElement.dir};apply();select.addEventListener('change',()=>{try{localStorage.setItem('chemistryLanguage',select.value)}catch{};location.reload()})})();
 </script>
-<script src="language-clean.js?v=20261025-admin-i18n" defer></script>
+<script src="language-clean.js?v=20261028-priority1" defer></script>
 <script src="lesson-content-i18n.js?v=20261025-admin-i18n" defer></script>
 <script src="i18n-enhancements.js?v=20261025-admin-i18n" defer></script>
 </body></html>
