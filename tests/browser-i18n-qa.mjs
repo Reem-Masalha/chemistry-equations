@@ -92,7 +92,7 @@ for(const lang of languages){
   await page.locator('#newQuiz').click();await page.waitForTimeout(500);
   const quizAreaText=(await page.locator('#quizArea').innerText()).trim();
   const questionMeta=(await page.locator('.practice-question-meta').innerText().catch(()=>'' )).trim();
-  const questionMetaLocalized=lang.code==='en'||!/\\b(basic balancing|coefficients|diatomic elements|already-balanced equations|tricky formulas|parentheses|polyatomic ions|combustion|redox|ionic equations|beginner|intermediate|advanced|easy|medium|hard)\\b/i.test(questionMeta);
+  const questionMetaLocalized=lang.code==='en'||!/\b(basic balancing|coefficients|diatomic elements|already-balanced equations|tricky formulas|parentheses|polyatomic ions|combustion|redox|ionic equations|beginner|intermediate|advanced|easy|medium|hard)\b/i.test(questionMeta);
   report.checks.push({page:'personal-quiz.html:start-practice',lang:lang.code,quizAreaVisible:quizAreaText.length>0,questionMeta,scoreArea:(await page.locator('#scoreArea').innerText()).trim(),assertions:{practiceStarted:quizAreaText.length>0,questionMetaLocalized}});
  }catch(e){report.errors.push({page:'interactive-journeys',lang:lang.code,error:String(e)})}
  finally{await context.close()}
