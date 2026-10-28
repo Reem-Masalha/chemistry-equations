@@ -231,3 +231,24 @@ for (const language of languages) {
     await expect(page.locator('#quizArea')).toContainText(language.code === 'ar' ? 'تم إلغاء الاختبار' : language.code === 'he' ? 'החידון בוטל' : 'Quiz cancelled');
   });
 }
+
+
+for (const language of languages) {
+  test(`practice feedback hints are localized in ${language.code}`, async ({ page }) => {
+    await prepare(page, language.code);
+    await page.goto('/personal-quiz.html', { waitUntil: 'domcontentloaded' });
+    await page.waitForFunction(() => window.ChemistryI18nReady === true, null, { timeout: 15000 });
+    await page.locator('input[name="qtype"][value="coefficients"]').check();
+    await page.locator('#newQuiz').click();
+    const coefficients = page.locator('#quizArea [data-coef]');
+    await expect(coefficients.first()).toBeVisible();
+    await coefficients.first().fill('99');
+    for (let i = 1; i < await coefficients.count(); i++) await coefficients.nth(i).fill('1');
+    await page.locator('#quizArea .practice-submit').click();
+    await expect(page.locator('#answerFeedback')).toBeVisible();
+    const hint = await page.locator('#answerFeedback .muted').innerText();
+    expect(hint.trim().length).toBeGreaterThan(5);
+    if (language.code === 'ar') expect(hint, 'Arabic feedback hint expected').toMatch(/[\\u0600-\\u06FF]/);
+    if (language.code === 'he') expect(hint, 'Hebrew feedback hint expected').toMatch(/[\\u0590-\\u05FF]/);
+  });
+}
