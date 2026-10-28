@@ -103,7 +103,7 @@ for(const lang of languages){
   await page.locator('#quizArea .practice-submit').click();
   await page.waitForSelector('#answerFeedback .muted',{timeout:5000});
   const feedbackHint=(await page.locator('#answerFeedback .muted').innerText()).trim();
-  const feedbackHintLocalized=lang.code==='en'||(lang.code==='ar'?/[\\u0600-\\u06FF]/.test(feedbackHint):/[\\u0590-\\u05FF]/.test(feedbackHint));
+  const feedbackHintLocalized=lang.code==='en'||(lang.code==='ar'?/[ء-ي]/.test(feedbackHint):/[א-ת]/.test(feedbackHint));
   report.checks.push({page:'personal-quiz.html:feedback-hint',lang:lang.code,feedbackHint,assertions:{feedbackHintLocalized}});
  }catch(e){report.errors.push({page:'interactive-journeys',lang:lang.code,error:String(e)})}
  finally{await context.close()}
