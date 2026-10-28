@@ -6,7 +6,7 @@ const load=()=>{
  /* Do not start a second localization engine while the shared one is loading. */
  if(document.querySelector('script[src*="i18n-safe.js"]'))return;
  const s=document.createElement('script');
- s.src='i18n-safe.js?v=20261028-priority1';
+ s.src='i18n-safe.js?v=20261028-priority2';
  s.async=false;
  document.head.appendChild(s);
 };
