@@ -71,9 +71,9 @@ function protectedNode(el){return !el||!!el.closest('script,style,noscript,texta
 function translateText(s,l){
  const raw=String(s??''),key=raw.trim();if(!key||l==='en')return raw;
  const v=M[key];if(v&&v[l==='ar'?0:1])return raw.replace(key,v[l==='ar'?0:1]);
- const lesson=key.match(/^(Beginner|Intermediate|Advanced) · Lesson (\\d+)$/);
+ const lesson=key.match(/^(Beginner|Intermediate|Advanced) · Lesson (\d+)$/);
  if(lesson){const levels={Beginner:['مبتدئ','מתחילים'],Intermediate:['متوسط','ביניים'],Advanced:['متقدم','מתקדמים']};return raw.replace(key,levels[lesson[1]][l==='ar'?0:1]+' · '+(l==='ar'?'الدرس ':'שיעור ')+lesson[2])}
- const level=key.match(/^⭐ Level (\\d+)$/);
+ const level=key.match(/^⭐ Level (\d+)$/);
  if(level)return raw.replace(key,l==='ar'?'⭐ المستوى '+level[1]:'⭐ רמה '+level[1]);
  const stage=key.match(/^✓(Easy|Medium|Hard)$/);
  if(stage){const stages={Easy:['سهل','קל'],Medium:['متوسط','בינוני'],Hard:['صعب','קשה']};return raw.replace(key,'✓'+stages[stage[1]][l==='ar'?0:1])}
