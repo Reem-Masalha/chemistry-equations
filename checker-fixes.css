@@ -17,6 +17,9 @@ html body.dark .checker-section,html body.dark .checker-equation{background:var(
   .section > .grid-2 > .checker-card{width:100%;}
 }
 @media(max-width:760px){
-  .section > .grid-2{grid-template-columns:1fr!important;}
+  .section > .grid-2{grid-template-columns:minmax(0,1fr)!important;min-width:0!important;}
   .section > .grid-2 > .tips{margin-bottom:0;}
+  /* These cards declare width:100% and also have padding; include padding in the width. */
+  .checker-card,.tips,.checker-examples,.next-card{box-sizing:border-box!important;max-width:100%!important;min-width:0!important;}
+  .section > .grid-2 > *, .checker-example-list, .checker-status, .checker-section{min-width:0!important;}
 }
