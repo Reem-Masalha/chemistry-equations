@@ -248,7 +248,7 @@ for (const language of languages) {
     await expect(page.locator('#answerFeedback')).toBeVisible();
     const hint = await page.locator('#answerFeedback .muted').innerText();
     expect(hint.trim().length).toBeGreaterThan(5);
-    if (language.code === 'ar') expect(hint, 'Arabic feedback hint expected').toMatch(/[\\u0600-\\u06FF]/);
-    if (language.code === 'he') expect(hint, 'Hebrew feedback hint expected').toMatch(/[\\u0590-\\u05FF]/);
+    if (language.code === 'ar') expect(hint, 'Arabic feedback hint expected').toMatch(/[\u0600-\u06FF]/);
+    if (language.code === 'he') expect(hint, 'Hebrew feedback hint expected').toMatch(/[\u0590-\u05FF]/);
   });
 }
