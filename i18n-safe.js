@@ -1,6 +1,8 @@
 (()=>{
 'use strict';
 const KEY='chemistryLanguage';
+if(window.__CHEMISTRY_I18N_SAFE_LOADED__)return;
+window.__CHEMISTRY_I18N_SAFE_LOADED__=true;
 const LANG={en:{dir:'ltr',label:'English'},ar:{dir:'rtl',label:'العربية'},he:{dir:'rtl',label:'עברית'}};
 let M={};
 const originals=new WeakMap();
@@ -142,7 +144,9 @@ async function loadDictionary(){try{const r=await fetch('site-language-v2.js?dic
 "Complete Easy, Medium and Hard to unlock your certificate.":["أكمل مستويات السهل والمتوسط والصعب لفتح الشهادة.","השלימו את הרמות קל, בינוני וקשה כדי לפתוח את התעודה."]
 });buildReverse()}catch(e){M={}}}
 async function init(){
- apply();await loadDictionary();apply();[150,500,1200,2500].forEach(ms=>setTimeout(()=>apply(),ms));
+ const api={lang:getLang,refresh:()=>apply(),apply:(root=document.body)=>scan(root,getLang()),setLanguage:l=>{if(!LANG[l])return;try{localStorage.setItem(KEY,l)}catch{};location.reload()},t:(en,ar,he)=>getLang()==='ar'?(ar??en):getLang()==='he'?(he??en):en};
+ window.ChemistryI18n=api;window.ChemLang=api;
+ apply();await loadDictionary();apply();window.ChemistryI18nDictionaryAudit={entries:Object.keys(M).length,missing:Object.entries(M).filter(([key,value])=>!String(key||'').trim()||!Array.isArray(value)||!String(value[0]||'').trim()||!String(value[1]||'').trim()).map(([key])=>key)};window.ChemistryI18nReady=true;[150,500,1200,2500].forEach(ms=>setTimeout(()=>apply(),ms));
  if(document.body&&!window.__chemistryI18nObserver){
   window.__chemistryI18nObserver=true;let timer=0;
   const observer=new MutationObserver(records=>{
@@ -151,6 +155,6 @@ async function init(){
   });
   observer.observe(document.body,{childList:true,subtree:true});
  }
- window.ChemistryI18n={lang:getLang,refresh:()=>apply(),apply:(root=document.body)=>scan(root,getLang()),setLanguage:l=>{try{localStorage.setItem(KEY,l)}catch{};location.reload()},t:(en,ar,he)=>getLang()==='ar'?(ar??en):getLang()==='he'?(he??en):en};window.ChemLang=window.ChemistryI18n}
+ }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
 })();

@@ -1,11 +1,13 @@
 (()=>{
 'use strict';
 const load=()=>{
- if(window.ChemistryI18n){window.ChemistryI18n.refresh?.();return}
+ const engine=window.ChemistryI18n||window.ChemLang;
+ if(engine?.refresh){engine.refresh();return}
+ /* Do not start a second localization engine while the shared one is loading. */
+ if(document.querySelector('script[src*="i18n-safe.js"]'))return;
  const s=document.createElement('script');
- s.src='i18n-safe.js?v=20261025-translation-audit-15';
+ s.src='i18n-safe.js?v=20261028-priority1';
  s.async=false;
- s.onload=()=>window.ChemistryI18n?.refresh?.();
  document.head.appendChild(s);
 };
 function stabilizeNavigation(){
