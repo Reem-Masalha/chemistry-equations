@@ -3,7 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 const base = 'https://reem-masalha.github.io/chemistry-equations/';
-const pages = ['index.html','learn.html','beginner-lessons.html','intermediate-lessons.html','advanced-lessons.html','personal-quiz.html','quiz.html','challenges.html','checker.html','chemistry-reference.html','profile.html','set-password.html','admin-tools.html','admin.html'];
+const pages = ['index.html','learn.html','beginner-lessons.html','intermediate-lessons.html','advanced-lessons.html','personal-quiz.html','quiz.html','challenges.html','checker.html','chemistry-reference.html','test-maker.html','profile.html','set-password.html','admin-tools.html','admin.html'];
 const languages = [{code:'en',dir:'ltr',nav:'Learn'},{code:'ar',dir:'rtl',nav:'تعلّم'},{code:'he',dir:'rtl',nav:'למידה'}];
 const viewports = [{name:'desktop',width:1440,height:1000},{name:'mobile',width:390,height:844}];
 const out='browser-i18n-artifacts';
