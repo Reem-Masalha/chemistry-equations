@@ -221,7 +221,7 @@ for (const language of languages) {
     await page.waitForFunction(() => window.ChemistryI18nReady === true, null, { timeout: 15000 });
     await page.locator('#newQuiz').click();
     await expect(page.locator('#quizArea .practice-choice')).toHaveCount(4);
-    await expect(page.locator('#quizArea')).toContainText('H');
+    await expect(page.locator('#quizArea')).toContainText('→');
     await expect(page.locator('#cancelQuiz')).toBeVisible();
     await page.locator('#cancelQuiz').click();
     await expect(page.locator('#quizArea')).toContainText(language.code === 'ar' ? 'تم إلغاء الاختبار' : language.code === 'he' ? 'החידון בוטל' : 'Quiz cancelled');
