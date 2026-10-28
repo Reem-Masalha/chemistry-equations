@@ -254,3 +254,18 @@ for (const language of languages) {
     if (language.code === 'he') expect(hint, 'Hebrew feedback hint expected').toMatch(/[\u0590-\u05FF]/);
   });
 }
+
+test('test maker generates a stable shareable set and separate answer key', async ({ page }) => {
+  await prepare(page, 'en');
+  await page.goto('/test-maker.html', { waitUntil: 'domcontentloaded' });
+  await expect(page.locator('#testQuestions .test-question')).toHaveCount(10);
+  const sharedUrl = new URL(page.url());
+  const ids = (sharedUrl.searchParams.get('q') || '').split(',').filter(Boolean);
+  expect(ids).toHaveLength(10);
+  await page.locator('#toggleKey').click();
+  await expect(page.locator('#answerKey')).toBeVisible();
+  await expect(page.locator('#answers .test-question')).toHaveCount(10);
+  await page.goto('/test-maker.html?q=' + ids.join(','), { waitUntil: 'domcontentloaded' });
+  await expect(page.locator('#testQuestions .test-question')).toHaveCount(10);
+  expect(new URL(page.url()).searchParams.get('q')).toBe(ids.join(','));
+});
