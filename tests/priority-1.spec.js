@@ -6,6 +6,9 @@ const routes = [
   'personal-quiz.html',
   'challenges.html',
   'checker.html',
+  'beginner-lessons.html',
+  'intermediate-lessons.html',
+  'advanced-lessons.html',
 ];
 const languages = [
   { code: 'en', dir: 'ltr', learn: 'Learn' },
@@ -151,3 +154,76 @@ test('RTL layout remains within the viewport at 320px', async ({ page }) => {
   expect(Math.max(widths.document, widths.body), JSON.stringify(widths))
     .toBeLessThanOrEqual(widths.viewport + 2);
 });
+
+
+for (const language of languages) {
+  test(`profile achievements and certificate preview are localized in ${language.code}`, async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.addInitScript(({ language }) => {
+      localStorage.setItem('chemistryLanguage', language);
+      localStorage.setItem('chemistryTheme', 'light');
+      localStorage.setItem('chemistryCurrentUser', JSON.stringify({
+        id: 'playwright-user', username: 'TestUser', name: 'Test User', token: 'playwright-token'
+      }));
+    }, { language: language.code });
+    await page.route('https://chemistry-equations-api.reemkhmasalha.workers.dev/api/scores', route =>
+      route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ scores: [] }) }));
+    const pageErrors = [];
+    page.on('pageerror', error => pageErrors.push(error.message));
+    await page.goto('/profile.html', { waitUntil: 'domcontentloaded' });
+    await expect(page.locator('#profileContent .profile-dashboard')).toBeVisible();
+    await expect(page.locator('html')).toHaveAttribute('lang', language.code);
+    await expect(page.locator('html')).toHaveAttribute('dir', language.dir);
+    await page.locator('#previewAchievements').click();
+    await expect(page.locator('#achievements .achievement')).toHaveCount(5);
+    await expect(page.locator('#certificatePreviewOverlay')).toBeVisible({ timeout: 5000 });
+    await expect(page.locator('#certificateArea .certificate')).toBeVisible();
+    if (language.code !== 'en') {
+      for (const english of ['Certificate of Achievement', 'Overall score', 'Equations solved', 'Download / Print Certificate']) {
+        await expect(page.locator('#certificateArea')).not.toContainText(english);
+      }
+    }
+    await expect(pageErrors, pageErrors.join('\\n')).toEqual([]);
+    if (language.code !== 'en') {
+      await expect(page.locator('#certificatePreviewOverlay .certificate-preview-title')).not.toContainText('Certificate Preview');
+    }
+  });
+}
+
+for (const language of languages.filter(item => item.code !== 'en')) {
+  test(`dynamic profile achievement cards translate to ${language.code}`, async ({ page }) => {
+    await page.setViewportSize({ width: 320, height: 844 });
+    await page.addInitScript(({ language }) => {
+      localStorage.setItem('chemistryLanguage', language);
+      localStorage.setItem('chemistryCurrentUser', JSON.stringify({
+        id: 'playwright-user', username: 'TestUser', name: 'Test User', token: 'playwright-token'
+      }));
+    }, { language: language.code });
+    await page.route('https://chemistry-equations-api.reemkhmasalha.workers.dev/api/scores', route =>
+      route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ scores: [] }) }));
+    await page.goto('/profile.html', { waitUntil: 'domcontentloaded' });
+    await expect(page.locator('#profileContent .profile-dashboard')).toBeVisible();
+    await page.locator('#previewAchievements').click();
+    const cards = await page.locator('#achievements').innerText();
+    for (const english of ['First Quiz', 'Complete your first quiz.', '10 in a Row', 'Complete all learning stages.']) {
+      expect(cards, 'Untranslated achievement text: ' + english).not.toContain(english);
+    }
+    const widths = await page.evaluate(() => ({ viewport: innerWidth, document: document.documentElement.scrollWidth, body: document.body.scrollWidth }));
+    expect(Math.max(widths.document, widths.body), JSON.stringify(widths)).toBeLessThanOrEqual(widths.viewport + 2);
+  });
+}
+
+
+for (const language of languages) {
+  test(`practice session starts and renders answer choices in ${language.code}`, async ({ page }) => {
+    await prepare(page, language.code);
+    await page.goto('/personal-quiz.html', { waitUntil: 'domcontentloaded' });
+    await page.waitForFunction(() => window.ChemistryI18nReady === true, null, { timeout: 15000 });
+    await page.locator('#newQuiz').click();
+    await expect(page.locator('#quizArea .practice-choice')).toHaveCount(4);
+    await expect(page.locator('#quizArea')).toContainText('→');
+    await expect(page.locator('#cancelQuiz')).toBeVisible();
+    await page.locator('#cancelQuiz').click();
+    await expect(page.locator('#quizArea')).toContainText(language.code === 'ar' ? 'تم إلغاء الاختبار' : language.code === 'he' ? 'החידון בוטל' : 'Quiz cancelled');
+  });
+}
