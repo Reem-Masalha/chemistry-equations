@@ -49,6 +49,15 @@ for (const route of routes) {
   }
 }
 
+test('translation dictionary has Arabic and Hebrew for every entry', async ({ page }) => {
+  await prepare(page, 'en');
+  await page.goto('/learn.html', { waitUntil: 'domcontentloaded' });
+  await page.waitForFunction(() => window.ChemistryI18nReady === true, null, { timeout: 15000 });
+  const audit = await page.evaluate(() => window.ChemistryI18nDictionaryAudit);
+  expect(audit.entries).toBeGreaterThan(1000);
+  expect(audit.missing).toEqual([]);
+});
+
 for (const language of languages.filter(item => item.code !== 'en')) {
   test(`dynamic and recently reported labels translate to ${language.code}`, async ({ page }) => {
     await prepare(page, language.code);
