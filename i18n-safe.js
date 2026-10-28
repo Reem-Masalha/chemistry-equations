@@ -145,7 +145,7 @@ async function loadDictionary(){try{const r=await fetch('site-language-v2.js?dic
 });buildReverse()}catch(e){M={}}}
 async function init(){
  const api={lang:getLang,refresh:()=>apply(),apply:(root=document.body)=>scan(root,getLang()),setLanguage:l=>{if(!LANG[l])return;try{localStorage.setItem(KEY,l)}catch{};location.reload()},t:(en,ar,he)=>getLang()==='ar'?(ar??en):getLang()==='he'?(he??en):en};
- window.ChemistryI18n=api;window.ChemLang=api;
+ window.ChemLang=window.ChemistryI18n=api;
  apply();await loadDictionary();apply();window.ChemistryI18nDictionaryAudit={entries:Object.keys(M).length,missing:Object.entries(M).filter(([key,value])=>!String(key||'').trim()||!Array.isArray(value)||!String(value[0]||'').trim()||!String(value[1]||'').trim()).map(([key])=>key)};window.ChemistryI18nReady=true;window.dispatchEvent(new Event('chemistry:i18n-ready'));[150,500,1200,2500].forEach(ms=>setTimeout(()=>apply(),ms));
  if(document.body&&!window.__chemistryI18nObserver){
   window.__chemistryI18nObserver=true;let timer=0;
