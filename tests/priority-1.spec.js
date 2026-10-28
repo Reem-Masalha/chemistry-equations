@@ -222,6 +222,10 @@ for (const language of languages) {
     await page.locator('#newQuiz').click();
     await expect(page.locator('#quizArea .practice-choice')).toHaveCount(4);
     await expect(page.locator('#quizArea')).toContainText('→');
+    const questionMeta = await page.locator('.practice-question-meta').innerText();
+    if (language.code !== 'en') {
+      expect(questionMeta, 'Untranslated practice metadata: ' + questionMeta).not.toMatch(/\\b(basic balancing|coefficients|diatomic elements|already-balanced equations|tricky formulas|parentheses|polyatomic ions|combustion|redox|ionic equations|beginner|intermediate|advanced|easy|medium|hard)\\b/i);
+    }
     await expect(page.locator('#cancelQuiz')).toBeVisible();
     await page.locator('#cancelQuiz').click();
     await expect(page.locator('#quizArea')).toContainText(language.code === 'ar' ? 'تم إلغاء الاختبار' : language.code === 'he' ? 'החידון בוטל' : 'Quiz cancelled');
