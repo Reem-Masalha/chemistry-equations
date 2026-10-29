@@ -1,4 +1,8 @@
 /* Global dark-mode enforcement for every page. Loaded by the Pages build. */
+/* Make the theme control reflect the actual mode instead of always looking active. */
+html body #themeToggle{background:var(--surface)!important;color:var(--text)!important;border:1px solid var(--line)!important;box-shadow:none!important}
+html body #themeToggle[aria-pressed="true"]{background:var(--accent)!important;color:#fff!important;border-color:var(--accent)!important}
+
 html body.dark{background:var(--bg)!important;background-image:none!important;color:var(--text)!important}
 html body.dark .topbar{background:rgba(16,22,34,.94)!important;color:var(--text)!important;border-color:var(--line)!important}
 html body.dark main,html body.dark section,html body.dark article,html body.dark footer,html body.dark .page-title,html body.dark .hero{color:var(--text)}
