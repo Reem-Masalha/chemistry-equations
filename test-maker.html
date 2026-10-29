@@ -60,8 +60,7 @@ function print(mode){
   printWindow.document.write('<!doctype html><html lang="'+lang()+'"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>'+safeTitle+'</title><style>body{margin:24px;color:#111;background:#fff;font:12pt/1.45 Georgia,serif}h1{font-size:20pt;margin:0 0 14px}h2{font-size:15pt}.test-meta{display:flex;gap:20px;flex-wrap:wrap;border-bottom:1px solid #aaa;padding-bottom:12px;margin-bottom:12px;color:#333}.test-question{padding:12px 0;border-bottom:1px solid #ccc;break-inside:avoid}.test-question h3{font-size:12pt;margin:0 0 7px}.question-equation{font: bold 15pt/1.5 Arial,sans-serif;direction:ltr;text-align:left;unicode-bidi:isolate}.answer-space{height:24px;max-width:100%;margin-top:6px;border-bottom:1px solid #777}@page{margin:16mm}</style></head><body><h1>'+heading.replace(/</g,'&lt;').replace(/>/g,'&gt;')+'</h1>'+meta+body+'</body></html>');
   printWindow.document.close();
   printWindow.focus();
-  printWindow.addEventListener('load',()=>{printWindow.print()},{once:true});
-  setTimeout(()=>{if(!printWindow.closed){try{printWindow.print()}catch(_){}}},300);
+  setTimeout(()=>{if(!printWindow.closed){try{printWindow.focus();printWindow.print()}catch(_){}}},250);
 }
 $('generate').addEventListener('click',()=>generate(true));$('newSet').addEventListener('click',()=>generate(true));
 $('share').addEventListener('click',async()=>{const link=location.href;try{await navigator.clipboard.writeText(link);$('status').textContent=tr('Share link copied.','تم نسخ رابط المشاركة.','קישור השיתוף הועתק.')}catch{$('status').textContent=link;try{window.prompt(tr('Copy this share link:','انسخ رابط المشاركة هذا:','העתיקו את קישור השיתוף:'),link)}catch{}}});
