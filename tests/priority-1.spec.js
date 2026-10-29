@@ -269,3 +269,24 @@ test('test maker generates a stable shareable set and separate answer key', asyn
   await expect(page.locator('#testQuestions .test-question')).toHaveCount(10);
   expect(new URL(page.url()).searchParams.get('q')).toBe(ids.join(','));
 });
+
+
+test('test maker print buttons open populated printable documents', async ({ page }) => {
+  await prepare(page, 'en');
+  await page.goto('/test-maker.html', { waitUntil: 'domcontentloaded' });
+  await expect(page.locator('#testQuestions .test-question')).toHaveCount(10);
+
+  const testPopupPromise = page.waitForEvent('popup');
+  await page.locator('#printTest').click();
+  const testPopup = await testPopupPromise;
+  await expect(testPopup.locator('body')).toContainText('Chemical equation balancing test');
+  await expect(testPopup.locator('.test-question')).toHaveCount(10);
+  await expect(testPopup.locator('.answer-space')).toHaveCount(10);
+
+  const keyPopupPromise = page.waitForEvent('popup');
+  await page.locator('#printKey').click();
+  const keyPopup = await keyPopupPromise;
+  await expect(keyPopup.locator('h1')).toHaveText('Answer key');
+  await expect(keyPopup.locator('.test-question')).toHaveCount(10);
+  await expect(keyPopup.locator('.question-equation').first()).not.toBeEmpty();
+});
