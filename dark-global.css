@@ -1,5 +1,5 @@
 /* Global dark-mode enforcement for every page. Loaded by the Pages build. */
-html body.dark{background:var(--bg)!important;color:var(--text)!important}
+html body.dark{background:var(--bg)!important;background-image:none!important;color:var(--text)!important}
 html body.dark .topbar{background:rgba(16,22,34,.94)!important;color:var(--text)!important;border-color:var(--line)!important}
 html body.dark main,html body.dark section,html body.dark article,html body.dark footer,html body.dark .page-title,html body.dark .hero{color:var(--text)}
 html body.dark .card,html body.dark .hero-card,html body.dark .quiz-q,html body.dark .steps article,html body.dark .achievement,html body.dark .score-animation,html body.dark .progress-grid>div,html body.dark .certificate-actions,html body.dark .tool-card,html body.dark .lesson,html body.dark .mode-list label,html body.dark .stage-list .stage{background:var(--surface)!important;color:var(--text)!important;border-color:var(--line)!important}
