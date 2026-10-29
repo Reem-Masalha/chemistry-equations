@@ -1,0 +1,12 @@
+/* Targeted visual corrections confirmed in the screen recording. */
+/* Keep the daily streak readable as a status chip rather than a white pill. */
+body:not(.dark) .daily-streak{
+  background:rgba(49,88,214,.20)!important;
+  border-color:rgba(49,88,214,.58)!important;
+  color:#2447b8!important;
+}
+body.dark .daily-streak{
+  background:rgba(112,142,235,.28)!important;
+  border-color:rgba(145,165,245,.62)!important;
+  color:#dbe5ff!important;
+}

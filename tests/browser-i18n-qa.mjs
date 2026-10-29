@@ -146,12 +146,53 @@ for(const lang of languages){
   await page.waitForSelector('#accountModal',{timeout:5000});
   await page.waitForTimeout(lang.code==='en'?250:1000);
   const modalText=(await page.locator('#accountModal').innerText()).trim();
-  const modalVisible=await page.locator('#accountModal').isVisible().catch(()=>false)&&modalText.length>0;
-  report.checks.push({page:'account-modal',lang:lang.code,modalVisible,modalText,assertions:{accountModalVisible:modalVisible}});
+   const modalVisible=await page.locator('#accountModal').isVisible().catch(()=>false)&&modalText.length>0;
+   const quickMenuVisible=await page.locator('#accountQuickMenu').isVisible().catch(()=>false);
+   report.checks.push({page:'account-modal',lang:lang.code,modalVisible,modalText,quickMenuVisible,assertions:{accountModalVisible:modalVisible,duplicateQuickMenuHidden:!quickMenuVisible}});
   await page.screenshot({path:path.join(out,'account-modal-'+lang.code+'.png'),fullPage:true,animations:'disabled',timeout:20000});
  }catch(e){report.errors.push({page:'account-modal',lang:lang.code,error:String(e)})}
  await context.close();
 }
+
+
+ try{
+  const testContext=await browser.newContext({viewport:{width:1440,height:1000}});
+  const testPage=await testContext.newPage();
+  await testPage.goto(new URL('test-maker.html',base).href,{waitUntil:'domcontentloaded',timeout:60000});
+  await testPage.waitForSelector('#generate',{timeout:10000});
+  await testPage.waitForFunction(()=>document.querySelectorAll('#testQuestions .test-question').length>0,{timeout:10000});
+  await testPage.locator('#generate').click();
+  await testPage.waitForFunction(()=>document.querySelectorAll('#testQuestions .test-question').length>0);
+  const questionCount=await testPage.locator('#testQuestions .test-question').count();
+  const status=(await testPage.locator('#status').innerText()).trim();
+  await testPage.locator('#toggleKey').click();
+  const answerKeyShown=await testPage.locator('#answerKey').isVisible();
+  const answerCount=await testPage.locator('#answers .test-question').count();
+  await testPage.locator('#toggleKey').click();
+  const answerKeyHidden=!(await testPage.locator('#answerKey').isVisible());
+  await testPage.evaluate(()=>{window.__sharePromptValue='';window.prompt=(_message,value)=>{window.__sharePromptValue=String(value||'');return value||''}});
+  await testPage.locator('#share').click();
+  await testPage.waitForTimeout(250);
+  const shareStatus=(await testPage.locator('#status').innerText()).trim();
+  const shareWorked=/copied/i.test(shareStatus)||await testPage.evaluate(()=>Boolean(window.__sharePromptValue));
+  const sourceLeak=await testPage.evaluate(()=>document.body.innerText.includes('printWindow.focus()')||document.body.innerText.includes("$('generate').addEventListener"));
+  const printTestPopupPromise=testPage.waitForEvent('popup',{timeout:5000});
+  await testPage.locator('#printTest').click();
+  const printTestPopup=await printTestPopupPromise;
+  await printTestPopup.waitForTimeout(150);
+  const printTestTitle=(await printTestPopup.locator('h1').innerText().catch(()=>'' )).trim();
+  const printTestWorks=printTestTitle.includes('Chemical equation balancing test');
+  await printTestPopup.close();
+  const printKeyPopupPromise=testPage.waitForEvent('popup',{timeout:5000});
+  await testPage.locator('#printKey').click();
+  const printKeyPopup=await printKeyPopupPromise;
+  await printKeyPopup.waitForTimeout(150);
+  const printKeyTitle=(await printKeyPopup.locator('h1').innerText().catch(()=>'' )).trim();
+  const printKeyWorks=printKeyTitle.includes('Answer key');
+  await printKeyPopup.close();
+  report.checks.push({page:'test-maker.html:functional-controls',questionCount,status,answerKeyShown,answerCount,answerKeyHidden,shareStatus,shareWorked,sourceLeak,printTestTitle,printTestWorks,printKeyTitle,printKeyWorks,assertions:{testQuestionsGenerated:questionCount>0,answerKeyCanShow:answerKeyShown&&answerCount>0,answerKeyCanHide:answerKeyHidden,shareLinkActionWorks:shareWorked,noScriptSourceLeak:!sourceLeak,printBlankTestWorks:printTestWorks,printAnswerKeyWorks:printKeyWorks}});
+  await testContext.close();
+ }catch(e){report.errors.push({page:'test-maker.html:functional-controls',error:String(e)})}
 
 const failed=report.checks.filter(c=>c.assertions&&Object.values(c.assertions).some(v=>!v));
 report.summary={pages:pages.length,languages:languages.map(x=>x.code),viewports:viewports.map(x=>x.name),screenshotCount:report.screenshots.length,assertionFailures:failed.map(c=>({page:c.page,lang:c.lang,viewport:c.viewport,failures:Object.entries(c.assertions).filter(([,v])=>!v).map(([k])=>k)})),errorCount:report.errors.length,untranslatedCandidateGroups:report.untranslatedCandidates.length};
