@@ -40,21 +40,6 @@ html body.dark .recent-quiz,html body.dark .weak{color:var(--text)!important;bor
 html body.dark .profile-table td{color:var(--text)!important;border-color:var(--line)!important}
 
 
-/* Recording audit: keep page-title typography and eyebrow labels consistent site-wide. */
-html body .page-title,
-html body .hero{color:var(--text)}
-html body .page-title{padding-top:72px;padding-bottom:30px}
-html body .page-title h1,
-html body .hero h1{font-size:clamp(42px,6vw,70px);line-height:1.02;letter-spacing:-.04em;font-weight:800;margin:15px 0 20px}
-html body .page-title .eyebrow,
-html body .hero .eyebrow,
-html body .section-head .eyebrow,
-html body .card>.eyebrow{display:inline-block;font-size:12px;font-weight:800;line-height:1.4;letter-spacing:.13em;text-transform:uppercase;color:var(--accent)}
-html body .page-title p{max-width:820px;margin:0;color:var(--muted);font-size:18px;line-height:1.55}
-html body .section-head{gap:16px}
-html body .section-head h2{font-size:clamp(25px,3vw,34px);line-height:1.1;letter-spacing:-.025em}
-@media(max-width:760px){html body .page-title{padding-top:34px;padding-bottom:20px}html body .page-title h1,html body .hero h1{font-size:clamp(34px,9vw,48px)}html body .page-title p{font-size:16px}}
-
 /* Prevent legacy hard-coded white buttons from flashing on dark-themed pages. */
 html body.dark button:not(.primary):not(.danger),
 html body.dark .checker-example,
@@ -86,6 +71,7 @@ html body .test-intro {
   color:var(--text);
 }
 html body .page-title,
+html body .hero,
 html body .test-intro {
   padding:72px 0 30px;
 }
@@ -121,8 +107,8 @@ html body .hero p {max-width:650px;color:var(--muted);font-size:18px;line-height
 html body .hero {padding-top:72px;padding-bottom:72px}
 @media(max-width:760px) {
   html body .page-title,
+  html body .hero,
   html body .test-intro {padding:34px 0 20px}
-  html body .hero {padding:38px 0 30px}
   html body .page-title h1,
   html body .hero h1,
   html body .test-intro h1 {font-size:clamp(34px,9vw,48px)}
