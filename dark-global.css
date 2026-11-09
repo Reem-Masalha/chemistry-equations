@@ -104,7 +104,6 @@ html body .test-intro p {
   line-height:1.55;
 }
 html body .hero p {max-width:650px;color:var(--muted);font-size:18px;line-height:1.55}
-html body .hero {padding-top:72px;padding-bottom:72px}
 @media(max-width:760px) {
   html body .page-title,
   html body .hero,
