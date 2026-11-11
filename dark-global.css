@@ -115,3 +115,41 @@ html body .hero p {max-width:650px;color:var(--muted);font-size:18px;line-height
   html body .test-intro p,
   html body .hero p {font-size:16px}
 }
+
+
+/* Desktop header fit: keep every navigation label readable beside the utility controls. */
+@media (min-width:761px) {
+  html body .topbar {
+    gap:10px !important;
+    padding-left:clamp(18px,3.6vw,64px) !important;
+    padding-right:clamp(18px,3.6vw,64px) !important;
+    min-width:0;
+  }
+  html body .topbar > .brand {
+    flex:0 0 auto;
+    margin-right:0;
+    font-size:18px;
+    gap:7px;
+  }
+  html body .topbar > .main-nav {
+    flex:1 1 auto;
+    min-width:0;
+    gap:2px;
+    overflow-x:auto;
+    overflow-y:hidden;
+    scrollbar-width:none;
+    white-space:nowrap;
+  }
+  html body .topbar > .main-nav::-webkit-scrollbar {display:none}
+  html body .topbar > .main-nav a {
+    flex:0 0 auto;
+    font-size:13px;
+    padding:8px 8px;
+  }
+  html body .topbar > button,
+  html body .topbar > select,
+  html body .topbar > .account-top {
+    flex:0 0 auto;
+    white-space:nowrap;
+  }
+}
