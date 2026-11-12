@@ -153,3 +153,47 @@ html body .hero p {max-width:650px;color:var(--muted);font-size:18px;line-height
     white-space:nowrap;
   }
 }
+
+
+/* Final desktop header layout: utility controls on row one, complete navigation on row two. */
+@media (min-width:761px) {
+  html body header.topbar {
+    display:flex !important;
+    flex-wrap:wrap !important;
+    align-items:center !important;
+    row-gap:8px !important;
+    column-gap:10px !important;
+    min-height:0 !important;
+    padding-top:10px !important;
+    padding-bottom:10px !important;
+  }
+  html body header.topbar > .brand {
+    order:1 !important;
+    margin-right:auto !important;
+    flex:0 0 auto !important;
+  }
+  html body header.topbar > .main-nav {
+    order:10 !important;
+    flex:0 0 100% !important;
+    width:100% !important;
+    min-width:0 !important;
+    display:flex !important;
+    justify-content:center !important;
+    align-items:center !important;
+    flex-wrap:nowrap !important;
+    overflow:visible !important;
+    gap:clamp(3px,.55vw,10px) !important;
+  }
+  html body header.topbar > .main-nav a {
+    flex:0 0 auto !important;
+    font-size:14px !important;
+    padding:8px clamp(7px,.7vw,12px) !important;
+  }
+  html body header.topbar > button,
+  html body header.topbar > select,
+  html body header.topbar > .account-top {
+    order:2 !important;
+    flex:0 0 auto !important;
+    white-space:nowrap !important;
+  }
+}
