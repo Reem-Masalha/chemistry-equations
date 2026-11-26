@@ -197,3 +197,56 @@ html body .hero p {max-width:650px;color:var(--muted);font-size:18px;line-height
     white-space:nowrap !important;
   }
 }
+
+
+/* Desktop navigation labels: reserve a full second row so none are clipped. */
+@media (min-width:761px) {
+  html body header.topbar {
+    display:grid !important;
+    grid-template-columns:minmax(0,1fr) auto auto auto;
+    grid-template-rows:auto auto;
+    align-items:center !important;
+    column-gap:10px !important;
+    row-gap:8px !important;
+    min-width:0 !important;
+    padding:10px clamp(18px,3.6vw,64px) !important;
+  }
+  html body header.topbar > .brand {
+    grid-column:1;
+    grid-row:1;
+    margin:0 !important;
+    min-width:max-content;
+  }
+  html body header.topbar > .main-nav {
+    grid-column:1 / -1 !important;
+    grid-row:2 !important;
+    display:flex !important;
+    width:100% !important;
+    min-width:0 !important;
+    justify-content:center !important;
+    align-items:center !important;
+    flex-wrap:nowrap !important;
+    overflow-x:auto !important;
+    overflow-y:hidden !important;
+    white-space:nowrap !important;
+    scrollbar-width:none !important;
+    gap:clamp(4px,.7vw,12px) !important;
+  }
+  html body header.topbar > .main-nav::-webkit-scrollbar {display:none}
+  html body header.topbar > .main-nav a,
+  html body header.topbar > .main-nav .nav-group-button {
+    flex:0 0 auto !important;
+    min-width:max-content !important;
+    white-space:nowrap !important;
+    font-size:14px !important;
+    padding:8px 10px !important;
+  }
+  html body header.topbar > .account-top,
+  html body header.topbar > #themeToggle,
+  html body header.topbar > select,
+  html body header.topbar > label,
+  html body header.topbar > .language-control {
+    grid-row:1;
+    white-space:nowrap !important;
+  }
+}
